@@ -1670,7 +1670,7 @@ footer {
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
   margin-bottom: 32px;
-  align-items: start;
+  align-items: stretch;
 }
 .pricing-card {
   background: var(--s2);
@@ -1830,16 +1830,18 @@ footer {
 .pricing-note {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  font-family: var(--fm);
-  font-size: .68rem;
+  font-family: var(--fi), sans-serif;
+  font-size: .82rem;
   color: #4a6585;
-  letter-spacing: .04em;
-  line-height: 1.7;
-  padding: 16px 20px;
+  letter-spacing: .01em;
+  line-height: 1.5;
+  padding: 20px 32px;
   background: var(--s2);
   border: 1px solid var(--b1);
   border-radius: 6px;
+  text-align: center;
 }
 .pricing-note [data-lucide] {
   width: 14px; height: 14px;
