@@ -1682,6 +1682,8 @@ footer {
   display: flex;
   flex-direction: column;
   gap: 0;
+  min-height: 480px;
+  justify-content: space-between;
 }
 .pricing-card:hover {
   border-color: rgba(255,255,255,.12);
@@ -1828,20 +1830,21 @@ footer {
 }
 
 .pricing-note {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  font-family: var(--fi), sans-serif;
+  display: block;
+  font-family: var(--fm);
   font-size: .82rem;
   color: #4a6585;
-  letter-spacing: .01em;
-  line-height: 1.5;
-  padding: 20px 32px;
+  letter-spacing: .02em;
+  line-height: 1.6;
+  padding: 18px 40px;
   background: var(--s2);
   border: 1px solid var(--b1);
   border-radius: 6px;
   text-align: center;
+  white-space: nowrap;
+}
+@media (max-width: 900px) {
+  .pricing-note { white-space: normal; }
 }
 .pricing-note [data-lucide] {
   width: 14px; height: 14px;
@@ -3200,8 +3203,7 @@ footer {
     </div>
 
     <p class="pricing-note">
-      <i data-lucide="info"></i>
-      Sem fidelidade mínima no primeiro trimestre. Diagnóstico incluso no primeiro mês de engajamento.
+      Sem fidelidade mínima no primeiro trimestre — diagnóstico incluso no primeiro mês de engajamento.
     </p>
   </div>
 </section>
