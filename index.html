@@ -1867,6 +1867,46 @@ footer {
   filter: brightness(1.1);
 }
 
+
+/* Nav hover glow */
+.nav-links a {
+  position: relative;
+  padding: 4px 2px;
+  transition: color .2s, text-shadow .2s;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0; right: 0;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform .25s cubic-bezier(.4,0,.2,1), opacity .25s;
+  opacity: 0;
+  border-radius: 2px;
+  box-shadow: 0 0 8px 1px rgba(59,130,246,.7);
+}
+.nav-links a:hover {
+  color: #fff !important;
+  text-shadow:
+    0 0 12px rgba(59,130,246,.9),
+    0 0 24px rgba(59,130,246,.5);
+}
+.nav-links a:hover::after {
+  transform: scaleX(1);
+  opacity: 1;
+}
+/* Link ativo (seção visível no scroll) */
+.nav-links a.active {
+  color: #60a5fa !important;
+  text-shadow: 0 0 10px rgba(59,130,246,.6);
+}
+.nav-links a.active::after {
+  transform: scaleX(1);
+  opacity: .7;
+}
+
 </style>
 </head>
 <body>
@@ -3382,5 +3422,27 @@ document.querySelectorAll('.fase, .prob-card, .res-card, .edu-track, .seg-card, 
   observer.observe(el);
 });
 </script>
+
+<script>
+(function() {
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+  
+  function setActive() {
+    let current = '';
+    sections.forEach(s => {
+      const top = s.getBoundingClientRect().top;
+      if (top <= 100) current = s.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  }
+  
+  window.addEventListener('scroll', setActive, { passive: true });
+  setActive();
+})();
+</script>
+
 </body>
 </html>
