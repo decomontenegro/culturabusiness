@@ -172,166 +172,225 @@ nav {
 }
 .text-link:hover .arrow { transform: translateX(5px); }
 
-/* ── HERO VISUAL (knowledge sphere 3D) ── */
+/* ── HERO VISUAL — live capture mockup ── */
 .hero-visual {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 380px;
-  position: relative;
 }
 
-.sphere-wrap {
-  position: relative;
-  width: 300px;
-  height: 300px;
+.live-capture {
+  width: 360px;
+  border: 1px solid rgba(200,169,110,0.18);
+  border-radius: 12px;
+  background: #0d0d0d;
+  overflow: hidden;
+  box-shadow: 0 0 80px rgba(200,169,110,0.05), 0 24px 64px rgba(0,0,0,0.6);
+}
+
+.lc-header {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(245,240,232,0.06);
+  background: rgba(245,240,232,0.02);
 }
 
-.sphere {
-  position: absolute;
-  width: 180px;
-  height: 180px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 34% 32%,
-    rgba(245,240,232,0.13) 0%,
-    rgba(200,169,110,0.18) 18%,
-    rgba(200,169,110,0.06) 42%,
-    rgba(30,25,20,0.85) 72%,
-    rgba(10,8,6,0.95) 100%
-  );
-  box-shadow:
-    inset -18px -18px 42px rgba(0,0,0,0.85),
-    inset 8px 8px 28px rgba(200,169,110,0.12),
-    0 0 60px rgba(200,169,110,0.08),
-    0 0 120px rgba(200,169,110,0.04);
-  z-index: 2;
+.lc-dot { width: 10px; height: 10px; border-radius: 50%; }
+.lc-dot-red  { background: #FF5F57; }
+.lc-dot-gray { background: rgba(245,240,232,0.15); }
+
+.lc-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  margin-left: 6px;
+  flex: 1;
 }
 
-.sphere::before {
-  content: '';
-  position: absolute;
-  width: 52px; height: 34px;
-  border-radius: 50%;
-  background: radial-gradient(ellipse,
-    rgba(245,240,232,0.22) 0%,
-    transparent 70%);
-  top: 22px; left: 26px;
-  transform: rotate(-20deg);
-}
-
-.sphere::after {
-  content: '';
-  position: absolute;
-  width: 18px; height: 12px;
-  border-radius: 50%;
-  background: radial-gradient(ellipse,
-    rgba(200,169,110,0.35) 0%,
-    transparent 70%);
-  bottom: 38px; right: 30px;
-  transform: rotate(15deg);
-}
-
-.sphere-orbit {
-  position: absolute;
-  border-radius: 50%;
-  border-style: solid;
-  border-color: transparent;
-}
-
-.sphere-orbit1 {
-  width: 240px; height: 240px;
-  border-top-color: rgba(200,169,110,0.28);
-  border-bottom-color: rgba(200,169,110,0.06);
-  border-width: 1px;
-  animation: orbit1 18s linear infinite;
-}
-.sphere-orbit1::after {
-  content: '';
-  position: absolute;
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--gold);
-  top: -3px; left: 50%;
-  transform: translateX(-50%);
-  box-shadow: 0 0 8px rgba(200,169,110,0.8);
-}
-
-.sphere-orbit2 {
-  width: 272px; height: 272px;
-  border-left-color: rgba(200,169,110,0.16);
-  border-right-color: rgba(200,169,110,0.04);
-  border-width: 1px;
-  animation: orbit2 26s linear infinite reverse;
-  transform: rotateX(72deg);
-}
-.sphere-orbit2::after {
-  content: '';
-  position: absolute;
-  width: 4px; height: 4px;
-  border-radius: 50%;
-  background: rgba(200,169,110,0.7);
-  top: -2px; left: 50%;
-  transform: translateX(-50%);
-  box-shadow: 0 0 6px rgba(200,169,110,0.6);
-}
-
-.sphere-orbit3 {
-  width: 300px; height: 300px;
-  border-top-color: rgba(200,169,110,0.08);
-  border-bottom-color: rgba(200,169,110,0.03);
-  border-width: 1px;
-  animation: orbit3 38s linear infinite;
-  transform: rotateX(55deg) rotateZ(30deg);
-}
-
-.sphere-center {
-  position: absolute;
-  z-index: 3;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  text-align: center;
-  gap: 2px;
-}
-
-.sphere-kpi-label {
+.lc-pulse-badge {
   font-family: var(--mono);
   font-size: 8px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: rgba(200,169,110,0.55);
+  letter-spacing: 0.12em;
+  color: #C8A96E;
+  animation: lcpulse 2s ease-in-out infinite;
 }
 
-.sphere-kpi-num {
-  font-family: var(--serif);
-  font-size: 44px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  color: var(--text);
+@keyframes lcpulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.3; }
 }
 
-.sphere-kpi-sub {
+.lc-body { padding: 20px 18px; }
+.lc-stream { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.lc-msg { display: flex; flex-direction: column; gap: 6px; }
+
+.lc-msg-label {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+}
+
+.lc-msg-text {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: rgba(245,240,232,0.6);
+  line-height: 1.6;
+  font-style: italic;
+  padding: 10px 12px;
+  border: 1px solid rgba(245,240,232,0.07);
+  border-radius: 6px;
+  background: rgba(245,240,232,0.02);
+  transition: opacity 0.6s;
+}
+
+.lc-arrow {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--gold);
+  letter-spacing: 0.12em;
+  text-align: center;
+  opacity: 0.7;
+}
+
+.lc-structured {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid rgba(200,169,110,0.2);
+  border-radius: 6px;
+  background: rgba(200,169,110,0.03);
+  transition: opacity 0.6s;
+}
+
+.lc-row { display: flex; gap: 12px; align-items: baseline; }
+
+.lc-key {
+  font-family: var(--mono);
   font-size: 9px;
   color: var(--muted);
   letter-spacing: 0.1em;
-  text-transform: uppercase;
+  min-width: 60px;
 }
 
-@keyframes orbit1 {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+.lc-val {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text);
 }
-@keyframes orbit2 {
-  from { transform: rotateX(72deg) rotateZ(0deg); }
-  to   { transform: rotateX(72deg) rotateZ(360deg); }
+
+.lc-val-gold { color: var(--gold); }
+
+.lc-stats {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid rgba(245,240,232,0.06);
 }
-@keyframes orbit3 {
-  from { transform: rotateX(55deg) rotateZ(30deg) rotateY(0deg); }
-  to   { transform: rotateX(55deg) rotateZ(30deg) rotateY(360deg); }
+
+.lc-stat { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+
+.lc-stat-num {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  line-height: 1;
 }
+
+.lc-stat-pct::after { content: '%'; font-size: 16px; }
+
+.lc-stat-label {
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* ── COMPOUND ── */
+.compound-section { padding: 160px 0; border-top: 1px solid rgba(245,240,232,0.05); }
+.compound-inner { max-width: 640px; }
+.compound-headline {
+  font-family: var(--serif);
+  font-size: clamp(40px, 5vw, 72px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--text);
+  margin: 32px 0 64px;
+}
+.compound-lines { display: flex; flex-direction: column; gap: 0; }
+.compound-line {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 32px;
+  padding: 28px 0;
+  border-bottom: 1px solid rgba(245,240,232,0.06);
+  align-items: start;
+}
+.compound-line:first-child { border-top: 1px solid rgba(245,240,232,0.06); }
+.compound-period {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 3px;
+}
+.compound-line-gold .compound-period { color: var(--gold); }
+.compound-desc {
+  font-size: 15px;
+  color: rgba(245,240,232,0.75);
+  line-height: 1.7;
+  font-weight: 300;
+}
+.compound-line-gold .compound-desc { color: var(--text); }
+
+/* ── TESTIMONIAL ── */
+.testimonial-section { padding: 160px 0; border-top: 1px solid rgba(245,240,232,0.05); }
+.testimonial-block { max-width: 760px; position: relative; }
+.testimonial-quote-mark {
+  font-family: var(--serif);
+  font-size: 120px;
+  font-weight: 800;
+  color: var(--gold);
+  opacity: 0.15;
+  line-height: 0.8;
+  margin-bottom: 24px;
+  user-select: none;
+}
+.testimonial-text {
+  font-family: var(--serif);
+  font-size: clamp(20px, 2.5vw, 28px);
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--text);
+  margin-bottom: 48px;
+  letter-spacing: -0.01em;
+}
+.testimonial-author { display: flex; align-items: center; gap: 16px; }
+.testimonial-avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: rgba(200,169,110,0.12);
+  border: 1px solid rgba(200,169,110,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+.testimonial-name { font-size: 14px; font-weight: 500; color: var(--text); display: block; }
+.testimonial-role { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); display: block; margin-top: 2px; }
 
 @keyframes bpulse {
   0%,100% { transform: scale(1); opacity: 0.8; }
@@ -1321,16 +1380,13 @@ footer {
       <span class="hero-eyebrow">Knowledge Intelligence Platform</span>
 
       <h1 class="hero-title">
-        Sua empresa já tem<br>
-        todo o conhecimento<br>
-        que precisa.<br>
-        <em>O problema é outro.</em>
+        Seja a empresa<br>
+        que nunca perde<br>
+        <em>o que sabe.</em>
       </h1>
 
       <p class="hero-sub">
-        Ele está preso em silos, em cabeças, em conversas que ninguém registra.
-        Capturamos esse conhecimento, amplificamos com IA, e devolvemos
-        para toda a organização — descentralizado.
+        Cada decisão, cada reunião, cada aprendizado que sua empresa gera — capturado, estruturado e amplificado com IA. Para que nenhum conhecimento fique preso em cabeças, silos ou conversas esquecidas.
       </p>
 
       <div class="hero-actions">
@@ -1345,17 +1401,46 @@ footer {
       </div>
     </div>
 
-    <!-- Knowledge Sphere 3D -->
+    <!-- Live Capture Mockup -->
     <div class="hero-visual">
-      <div class="sphere-wrap">
-        <div class="sphere-orbit sphere-orbit3"></div>
-        <div class="sphere-orbit sphere-orbit2"></div>
-        <div class="sphere-orbit sphere-orbit1"></div>
-        <div class="sphere"></div>
-        <div class="sphere-center">
-          <span class="sphere-kpi-label">Comunidade</span>
-          <span class="sphere-kpi-num">7K+</span>
-          <span class="sphere-kpi-sub">builders</span>
+      <div class="live-capture">
+        <div class="lc-header">
+          <span class="lc-dot lc-dot-red"></span>
+          <span class="lc-dot lc-dot-gray"></span>
+          <span class="lc-dot lc-dot-gray"></span>
+          <span class="lc-title">knowledge.capture — ao vivo</span>
+          <span class="lc-pulse-badge">● AO VIVO</span>
+        </div>
+        <div class="lc-body">
+          <div class="lc-stream" id="lcStream">
+            <div class="lc-msg lc-msg-in">
+              <span class="lc-msg-label">REUNIÃO</span>
+              <span class="lc-msg-text">"Decidimos adiar o lançamento para Q2. Budget aprovado foi R$280k."</span>
+            </div>
+            <div class="lc-arrow">↓ estruturando</div>
+            <div class="lc-msg lc-msg-out">
+              <span class="lc-msg-label">MEMÓRIA</span>
+              <div class="lc-structured">
+                <div class="lc-row"><span class="lc-key">Decisão</span><span class="lc-val">Lançamento → Q2 2025</span></div>
+                <div class="lc-row"><span class="lc-key">Budget</span><span class="lc-val">R$ 280.000 ✓</span></div>
+                <div class="lc-row"><span class="lc-key">Status</span><span class="lc-val lc-val-gold">confirmado</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="lc-stats">
+            <div class="lc-stat">
+              <span class="lc-stat-num" data-target="847">0</span>
+              <span class="lc-stat-label">decisões capturadas</span>
+            </div>
+            <div class="lc-stat">
+              <span class="lc-stat-num" data-target="12">0</span>
+              <span class="lc-stat-label">equipes conectadas</span>
+            </div>
+            <div class="lc-stat">
+              <span class="lc-stat-num lc-stat-pct" data-target="94">0</span>
+              <span class="lc-stat-label">taxa de retenção</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1632,64 +1717,23 @@ footer {
 </section>
 
 
-<!-- ════ TICKER DE CITAÇÕES ════ -->
-<section class="ticker-section">
-  <span class="ticker-eyebrow">O que dizem quem já implementou</span>
-  <div class="ticker-track">
-    <div class="ticker-inner">
-      <div class="ticker-card">
-        <span class="ticker-quote">"Antes perdíamos 2h por reunião só recapitulando o que foi decidido na semana anterior. Hoje isso simplesmente não acontece mais."</span>
-        <span class="ticker-author">Fernanda R., Diretora de Operações</span>
+<!-- ════ DEPOIMENTO ════ -->
+<section class="testimonial-section">
+  <div class="wrap">
+    <div class="testimonial-block reveal">
+      <div class="testimonial-quote-mark">"</div>
+      <blockquote class="testimonial-text">
+        Antes, quando um diretor saía, levava anos de contexto com ele.
+        Hoje esse conhecimento está estruturado, auditável e acessível para qualquer pessoa — ou agente de IA.
+        Foi a mudança operacional mais silenciosa e mais impactante que já fizemos.
+      </blockquote>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">MR</div>
+        <div class="testimonial-info">
+          <span class="testimonial-name">Marcelo Ribeiro</span>
+          <span class="testimonial-role">CEO · Vértice Group</span>
+        </div>
       </div>
-      <span class="ticker-sep">·</span>
-      <div class="ticker-card">
-        <span class="ticker-quote">"A memória institucional que levou 3 anos para construir agora está acessível para qualquer novo colaborador em 15 minutos."</span>
-        <span class="ticker-author">Marcelo T., CEO</span>
-      </div>
-      <span class="ticker-sep">·</span>
-      <div class="ticker-card">
-        <span class="ticker-quote">"Nosso agente de IA passou a responder perguntas que antes só o fundador sabia responder."</span>
-        <span class="ticker-author">Julia M., Head de Produto</span>
-      </div>
-      <span class="ticker-sep">·</span>
-      <div class="ticker-card">
-        <span class="ticker-quote">"Cada decisão agora tem contexto, data e responsável. Nunca mais vamos repetir os mesmos erros."</span>
-        <span class="ticker-author">Rafael S., CTO</span>
-      </div>
-      <span class="ticker-sep">·</span>
-      <div class="ticker-card">
-        <span class="ticker-quote">"Implementamos em uma semana. Na semana seguinte, o time já perguntava 'por que não fizemos isso antes?'"</span>
-        <span class="ticker-author">Camila V., COO</span>
-      </div>
-      <span class="ticker-sep">·</span>
-    </div>
-    <!-- Duplicate for seamless loop -->
-    <div class="ticker-inner">
-      <div class="ticker-card">
-        <span class="ticker-quote">"Antes perdíamos 2h por reunião só recapitulando o que foi decidido na semana anterior. Hoje isso simplesmente não acontece mais."</span>
-        <span class="ticker-author">Fernanda R., Diretora de Operações</span>
-      </div>
-      <span class="ticker-sep">·</span>
-      <div class="ticker-card">
-        <span class="ticker-quote">"A memória institucional que levou 3 anos para construir agora está acessível para qualquer novo colaborador em 15 minutos."</span>
-        <span class="ticker-author">Marcelo T., CEO</span>
-      </div>
-      <span class="ticker-sep">·</span>
-      <div class="ticker-card">
-        <span class="ticker-quote">"Nosso agente de IA passou a responder perguntas que antes só o fundador sabia responder."</span>
-        <span class="ticker-author">Julia M., Head de Produto</span>
-      </div>
-      <span class="ticker-sep">·</span>
-      <div class="ticker-card">
-        <span class="ticker-quote">"Cada decisão agora tem contexto, data e responsável. Nunca mais vamos repetir os mesmos erros."</span>
-        <span class="ticker-author">Rafael S., CTO</span>
-      </div>
-      <span class="ticker-sep">·</span>
-      <div class="ticker-card">
-        <span class="ticker-quote">"Implementamos em uma semana. Na semana seguinte, o time já perguntava 'por que não fizemos isso antes?'"</span>
-        <span class="ticker-author">Camila V., COO</span>
-      </div>
-      <span class="ticker-sep">·</span>
     </div>
   </div>
 </section>
@@ -1819,6 +1863,34 @@ footer {
 </section>
 
 
+<!-- ════ COMPOUND ════ -->
+<section class="compound-section reveal">
+  <div class="wrap">
+    <div class="compound-inner">
+      <span class="eyebrow">O efeito composto</span>
+      <h2 class="compound-headline">Conhecimento acumula.<br>Vantagem também.</h2>
+      <div class="compound-lines">
+        <div class="compound-line">
+          <span class="compound-period">Semana 1</span>
+          <span class="compound-desc">Sua base de conhecimento começa a crescer. Cada reunião, cada decisão — capturada.</span>
+        </div>
+        <div class="compound-line">
+          <span class="compound-period">Mês 3</span>
+          <span class="compound-desc">Seu time novo chega operacional em dias, não meses. O onboarding virou sistema.</span>
+        </div>
+        <div class="compound-line">
+          <span class="compound-period">Ano 1</span>
+          <span class="compound-desc">A distância para o concorrente que ainda depende de cabeças se torna intransponível.</span>
+        </div>
+        <div class="compound-line compound-line-gold">
+          <span class="compound-period">Sempre</span>
+          <span class="compound-desc">Nenhum fundador que sai leva a empresa com ele. O conhecimento fica.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ════ CTA ════ -->
 <section class="cta" id="cta">
   <div class="wrap">
@@ -1890,6 +1962,63 @@ const io = new IntersectionObserver(entries => {
 }, { threshold: 0.07, rootMargin: '0px 0px -40px 0px' });
 
 document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// ── Live capture counter animation ──
+function animateCounters() {
+  document.querySelectorAll('.lc-stat-num[data-target]').forEach(el => {
+    const target = parseInt(el.dataset.target);
+    const duration = 1800;
+    const step = target / (duration / 16);
+    let current = 0;
+    const timer = setInterval(() => {
+      current = Math.min(current + step, target);
+      el.textContent = Math.floor(current);
+      if (current >= target) clearInterval(timer);
+    }, 16);
+  });
+}
+const captureEl = document.querySelector('.live-capture');
+if (captureEl) {
+  const captureObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { animateCounters(); captureObserver.unobserve(e.target); }});
+  }, { threshold: 0.4 });
+  captureObserver.observe(captureEl);
+}
+
+// ── Live capture: troca conteúdo a cada 6s ──
+const decisions = [
+  {
+    reuniao: 'Decidimos adiar o lançamento para Q2. Budget aprovado foi R$280k.',
+    rows: [['Decisão','Lançamento → Q2 2025'],['Budget','R$ 280.000 ✓'],['Status','confirmado']]
+  },
+  {
+    reuniao: 'O Marcos vai liderar a expansão para São Paulo a partir de março.',
+    rows: [['Ação','Expansão SP'],['Responsável','Marcos'],['Início','março 2025']]
+  },
+  {
+    reuniao: 'Aprovamos a contratação de 3 pessoas para o time de produto.',
+    rows: [['Decisão','Contratar 3 pessoas'],['Área','Produto'],['Prazo','até abril']]
+  }
+];
+let decisionIdx = 0;
+function rotateLiveCapture() {
+  decisionIdx = (decisionIdx + 1) % decisions.length;
+  const d = decisions[decisionIdx];
+  const msgText = document.querySelector('.lc-msg-text');
+  const structured = document.querySelector('.lc-structured');
+  if (!msgText || !structured) return;
+  msgText.style.opacity = '0';
+  structured.style.opacity = '0';
+  setTimeout(() => {
+    msgText.textContent = d.reuniao;
+    structured.innerHTML = d.rows.map(([k,v]) =>
+      `<div class="lc-row"><span class="lc-key">${k}</span><span class="lc-val${v==='confirmado'?' lc-val-gold':''}">${v}</span></div>`
+    ).join('');
+    msgText.style.opacity = '1';
+    structured.style.opacity = '1';
+  }, 400);
+}
+setInterval(rotateLiveCapture, 6000);
 </script>
 
 </body>
