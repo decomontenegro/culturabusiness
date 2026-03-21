@@ -5,379 +5,924 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>CulturaBuilder — O conhecimento da sua empresa, amplificado</title>
 <meta name="description" content="Sua empresa já tem todo o conhecimento que precisa. O problema é que ele está preso em silos, em cabeças, em conversas que ninguém registra."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800&family=Inter:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-:root {
-  --bg: #0a0c10;
-  --s1: #0f1117;
-  --s2: #141720;
-  --b1: rgba(255,255,255,.07);
-  --b2: rgba(255,255,255,.04);
-  --tp: #f0f4ff;
-  --ts: #8a96b0;
-  --tt: #4a5568;
-  --accent: #4f8ef7;
-  --accent2: #6366f1;
-  --green: #10b981;
-  --gold: #f59e0b;
-  --red: #ef4444;
-  --fm: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-  --fs: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #080808;
+  --text: #F5F0E8;
+  --muted: #6B6B6B;
+  --gold: #C8A96E;
+  --serif: 'Playfair Display', 'DM Serif Display', Georgia, serif;
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono: 'DM Mono', 'SF Mono', monospace;
+}
+
 html { scroll-behavior: smooth; }
+
 body {
   background: var(--bg);
-  color: var(--tp);
-  font-family: var(--fs);
+  color: var(--text);
+  font-family: var(--sans);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
+
 a { color: inherit; text-decoration: none; }
+
+/* ── SCROLL ANIMATIONS ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1),
+              transform 0.9s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
 
 /* ── NAV ── */
 nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  background: rgba(10,12,16,.92);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--b1);
-  height: 56px;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 32px;
+  padding: 0 56px; height: 64px;
+  background: rgba(8,8,8,0.92);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(245,240,232,0.05);
 }
-.nav-logo { font-size: .85rem; font-weight: 600; letter-spacing: .02em; }
-.nav-logo span { color: var(--accent); }
-.nav-links { display: flex; gap: 28px; align-items: center; }
-.nav-links a { font-size: .8rem; color: var(--ts); transition: color .2s; }
-.nav-links a:hover { color: var(--tp); }
+
+.nav-logo {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text);
+  opacity: 0.6;
+}
+
+.nav-links {
+  display: flex; align-items: center; gap: 40px;
+}
+
+.nav-links a {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-family: var(--mono);
+  color: var(--muted);
+  transition: color 0.3s ease;
+}
+.nav-links a:hover { color: var(--text); }
+
 .nav-cta {
-  background: var(--accent); color: #fff !important;
-  padding: 7px 18px; border-radius: 6px; font-size: .78rem !important;
-  font-weight: 600; transition: opacity .2s !important;
+  color: var(--gold) !important;
+  border-bottom: 1px solid rgba(200,169,110,0.4);
+  padding-bottom: 2px;
 }
-.nav-cta:hover { opacity: .85; }
 
 /* ── LAYOUT ── */
-.container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
-.container-wide { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
-section { padding: 120px 0; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 56px; }
 
-/* ── HERO ── */
+/* ════════════════════════════════
+   HERO
+════════════════════════════════ */
 .hero {
   min-height: 100vh;
+  padding: 160px 0;
   display: flex; align-items: center;
-  padding-top: 56px;
-  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(79,142,247,.08) 0%, transparent 70%);
-  border-bottom: 1px solid var(--b1);
+  position: relative; overflow: hidden;
+  border-bottom: 1px solid rgba(245,240,232,0.05);
 }
-.hero-inner {
-  max-width: 860px; margin: 0 auto;
-  padding: 80px 32px 100px;
-  text-align: center;
+
+.hero-grid {
+  max-width: 1080px; margin: 0 auto; padding: 0 56px;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 80px;
+  align-items: center;
 }
-.hero-label {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-family: var(--fm); font-size: .62rem; letter-spacing: .16em;
-  text-transform: uppercase; color: var(--accent);
-  background: rgba(79,142,247,.08); border: 1px solid rgba(79,142,247,.2);
-  padding: 6px 14px; border-radius: 20px; margin-bottom: 40px;
+
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 44px;
 }
-.hero-label::before {
-  content: ''; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--accent); animation: pulse 2s infinite;
-}
-@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
 
 .hero-title {
-  font-size: clamp(2.4rem, 5vw, 4rem);
-  font-weight: 700; line-height: 1.15;
-  letter-spacing: -.03em;
-  margin-bottom: 12px;
+  font-family: var(--serif);
+  font-size: clamp(64px, 7vw, 108px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.0;
+  color: var(--text);
+  margin-bottom: 36px;
 }
+
 .hero-title em {
-  font-style: normal;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-style: italic;
+  color: var(--gold);
 }
-.hero-subtitle {
-  font-size: clamp(1.1rem, 2vw, 1.4rem);
-  color: var(--ts); font-weight: 400;
-  margin-bottom: 48px; line-height: 1.6;
-  max-width: 700px; margin-left: auto; margin-right: auto;
-}
-.hero-ctas {
-  display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
-  margin-bottom: 64px;
-}
-.btn-primary {
-  background: var(--accent); color: #fff;
-  padding: 14px 32px; border-radius: 8px;
-  font-size: .88rem; font-weight: 600;
-  transition: opacity .2s, transform .2s;
-}
-.btn-primary:hover { opacity: .85; transform: translateY(-1px); }
-.btn-outline {
-  border: 1px solid var(--b1); color: var(--ts);
-  padding: 14px 32px; border-radius: 8px;
-  font-size: .88rem; font-weight: 500;
-  transition: border-color .2s, color .2s;
-}
-.btn-outline:hover { border-color: rgba(255,255,255,.2); color: var(--tp); }
 
-/* Proof strip */
-.proof-strip {
-  display: flex; justify-content: center; flex-wrap: wrap; gap: 32px;
+.hero-sub {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.85;
+  max-width: 460px;
+  margin-bottom: 56px;
+  font-weight: 300;
 }
-.proof-item {
-  display: flex; align-items: center; gap: 8px;
-  font-size: .8rem; color: var(--tt);
-}
-.proof-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
 
-/* ── INSIGHT SECTION ── */
-.insight-block {
-  background: var(--s1); border: 1px solid var(--b1);
-  border-radius: 16px; padding: 64px;
-  position: relative; overflow: hidden;
+.hero-actions {
+  display: flex;
+  flex-direction: column;
 }
-.insight-block::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(79,142,247,.4), transparent);
-}
-.insight-eyebrow {
-  font-family: var(--fm); font-size: .6rem; letter-spacing: .16em;
-  text-transform: uppercase; color: var(--accent); margin-bottom: 24px;
-}
-.insight-quote {
-  font-size: clamp(1.3rem, 2.5vw, 1.8rem);
-  font-weight: 600; line-height: 1.45;
-  letter-spacing: -.02em;
-  color: var(--tp);
-  border-left: 3px solid var(--accent);
-  padding-left: 28px;
-  margin-bottom: 32px;
-}
-.insight-body {
-  font-size: .95rem; color: var(--ts); line-height: 1.85;
-  max-width: 680px;
-}
-.insight-body strong { color: var(--tp); }
 
-/* ── COMPARISON ── */
-.comp-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
-  border-radius: 12px; overflow: hidden;
-  margin-top: 48px;
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(245,240,232,0.07);
+  transition: color 0.35s, gap 0.35s;
+  width: fit-content;
+  min-width: 280px;
 }
-.comp-card {
-  background: var(--s1); padding: 40px;
+
+.text-link:first-child { border-top: 1px solid rgba(245,240,232,0.07); }
+
+.text-link:hover { color: var(--gold); gap: 22px; }
+
+.text-link .arrow {
+  color: var(--gold);
+  font-size: 16px;
+  transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+}
+.text-link:hover .arrow { transform: translateX(5px); }
+
+/* ── HERO VISUAL (organic blob) ── */
+.hero-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 380px;
   position: relative;
 }
-.comp-card.highlight {
-  background: rgba(79,142,247,.05);
-  border: 1px solid rgba(79,142,247,.15);
-}
-.comp-label {
-  font-family: var(--fm); font-size: .6rem; letter-spacing: .14em;
-  text-transform: uppercase; margin-bottom: 20px;
-}
-.comp-label.old { color: var(--tt); }
-.comp-label.new { color: var(--accent); }
-.comp-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; }
-.comp-body { font-size: .88rem; color: var(--ts); line-height: 1.75; }
-.comp-items { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
-.comp-item {
-  display: flex; gap: 10px; align-items: flex-start;
-  font-size: .84rem;
-}
-.comp-item-icon { margin-top: 3px; flex-shrink: 0; }
-.comp-item.neg .comp-item-icon { color: var(--tt); }
-.comp-item.pos .comp-item-icon { color: var(--green); }
-.comp-item.neg span { color: var(--tt); }
-.comp-item.pos span { color: var(--ts); }
 
-/* ── TRÊS FASES ── */
-.phases { display: flex; flex-direction: column; gap: 2px; }
-.phase-card {
-  background: var(--s1); border: 1px solid var(--b1);
-  border-radius: 12px; padding: 40px 48px;
-  display: grid; grid-template-columns: 120px 1fr 320px; gap: 40px;
-  align-items: start; transition: border-color .2s;
+.blob {
+  position: relative;
+  width: 300px;
+  height: 300px;
 }
-.phase-card:hover { border-color: rgba(79,142,247,.2); }
-.phase-num-block { text-align: center; padding-top: 4px; }
-.phase-num {
-  font-size: 3rem; font-weight: 800; line-height: 1;
-  font-family: var(--fm);
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.phase-word {
-  font-family: var(--fm); font-size: .6rem; letter-spacing: .14em;
-  text-transform: uppercase; color: var(--tt); margin-top: 4px;
-}
-.phase-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 12px; }
-.phase-body { font-size: .9rem; color: var(--ts); line-height: 1.8; }
-.phase-example {
-  background: var(--s2); border: 1px solid var(--b2);
-  border-radius: 8px; padding: 20px;
-}
-.phase-example-label {
-  font-family: var(--fm); font-size: .58rem; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--tt); margin-bottom: 10px;
-}
-.phase-example-text { font-size: .82rem; color: var(--ts); line-height: 1.7; }
-.phase-example-text strong { color: var(--tp); }
 
-/* ── LOBO PROOF ── */
-.lobo-section {
-  background: var(--s1); border-top: 1px solid var(--b1); border-bottom: 1px solid var(--b1);
+.blob-glow {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 38%,
+    rgba(200,169,110,0.18) 0%,
+    rgba(200,169,110,0.06) 45%,
+    transparent 68%);
+  animation: bpulse 7s ease-in-out infinite;
+  filter: blur(2px);
 }
-.lobo-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
-}
-.lobo-eyebrow {
-  font-family: var(--fm); font-size: .6rem; letter-spacing: .16em;
-  text-transform: uppercase; color: var(--accent); margin-bottom: 16px;
-}
-.lobo-title {
-  font-size: clamp(1.6rem, 3vw, 2.4rem);
-  font-weight: 700; line-height: 1.25;
-  letter-spacing: -.025em; margin-bottom: 20px;
-}
-.lobo-body { font-size: .95rem; color: var(--ts); line-height: 1.85; margin-bottom: 32px; }
-.lobo-body strong { color: var(--tp); }
 
-/* Terminal mockup */
-.terminal {
-  background: #0d1117; border: 1px solid var(--b1);
-  border-radius: 10px; overflow: hidden;
+.blob-ring1 {
+  position: absolute; inset: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(200,169,110,0.18);
+  animation: bspin 22s linear infinite;
 }
-.terminal-bar {
-  background: #161b22; padding: 10px 16px;
-  display: flex; align-items: center; gap: 8px;
+.blob-ring1::before {
+  content: '';
+  position: absolute;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  top: -3.5px; left: 50%;
+  transform: translateX(-50%);
+  opacity: 0.7;
 }
-.terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
-.terminal-body { padding: 20px 24px; font-family: var(--fm); font-size: .78rem; }
-.t-line { margin-bottom: 8px; line-height: 1.6; }
-.t-prompt { color: var(--accent); }
-.t-output { color: var(--ts); }
-.t-highlight { color: var(--green); }
-.t-comment { color: var(--tt); }
 
-/* ── DIFERENCIAL VS EDRA ── */
-.diff-table {
-  width: 100%; border-collapse: collapse;
-  font-size: .88rem;
+.blob-ring2 {
+  position: absolute; inset: 52px;
+  border-radius: 50%;
+  border: 1px solid rgba(200,169,110,0.08);
+  animation: bspin 34s linear infinite reverse;
 }
-.diff-table th {
-  font-family: var(--fm); font-size: .6rem; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--tt);
-  text-align: left; padding: 12px 20px;
-  border-bottom: 1px solid var(--b1);
+
+.blob-ring3 {
+  position: absolute; inset: 96px;
+  border-radius: 50%;
+  border: 1px solid rgba(200,169,110,0.05);
+  animation: bspin 18s linear infinite;
 }
-.diff-table td {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--b2);
-  vertical-align: top;
+
+.blob-core {
+  position: absolute; inset: 88px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(200,169,110,0.22) 0%,
+    transparent 70%);
+  animation: bpulse 4.5s ease-in-out infinite alternate;
 }
-.diff-table tr:last-child td { border-bottom: none; }
-.diff-table tr:hover td { background: rgba(255,255,255,.02); }
-.dt-feature { font-weight: 500; color: var(--tp); }
-.dt-edra { color: var(--ts); }
-.dt-cb { color: var(--tp); }
-.dt-cb strong { color: var(--accent); }
-.badge-sm {
-  display: inline-block;
-  font-family: var(--fm); font-size: .58rem; letter-spacing: .1em;
-  text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
+
+.blob-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.blob-kpi-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(200,169,110,0.6);
+}
+
+.blob-kpi-num {
+  font-family: var(--serif);
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--text);
+}
+
+.blob-kpi-sub {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+@keyframes bpulse {
+  0%,100% { transform: scale(1); opacity: 0.8; }
+  50%      { transform: scale(1.06); opacity: 1; }
+}
+@keyframes bspin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+
+/* ════════════════════════════════
+   O INSIGHT
+════════════════════════════════ */
+.insight {
+  padding: 160px 0;
+  border-bottom: 1px solid rgba(245,240,232,0.05);
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 64px;
+}
+
+.insight-quote {
+  font-family: var(--serif);
+  font-size: clamp(28px, 3.5vw, 50px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.22;
+  color: var(--text);
+  text-align: center;
+  max-width: 780px;
+  margin: 0 auto 88px;
+}
+
+.insight-quote em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.insight-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 72px;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.insight-p {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.95;
+  font-weight: 300;
+}
+.insight-p strong { color: var(--text); font-weight: 500; }
+
+/* vs. bloco dentro do insight */
+.vs-intro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-top: 120px;
+  border-top: 1px solid rgba(245,240,232,0.06);
+}
+
+.vs-intro-col {
+  padding: 64px 0;
+}
+.vs-intro-col + .vs-intro-col {
+  padding-left: 64px;
+  border-left: 1px solid rgba(245,240,232,0.05);
+}
+
+.vs-col-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 28px;
+}
+.vs-col-label.accent { color: var(--gold); }
+
+.vs-col-title {
+  font-family: var(--serif);
+  font-size: clamp(22px, 2.2vw, 30px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 18px;
+}
+
+.vs-col-body {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.85;
+  font-weight: 300;
+  margin-bottom: 32px;
+}
+
+.vs-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.vs-item {
+  font-size: 13px;
+  line-height: 1.6;
+  padding-left: 22px;
+  position: relative;
+}
+
+.vs-item.neg {
+  color: var(--muted);
+}
+.vs-item.neg::before {
+  content: '–';
+  position: absolute; left: 0;
+  font-family: var(--mono);
+  color: rgba(107,107,107,0.45);
+}
+
+.vs-item.pos {
+  color: var(--text);
+}
+.vs-item.pos::before {
+  content: '+';
+  position: absolute; left: 0;
+  font-family: var(--mono);
+  color: var(--gold);
+}
+
+
+/* ════════════════════════════════
+   AS 3 FASES
+════════════════════════════════ */
+.fases {
+  padding: 160px 0;
+  border-bottom: 1px solid rgba(245,240,232,0.05);
+}
+
+.fases-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: end;
+  margin-bottom: 120px;
+}
+
+.fases-title {
+  font-family: var(--serif);
+  font-size: clamp(48px, 5.5vw, 84px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.0;
+}
+
+.fases-sub {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.9;
+  font-weight: 300;
+}
+.fases-sub strong { color: var(--text); font-weight: 500; }
+
+/* timeline vertical */
+.fase {
+  display: grid;
+  grid-template-columns: 152px 1fr;
+  gap: 64px;
+  padding: 72px 0;
+  border-top: 1px solid rgba(245,240,232,0.06);
+  position: relative;
+  transition: border-color 0.4s;
+}
+
+.fase::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  height: 1px; width: 0;
+  background: var(--gold);
+  transition: width 0.65s cubic-bezier(0.16,1,0.3,1);
+}
+.fase:hover::after { width: 100%; }
+
+.fase-num-col { padding-top: 6px; }
+
+.fase-num {
+  font-family: var(--serif);
+  font-size: 100px;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.85;
+  color: rgba(245,240,232,0.07);
+  display: block;
+  transition: color 0.4s;
+}
+.fase:hover .fase-num { color: rgba(200,169,110,0.25); }
+
+.fase-word {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 14px;
+  display: block;
+}
+
+.fase-content { padding-top: 6px; }
+
+.fase-title {
+  font-family: var(--serif);
+  font-size: clamp(24px, 2.4vw, 36px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 18px;
+}
+
+.fase-body {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.9;
+  font-weight: 300;
+  max-width: 560px;
+  margin-bottom: 36px;
+}
+
+.fase-example {
+  border-left: 1px solid rgba(200,169,110,0.22);
+  padding-left: 24px;
+  max-width: 540px;
+}
+
+.fase-ex-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 10px;
+}
+
+.fase-ex-text {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.85;
+  font-style: italic;
+}
+.fase-ex-text strong {
+  color: var(--text);
+  font-style: normal;
   font-weight: 500;
 }
-.badge-adv { background: rgba(16,185,129,.1); color: var(--green); }
-.badge-sim { background: rgba(79,142,247,.1); color: var(--accent); }
 
-/* ── NUMBERS ── */
-.numbers-strip {
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  gap: 2px;
+
+/* ════════════════════════════════
+   PROVA — O LOBO
+════════════════════════════════ */
+.prova {
+  padding: 160px 0;
+  border-bottom: 1px solid rgba(245,240,232,0.05);
 }
-.num-card {
-  background: var(--s1); padding: 36px 28px;
-  border-radius: 4px;
-  border-bottom: 2px solid transparent;
-  transition: border-color .2s;
+
+.prova-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 120px;
+  align-items: start;
 }
-.num-card:hover { border-bottom-color: var(--accent); }
-.num-value {
-  font-size: 2.4rem; font-weight: 800; font-family: var(--fm);
-  color: var(--tp); line-height: 1;
+
+.prova-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 40px;
+}
+
+.prova-title {
+  font-family: var(--serif);
+  font-size: clamp(44px, 5vw, 76px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.0;
+  margin-bottom: 32px;
+}
+
+.prova-body {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.9;
+  font-weight: 300;
+  margin-bottom: 64px;
+}
+.prova-body strong { color: var(--text); font-weight: 500; }
+
+/* stats magazine */
+.stats {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat {
+  padding: 28px 0;
+  border-bottom: 1px solid rgba(245,240,232,0.05);
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.stat:first-child { border-top: 1px solid rgba(245,240,232,0.05); }
+.stat:hover { transform: translateX(10px); }
+
+.stat-num {
+  font-family: var(--serif);
+  font-size: 72px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  color: var(--text);
+  display: block;
   margin-bottom: 8px;
 }
-.num-label { font-size: .82rem; color: var(--ts); line-height: 1.5; }
-.num-sub { font-size: .75rem; color: var(--tt); margin-top: 4px; }
 
-/* ── CTA FINAL ── */
-.cta-section {
+.stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  display: block;
+}
+
+
+/* ════════════════════════════════
+   NÚMEROS (strip)
+════════════════════════════════ */
+.numbers {
+  padding: 120px 0;
+  border-bottom: 1px solid rgba(245,240,232,0.05);
+}
+
+.numbers-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 80px;
   text-align: center;
-  background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(79,142,247,.06) 0%, transparent 70%);
-  border-top: 1px solid var(--b1);
-}
-.cta-title {
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 700; letter-spacing: -.025em; line-height: 1.2;
-  margin-bottom: 20px;
-}
-.cta-sub {
-  font-size: 1rem; color: var(--ts); max-width: 560px;
-  margin: 0 auto 40px; line-height: 1.8;
-}
-.cta-note {
-  font-family: var(--fm); font-size: .68rem; color: var(--tt);
-  letter-spacing: .08em; margin-top: 24px;
 }
 
-/* ── SECTION HEADERS ── */
-.section-label {
-  font-family: var(--fm); font-size: .6rem; letter-spacing: .16em;
-  text-transform: uppercase; color: var(--accent); margin-bottom: 16px;
+.nums-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 2px;
 }
-.section-title {
-  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
-  font-weight: 700; line-height: 1.2;
-  letter-spacing: -.025em; margin-bottom: 16px;
+
+.num-item {
+  padding: 48px 32px 48px 0;
+  border-top: 1px solid rgba(245,240,232,0.06);
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
 }
-.section-sub {
-  font-size: .95rem; color: var(--ts); line-height: 1.85;
-  max-width: 680px; margin-bottom: 48px;
+.num-item:hover { transform: translateY(-6px); }
+
+.num-val {
+  font-family: var(--serif);
+  font-size: clamp(52px, 5.5vw, 80px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  color: var(--text);
+  display: block;
+  margin-bottom: 18px;
 }
+
+.num-label {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  font-weight: 300;
+  display: block;
+  max-width: 180px;
+}
+
+.num-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: rgba(107,107,107,0.5);
+  letter-spacing: 0.1em;
+  margin-top: 8px;
+  display: block;
+}
+
+
+/* ════════════════════════════════
+   VS MERCADO
+════════════════════════════════ */
+.vs-mercado {
+  padding: 160px 0;
+  border-bottom: 1px solid rgba(245,240,232,0.05);
+}
+
+.vs-hdr { max-width: 620px; margin-bottom: 120px; }
+
+.vs-hdr-title {
+  font-family: var(--serif);
+  font-size: clamp(48px, 5.5vw, 84px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.0;
+  margin: 24px 0 28px;
+}
+
+.vs-hdr-sub {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.9;
+  font-weight: 300;
+}
+
+.vs-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-top: 1px solid rgba(245,240,232,0.06);
+}
+
+.vs-col {
+  padding: 64px 0;
+}
+.vs-col + .vs-col {
+  padding-left: 64px;
+  border-left: 1px solid rgba(245,240,232,0.05);
+}
+
+.vs-col-header {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(245,240,232,0.05);
+}
+.vs-col-header.gold { color: var(--gold); }
+
+.vs-dim {
+  padding: 24px 0;
+  border-bottom: 1px solid rgba(245,240,232,0.04);
+}
+
+.vs-dim-key {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(107,107,107,0.55);
+  display: block;
+  margin-bottom: 7px;
+}
+
+.vs-dim-val {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.6;
+  font-weight: 300;
+}
+.vs-dim-val.strong { color: var(--text); font-weight: 500; }
+
+.vs-tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid rgba(200,169,110,0.28);
+  padding: 2px 7px;
+  margin-left: 10px;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
+
+/* ════════════════════════════════
+   CTA
+════════════════════════════════ */
+.cta {
+  padding: 200px 0 160px;
+  text-align: center;
+}
+
+.cta-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 52px;
+}
+
+.cta-title {
+  font-family: var(--serif);
+  font-size: clamp(48px, 6.5vw, 100px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.0;
+  margin-bottom: 48px;
+  max-width: 820px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.cta-title em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.cta-sub {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.9;
+  font-weight: 300;
+  max-width: 500px;
+  margin: 0 auto 72px;
+}
+
+.cta-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 52px;
+}
+
+.cta-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  padding: 20px 0;
+  border-bottom: 1px solid rgba(245,240,232,0.07);
+  width: 380px;
+  transition: color 0.35s, gap 0.35s;
+}
+.cta-link:first-child { border-top: 1px solid rgba(245,240,232,0.07); }
+.cta-link:hover { color: var(--gold); gap: 22px; }
+
+.cta-link .arrow {
+  margin-left: auto;
+  color: var(--gold);
+  font-size: 16px;
+  transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+}
+.cta-link:hover .arrow { transform: translateX(5px); }
+
+.cta-note {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(107,107,107,0.45);
+}
+
 
 /* ── FOOTER ── */
 footer {
-  background: var(--s1); border-top: 1px solid var(--b1);
-  padding: 40px 32px;
-  display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; gap: 16px;
+  padding: 40px 56px;
+  border-top: 1px solid rgba(245,240,232,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
 }
-.footer-logo { font-size: .85rem; font-weight: 600; }
-.footer-logo span { color: var(--accent); }
-.footer-copy { font-size: .75rem; color: var(--tt); }
-.footer-note { font-family: var(--fm); font-size: .62rem; color: var(--tt); }
+
+.footer-logo {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.footer-logo span { color: var(--gold); }
+
+.footer-copy {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: rgba(107,107,107,0.45);
+  letter-spacing: 0.08em;
+}
+
+.footer-note {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: rgba(107,107,107,0.35);
+  letter-spacing: 0.08em;
+}
+
 
 /* ── RESPONSIVE ── */
-@media (max-width: 900px) {
-  .phase-card { grid-template-columns: 80px 1fr; }
-  .phase-card .phase-example { grid-column: 1 / -1; }
-  .comp-grid { grid-template-columns: 1fr; }
-  .lobo-grid { grid-template-columns: 1fr; }
-  .numbers-strip { grid-template-columns: 1fr 1fr; }
-  .insight-block { padding: 36px; }
+@media (max-width: 960px) {
+  nav { padding: 0 28px; }
   nav .nav-links { display: none; }
+
+  .hero-grid { grid-template-columns: 1fr; padding: 0 28px; gap: 48px; }
+  .hero-visual { display: none; }
+
+  .wrap { padding: 0 28px; }
+
+  .insight-cols { grid-template-columns: 1fr; gap: 32px; }
+  .vs-intro { grid-template-columns: 1fr; }
+  .vs-intro-col + .vs-intro-col { padding-left: 0; border-left: none; border-top: 1px solid rgba(245,240,232,0.05); }
+
+  .fases-header { grid-template-columns: 1fr; gap: 28px; margin-bottom: 64px; }
+  .fase { grid-template-columns: 100px 1fr; gap: 32px; }
+  .fase-num { font-size: 72px; }
+
+  .prova-grid { grid-template-columns: 1fr; gap: 64px; }
+
+  .nums-grid { grid-template-columns: 1fr 1fr; }
+
+  .vs-cols { grid-template-columns: 1fr; }
+  .vs-col + .vs-col { padding-left: 0; border-left: none; border-top: 1px solid rgba(245,240,232,0.05); }
+
+  .cta-link { width: 100%; max-width: 380px; }
+
+  footer { padding: 32px 28px; flex-direction: column; align-items: flex-start; gap: 12px; }
 }
+
 @media (max-width: 600px) {
-  .numbers-strip { grid-template-columns: 1fr; }
-  .phase-card { grid-template-columns: 1fr; padding: 28px; }
+  .hero { padding: 120px 0 100px; }
+  .hero-title { font-size: 52px; }
+  .nums-grid { grid-template-columns: 1fr; }
+  .fase { grid-template-columns: 1fr; }
+  .fase-num-col { display: none; }
+  .insight, .fases, .prova, .vs-mercado, .cta { padding: 100px 0; }
 }
 </style>
 </head>
@@ -385,422 +930,467 @@ footer {
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">Cultura<span>Builder</span></div>
+  <div class="nav-logo">Cultura<span style="color:var(--gold)">Builder</span></div>
   <div class="nav-links">
     <a href="#insight">O insight</a>
-    <a href="#como-funciona">Como funciona</a>
+    <a href="#fases">Como funciona</a>
     <a href="#prova">Já em uso</a>
     <a href="#vs-mercado">vs. mercado</a>
     <a href="#cta" class="nav-cta">Falar com especialista</a>
   </div>
 </nav>
 
+
 <!-- ════ HERO ════ -->
 <section class="hero">
-  <div class="hero-inner">
-    <div class="hero-label">Knowledge Intelligence Platform</div>
-    
-    <h1 class="hero-title">
-      Sua empresa já tem<br>
-      todo o conhecimento<br>que precisa.<br>
-      <em>O problema é outro.</em>
-    </h1>
-    
-    <p class="hero-subtitle">
-      Ele está preso em silos, em cabeças, em conversas que ninguém registra. 
-      Capturamos esse conhecimento, amplificamos com IA, e devolvemos 
-      para toda a organização — descentralizado.
-    </p>
-    
-    <div class="hero-ctas">
-      <a href="#como-funciona" class="btn-primary">Ver como funciona →</a>
-      <a href="#vs-mercado" class="btn-outline">Comparar com o mercado</a>
+  <div class="hero-grid">
+
+    <div>
+      <span class="hero-eyebrow">Knowledge Intelligence Platform</span>
+
+      <h1 class="hero-title">
+        Sua empresa já tem<br>
+        todo o conhecimento<br>
+        que precisa.<br>
+        <em>O problema é outro.</em>
+      </h1>
+
+      <p class="hero-sub">
+        Ele está preso em silos, em cabeças, em conversas que ninguém registra.
+        Capturamos esse conhecimento, amplificamos com IA, e devolvemos
+        para toda a organização — descentralizado.
+      </p>
+
+      <div class="hero-actions">
+        <a href="#fases" class="text-link">
+          Ver como funciona
+          <span class="arrow">→</span>
+        </a>
+        <a href="#vs-mercado" class="text-link">
+          Comparar com o mercado
+          <span class="arrow">→</span>
+        </a>
+      </div>
     </div>
-    
-    <div class="proof-strip">
-      <div class="proof-item"><div class="proof-dot"></div>7.000+ na comunidade</div>
-      <div class="proof-item"><div class="proof-dot"></div>Já em uso em empresas reais</div>
-      <div class="proof-item"><div class="proof-dot"></div">Parceiros AWS & NVIDIA</div>
-      <div class="proof-item"><div class="proof-dot"></div">Sem lock-in de fornecedor</div>
+
+    <!-- Organic visual -->
+    <div class="hero-visual">
+      <div class="blob">
+        <div class="blob-glow"></div>
+        <div class="blob-ring1"></div>
+        <div class="blob-ring2"></div>
+        <div class="blob-ring3"></div>
+        <div class="blob-core"></div>
+        <div class="blob-center">
+          <span class="blob-kpi-label">Comunidade</span>
+          <span class="blob-kpi-num">7K+</span>
+          <span class="blob-kpi-sub">builders</span>
+        </div>
+      </div>
     </div>
+
   </div>
 </section>
 
+
 <!-- ════ O INSIGHT ════ -->
-<section id="insight">
-  <div class="container">
-    <div class="section-label">O insight central</div>
-    
-    <div class="insight-block">
-      <div class="insight-eyebrow">O que ninguém fala sobre implementação de IA</div>
-      <div class="insight-quote">
-        "O gargalo não é a inteligência da IA.<br>
-        É o contexto que ela não tem sobre a sua empresa."
-      </div>
-      <p class="insight-body">
-        Os modelos de linguagem de 2026 são extraordinariamente capazes. Mas quando você 
-        os coloca dentro de uma empresa, eles não sabem nada. Não sabem como seu processo 
-        de aprovação realmente funciona. Não sabem por que aquela exceção existe. Não sabem 
-        que a planilha do João é a fonte da verdade, não o ERP.<br><br>
-        <strong>Esse conhecimento existe. Só que vive em conversas, decisões, cabeças — 
+<section class="insight" id="insight">
+  <div class="wrap">
+
+    <span class="eyebrow">O insight central</span>
+
+    <blockquote class="insight-quote reveal">
+      "O gargalo não é a inteligência da IA.<br>
+      É o contexto que ela <em>não tem</em><br>sobre a sua empresa."
+    </blockquote>
+
+    <div class="insight-cols">
+      <p class="insight-p reveal">
+        Os modelos de linguagem de 2026 são extraordinariamente capazes. Mas quando você
+        os coloca dentro de uma empresa, eles não sabem nada. Não sabem como seu processo
+        de aprovação realmente funciona. Não sabem por que aquela exceção existe. Não sabem
+        que a planilha do João é a fonte da verdade, não o ERP.
+      </p>
+      <p class="insight-p reveal">
+        <strong>Esse conhecimento existe. Só que vive em conversas, decisões, cabeças —
         e nunca foi capturado.</strong><br><br>
-        A nossa abordagem resolve isso de forma diferente de qualquer outra empresa no mercado: 
-        não processamos documentos velhos. Participamos das conversas onde o conhecimento 
-        está sendo criado agora — e construímos a memória institucional da empresa em tempo real.
+        A nossa abordagem resolve isso de forma diferente: não processamos documentos velhos.
+        Participamos das conversas onde o conhecimento está sendo criado agora — e construímos
+        a memória institucional da empresa em tempo real.
       </p>
     </div>
 
-    <!-- Comparação velha vs nova abordagem -->
-    <div class="comp-grid" style="margin-top: 48px; border-radius: 12px; overflow: hidden;">
-      <div class="comp-card">
-        <div class="comp-label old">Abordagem tradicional</div>
-        <div class="comp-title">Plugar IA em cima de documentos</div>
-        <div class="comp-body">A maioria das consultorias pega seus PDFs, SOPs e tickets antigos, processa com RAG e chama isso de "IA implementada".</div>
-        <div class="comp-items">
-          <div class="comp-item neg">
-            <div class="comp-item-icon">✗</div>
-            <span>Documentos refletem o passado, não como a empresa funciona hoje</span>
-          </div>
-          <div class="comp-item neg">
-            <div class="comp-item-icon">✗</div>
-            <span>Contradições e exceções não capturadas</span>
-          </div>
-          <div class="comp-item neg">
-            <div class="comp-item-icon">✗</div>
-            <span>Conhecimento continua preso nas mesmas cabeças</span>
-          </div>
-          <div class="comp-item neg">
-            <div class="comp-item-icon">✗</div>
-            <span>Adoção baixa — a IA não entende o contexto real</span>
-          </div>
-        </div>
+    <!-- Abordagem velha vs. nova -->
+    <div class="vs-intro">
+      <div class="vs-intro-col reveal">
+        <span class="vs-col-label">Abordagem tradicional</span>
+        <h3 class="vs-col-title">Plugar IA em cima de documentos</h3>
+        <p class="vs-col-body">
+          A maioria das consultorias pega seus PDFs, SOPs e tickets antigos,
+          processa com RAG e chama isso de "IA implementada".
+        </p>
+        <ul class="vs-list">
+          <li class="vs-item neg">Documentos refletem o passado, não como a empresa funciona hoje</li>
+          <li class="vs-item neg">Contradições e exceções não capturadas</li>
+          <li class="vs-item neg">Conhecimento continua preso nas mesmas cabeças</li>
+          <li class="vs-item neg">Adoção baixa — a IA não entende o contexto real</li>
+        </ul>
       </div>
-      <div class="comp-card highlight">
-        <div class="comp-label new">CulturaBuilder</div>
-        <div class="comp-title">Capturar onde o conhecimento é criado</div>
-        <div class="comp-body">Agentes participam das conversas, decisões e projetos em tempo real — construindo a memória institucional de forma orgânica e contínua.</div>
-        <div class="comp-items">
-          <div class="comp-item pos">
-            <div class="comp-item-icon">✓</div>
-            <span>Conhecimento capturado no momento em que é criado</span>
-          </div>
-          <div class="comp-item pos">
-            <div class="comp-item-icon">✓</div>
-            <span>Exceções, contextos e raciocínios preservados</span>
-          </div>
-          <div class="comp-item pos">
-            <div class="comp-item-icon">✓</div>
-            <span>Descentralizado — toda a equipe acessa a inteligência coletiva</span>
-          </div>
-          <div class="comp-item pos">
-            <div class="comp-item-icon">✓</div>
-            <span>Adoção natural — os agentes já conhecem o contexto</span>
-          </div>
-        </div>
+
+      <div class="vs-intro-col reveal">
+        <span class="vs-col-label accent">CulturaBuilder</span>
+        <h3 class="vs-col-title">Capturar onde o conhecimento é criado</h3>
+        <p class="vs-col-body">
+          Agentes participam das conversas, decisões e projetos em tempo real —
+          construindo a memória institucional de forma orgânica e contínua.
+        </p>
+        <ul class="vs-list">
+          <li class="vs-item pos">Conhecimento capturado no momento em que é criado</li>
+          <li class="vs-item pos">Exceções, contextos e raciocínios preservados</li>
+          <li class="vs-item pos">Descentralizado — toda a equipe acessa a inteligência coletiva</li>
+          <li class="vs-item pos">Adoção natural — os agentes já conhecem o contexto</li>
+        </ul>
       </div>
     </div>
+
   </div>
 </section>
 
-<!-- ════ COMO FUNCIONA ════ -->
-<section id="como-funciona">
-  <div class="container">
-    <div class="section-label">A metodologia em 3 fases</div>
-    <h2 class="section-title">Absorver. Estruturar. Amplificar.</h2>
-    <p class="section-sub">
-      Cada fase tem entregáveis concretos. Você não precisa esperar o projeto completo 
-      para ver o conhecimento se tornando ativo.
-    </p>
 
-    <div class="phases">
+<!-- ════ AS 3 FASES ════ -->
+<section class="fases" id="fases">
+  <div class="wrap">
 
-      <!-- FASE 1 -->
-      <div class="phase-card">
-        <div class="phase-num-block">
-          <div class="phase-num">01</div>
-          <div class="phase-word">Absorver</div>
-        </div>
-        <div>
-          <div class="phase-title">Capturar o que ninguém documenta</div>
-          <p class="phase-body">
-            Agentes integrados aos seus canais de comunicação e fluxos de trabalho participam 
-            das conversas onde o conhecimento real é criado: decisões de projeto, resoluções 
-            de problema, exceções de processo, contexto de cliente. Tudo é capturado de forma 
-            estruturada e auditável — sem que as pessoas precisem mudar como trabalham.
-          </p>
-        </div>
-        <div class="phase-example">
-          <div class="phase-example-label">Exemplo real</div>
-          <p class="phase-example-text">
-            Um gerente de vendas explica numa conversa de WhatsApp por que aquele cliente 
-            específico precisa de desconto especial. <strong>O agente captura o raciocínio, 
-            não só a decisão.</strong> Na próxima vez que alguém perguntar, 
+    <div class="fases-header">
+      <div>
+        <span class="eyebrow">A metodologia em 3 fases</span>
+        <h2 class="fases-title">Absorver.<br>Estruturar.<br>Amplificar.</h2>
+      </div>
+      <p class="fases-sub reveal">
+        Cada fase tem entregáveis concretos. Você não precisa esperar o projeto
+        completo para ver o conhecimento se tornando ativo.
+      </p>
+    </div>
+
+    <!-- Fase 01 -->
+    <div class="fase reveal">
+      <div class="fase-num-col">
+        <span class="fase-num">01</span>
+        <span class="fase-word">Absorver</span>
+      </div>
+      <div class="fase-content">
+        <h3 class="fase-title">Capturar o que ninguém documenta</h3>
+        <p class="fase-body">
+          Agentes integrados aos seus canais de comunicação e fluxos de trabalho participam
+          das conversas onde o conhecimento real é criado: decisões de projeto, resoluções
+          de problema, exceções de processo, contexto de cliente. Tudo é capturado de forma
+          estruturada e auditável — sem que as pessoas precisem mudar como trabalham.
+        </p>
+        <div class="fase-example">
+          <span class="fase-ex-label">Exemplo real</span>
+          <p class="fase-ex-text">
+            Um gerente de vendas explica numa conversa de WhatsApp por que aquele cliente
+            específico precisa de desconto especial. <strong>O agente captura o raciocínio,
+            não só a decisão.</strong> Na próxima vez que alguém perguntar,
             a lógica completa está disponível.
           </p>
         </div>
       </div>
+    </div>
 
-      <!-- FASE 2 -->
-      <div class="phase-card">
-        <div class="phase-num-block">
-          <div class="phase-num">02</div>
-          <div class="phase-word">Estruturar</div>
-        </div>
-        <div>
-          <div class="phase-title">Transformar em memória institucional</div>
-          <p class="phase-body">
-            O conhecimento bruto capturado é sintetizado continuamente: processos como 
-            realmente funcionam (não como estão no manual), mapas de quem sabe o quê, 
-            decisões com o raciocínio por trás delas, exceções com contexto. 
-            O resultado é uma base de conhecimento viva — auditável, versionável, 
-            que evolui com a empresa.
-          </p>
-        </div>
-        <div class="phase-example">
-          <div class="phase-example-label">Exemplo real</div>
-          <p class="phase-example-text">
-            O processo de onboarding de clientes tem 7 exceções que "todo mundo sabe" 
-            mas ninguém documentou. <strong>A estruturação as torna explícitas, 
-            visíveis e acessíveis</strong> — eliminando erros de novos colaboradores 
+    <!-- Fase 02 -->
+    <div class="fase reveal">
+      <div class="fase-num-col">
+        <span class="fase-num">02</span>
+        <span class="fase-word">Estruturar</span>
+      </div>
+      <div class="fase-content">
+        <h3 class="fase-title">Transformar em memória institucional</h3>
+        <p class="fase-body">
+          O conhecimento bruto capturado é sintetizado continuamente: processos como
+          realmente funcionam (não como estão no manual), mapas de quem sabe o quê,
+          decisões com o raciocínio por trás delas, exceções com contexto.
+          O resultado é uma base de conhecimento viva — auditável, versionável,
+          que evolui com a empresa.
+        </p>
+        <div class="fase-example">
+          <span class="fase-ex-label">Exemplo real</span>
+          <p class="fase-ex-text">
+            O processo de onboarding de clientes tem 7 exceções que "todo mundo sabe"
+            mas ninguém documentou. <strong>A estruturação as torna explícitas,
+            visíveis e acessíveis</strong> — eliminando erros de novos colaboradores
             e reuniões repetidas.
           </p>
         </div>
       </div>
+    </div>
 
-      <!-- FASE 3 -->
-      <div class="phase-card">
-        <div class="phase-num-block">
-          <div class="phase-num">03</div>
-          <div class="phase-word">Amplificar</div>
-        </div>
-        <div>
-          <div class="phase-title">Devolver para toda a organização</div>
-          <p class="phase-body">
-            O conhecimento estruturado é disponibilizado de forma descentralizada — 
-            qualquer membro de qualquer área pode acessar a inteligência acumulada 
-            da empresa inteira. Um novo colaborador tem acesso ao que os melhores 
-            fazem. Uma área que nunca conversou com outra usa o conhecimento acumulado 
-            lá. A empresa inteira aprende com a experiência de cada parte.
-          </p>
-        </div>
-        <div class="phase-example">
-          <div class="phase-example-label">Exemplo real</div>
-          <p class="phase-example-text">
-            A área de suporte resolve tickets 3× mais rápido porque o agente já sabe 
-            como os problemas similares foram resolvidos — <strong>inclusive pelos motivos 
+    <!-- Fase 03 -->
+    <div class="fase reveal">
+      <div class="fase-num-col">
+        <span class="fase-num">03</span>
+        <span class="fase-word">Amplificar</span>
+      </div>
+      <div class="fase-content">
+        <h3 class="fase-title">Devolver para toda a organização</h3>
+        <p class="fase-body">
+          O conhecimento estruturado é disponibilizado de forma descentralizada —
+          qualquer membro de qualquer área pode acessar a inteligência acumulada
+          da empresa inteira. Um novo colaborador tem acesso ao que os melhores
+          fazem. Uma área que nunca conversou com outra usa o conhecimento acumulado
+          lá. A empresa inteira aprende com a experiência de cada parte.
+        </p>
+        <div class="fase-example">
+          <span class="fase-ex-label">Exemplo real</span>
+          <p class="fase-ex-text">
+            A área de suporte resolve tickets 3× mais rápido porque o agente já sabe
+            como os problemas similares foram resolvidos — <strong>inclusive pelos motivos
             não documentados</strong> que os analistas seniores conheciam mas nunca escreveram.
           </p>
         </div>
       </div>
-
     </div>
+
   </div>
 </section>
 
-<!-- ════ LOBO — PROVA VIVA ════ -->
-<section id="prova" class="lobo-section">
-  <div class="container">
-    <div class="lobo-grid">
+
+<!-- ════ PROVA — O LOBO ════ -->
+<section class="prova" id="prova">
+  <div class="wrap">
+    <div class="prova-grid">
+
       <div>
-        <div class="lobo-eyebrow">Prova de conceito em produção</div>
-        <h2 class="lobo-title">O Lobo já faz isso.<br>Há meses.</h2>
-        <p class="lobo-body">
-          Antes de vender essa metodologia para clientes, nós a implementamos internamente. 
-          O Lobo — nosso agente de IA — participa de grupos, projetos e decisões em tempo real. 
-          <strong>Cada conversa relevante vira memória estruturada.</strong> Cada sessão começa 
+        <span class="prova-eyebrow">Prova de conceito em produção</span>
+        <h2 class="prova-title reveal">O Lobo já faz isso.<br>Há meses.</h2>
+        <p class="prova-body reveal">
+          Antes de vender essa metodologia para clientes, nós a implementamos internamente.
+          O Lobo — nosso agente de IA — participa de grupos, projetos e decisões em tempo real.
+          <strong>Cada conversa relevante vira memória estruturada.</strong> Cada sessão começa
           com contexto completo do projeto, das pessoas, das decisões anteriores.<br><br>
-          Isso é o que chamamos de <strong>memória institucional viva</strong>. 
-          Não é um banco de dados consultado — é um agente que participou das conversas 
+          Isso é o que chamamos de <strong>memória institucional viva</strong>.
+          Não é um banco de dados consultado — é um agente que participou das conversas
           e sabe o contexto de verdade.
         </p>
-        <div style="display:flex;gap:24px;flex-wrap:wrap">
-          <div>
-            <div style="font-size:1.8rem;font-weight:800;font-family:var(--fm);color:var(--accent)">12+</div>
-            <div style="font-size:.8rem;color:var(--tt)">projetos em memória ativa</div>
-          </div>
-          <div>
-            <div style="font-size:1.8rem;font-weight:800;font-family:var(--fm);color:var(--accent)">100%</div>
-            <div style="font-size:.8rem;color:var(--tt)">contexto preservado entre sessões</div>
-          </div>
-          <div>
-            <div style="font-size:1.8rem;font-weight:800;font-family:var(--fm);color:var(--accent)">0</div>
-            <div style="font-size:.8rem;color:var(--tt)">reuniões de alinhamento repetidas</div>
-          </div>
+      </div>
+
+      <!-- Stats magazine style -->
+      <div class="stats reveal">
+        <div class="stat">
+          <span class="stat-num">12+</span>
+          <span class="stat-label">projetos em memória ativa</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">100%</span>
+          <span class="stat-label">contexto preservado entre sessões</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">0</span>
+          <span class="stat-label">reuniões de alinhamento repetidas</span>
         </div>
       </div>
-      <div class="terminal">
-        <div class="terminal-bar">
-          <div class="terminal-dot" style="background:#ff5f56"></div>
-          <div class="terminal-dot" style="background:#ffbd2e"></div>
-          <div class="terminal-dot" style="background:#27c93f"></div>
-          <div style="font-family:var(--fm);font-size:.7rem;color:var(--tt);margin-left:8px">lobo — memória institucional</div>
-        </div>
-        <div class="terminal-body">
-          <div class="t-line t-comment"># Sessão inicia — contexto carregado</div>
-          <div class="t-line"><span class="t-prompt">→</span> <span style="color:var(--tp)">Carregando projetos ativos...</span></div>
-          <div class="t-line t-output">  ✓ bonfim.md — obra BodyTech, 14 itens elétricos</div>
-          <div class="t-line t-output">  ✓ safra-ai.md — Pedro Alvarenga, compliance bancário</div>
-          <div class="t-line t-output">  ✓ baas-dashboard.md — deploy pendente Alfred</div>
-          <div class="t-line" style="margin-top:12px t-comment"># Decisão tomada em conversa</div>
-          <div class="t-line"><span class="t-prompt">→</span> <span class="t-highlight">Capturando contexto de decisão...</span></div>
-          <div class="t-line t-output">  Deco: "DR 40A substitui 25A neste circuito"</div>
-          <div class="t-line t-output">  Raciocínio: capacidade maior, mesma função</div>
-          <div class="t-line t-output">  → Atualizado em bonfim.md [commit a3f9c]</div>
-          <div class="t-line" style="margin-top:12px t-comment"># Próxima sessão — contexto disponível</div>
-          <div class="t-line"><span class="t-prompt">→</span> <span class="t-highlight">Contexto completo. Zero briefing necessário.</span></div>
-        </div>
-      </div>
+
     </div>
   </div>
 </section>
 
-<!-- ════ VS MERCADO ════ -->
-<section id="vs-mercado">
-  <div class="container">
-    <div class="section-label">Posicionamento competitivo</div>
-    <h2 class="section-title">Por que é diferente<br>do que existe hoje</h2>
-    <p class="section-sub">
-      Edra AI, Glean, Guru e outros resolvem partes do problema. 
-      A CulturaBuilder resolve de forma mais completa — e com uma vantagem que nenhum deles tem.
-    </p>
-
-    <div style="background:var(--s1);border:1px solid var(--b1);border-radius:12px;overflow:hidden">
-      <table class="diff-table">
-        <thead>
-          <tr>
-            <th style="width:22%">Dimensão</th>
-            <th style="width:26%">Edra AI / Concorrentes</th>
-            <th style="width:26%">CulturaBuilder</th>
-            <th style="width:26%">Por que importa</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="dt-feature">Fonte do conhecimento</td>
-            <td class="dt-edra">Documentos, tickets, logs históricos</td>
-            <td class="dt-cb"><strong>Conversas em tempo real</strong> + histórico</td>
-            <td style="font-size:.82rem;color:var(--ts)">O que realmente importa está nas conversas, não nos docs</td>
-          </tr>
-          <tr>
-            <td class="dt-feature">Captura do contexto</td>
-            <td class="dt-edra">Retroativa — processa o passado</td>
-            <td class="dt-cb"><strong>Contínua</strong> — participa do presente <span class="badge-sm badge-adv">vantagem</span></td>
-            <td style="font-size:.82rem;color:var(--ts)">Contexto vivo é mais preciso que síntese de logs velhos</td>
-          </tr>
-          <tr>
-            <td class="dt-feature">Educação das equipes</td>
-            <td class="dt-edra">Não inclui</td>
-            <td class="dt-cb"><strong>Integrada ao produto</strong> <span class="badge-sm badge-adv">exclusivo</span></td>
-            <td style="font-size:.82rem;color:var(--ts)">Sem educação, adoção < 30% mesmo com boa tecnologia</td>
-          </tr>
-          <tr>
-            <td class="dt-feature">Comunidade de builders</td>
-            <td class="dt-edra">Não tem</td>
-            <td class="dt-cb"><strong>7.000+</strong> pessoas formadas <span class="badge-sm badge-adv">moat</span></td>
-            <td style="font-size:.82rem;color:var(--ts)">Pipeline de talento que nenhum concorrente pode comprar</td>
-          </tr>
-          <tr>
-            <td class="dt-feature">Conhecimento descentralizado</td>
-            <td class="dt-edra">Centralizado no sistema</td>
-            <td class="dt-cb"><strong>Distribuído</strong> para toda a organização</td>
-            <td style="font-size:.82rem;color:var(--ts)">Escala para toda empresa, não só para quem busca no sistema</td>
-          </tr>
-          <tr>
-            <td class="dt-feature">Prova de conceito</td>
-            <td class="dt-edra">Demos, pilotos controlados</td>
-            <td class="dt-cb"><strong>Em produção há meses</strong> internamente <span class="badge-sm badge-sim">live</span></td>
-            <td style="font-size:.82rem;color:var(--ts)">Implementamos em nós mesmos antes de vender para clientes</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
 
 <!-- ════ NÚMEROS ════ -->
-<section style="background:var(--s1);border-top:1px solid var(--b1);border-bottom:1px solid var(--b1);padding:80px 0">
-  <div class="container">
-    <div class="numbers-strip">
-      <div class="num-card">
-        <div class="num-value">73%</div>
-        <div class="num-label">Das implementações de IA falham</div>
-        <div class="num-sub">Por falta de contexto e educação adequada</div>
+<section class="numbers">
+  <div class="wrap">
+    <span class="numbers-eyebrow">Em números</span>
+    <div class="nums-grid">
+
+      <div class="num-item reveal">
+        <span class="num-val">73%</span>
+        <span class="num-label">Das implementações de IA falham</span>
+        <span class="num-sub">por falta de contexto e educação</span>
       </div>
-      <div class="num-card">
-        <div class="num-value">10×</div>
-        <div class="num-label">Mais rápido para novos colaboradores</div>
-        <div class="num-sub">Com acesso à memória institucional estruturada</div>
+
+      <div class="num-item reveal">
+        <span class="num-val">10×</span>
+        <span class="num-label">Mais rápido para novos colaboradores</span>
+        <span class="num-sub">com memória institucional estruturada</span>
       </div>
-      <div class="num-card">
-        <div class="num-value">7K+</div>
-        <div class="num-label">Builders na comunidade</div>
-        <div class="num-sub">O maior moat de talento em IA do Brasil</div>
+
+      <div class="num-item reveal">
+        <span class="num-val">7K+</span>
+        <span class="num-label">Builders na comunidade</span>
+        <span class="num-sub">o maior moat de talento em IA do Brasil</span>
       </div>
-      <div class="num-card">
-        <div class="num-value">0</div>
-        <div class="num-label">Lock-in de fornecedor</div>
-        <div class="num-sub">Arquitetura agnóstica de modelo desde o início</div>
+
+      <div class="num-item reveal">
+        <span class="num-val">0</span>
+        <span class="num-label">Lock-in de fornecedor</span>
+        <span class="num-sub">arquitetura agnóstica de modelo</span>
       </div>
+
     </div>
   </div>
 </section>
 
-<!-- ════ CTA ════ -->
-<section id="cta" class="cta-section">
-  <div class="container" style="max-width:760px">
-    <div class="section-label" style="text-align:center;display:block">Próximo passo</div>
-    <h2 class="cta-title">
-      Comece pelo diagnóstico.<br>
-      Veja o que sua empresa<br>já sabe — mas não sabe que sabe.
-    </h2>
-    <p class="cta-sub">
-      Em 2–4 semanas mapeamos seus sistemas, seus fluxos reais e o conhecimento que 
-      está sendo desperdiçado. O diagnóstico por si só já entrega valor — 
-      independente do que vier depois.
-    </p>
-    <div class="hero-ctas">
-      <a href="mailto:contato@culturabuilder.com.br" class="btn-primary">Falar com um especialista →</a>
-      <a href="/" class="btn-outline">Ver metodologia completa</a>
+
+<!-- ════ VS MERCADO ════ -->
+<section class="vs-mercado" id="vs-mercado">
+  <div class="wrap">
+
+    <div class="vs-hdr">
+      <span class="eyebrow">Posicionamento competitivo</span>
+      <h2 class="vs-hdr-title reveal">Por que é diferente<br>do que existe hoje</h2>
+      <p class="vs-hdr-sub reveal">
+        Edra AI, Glean, Guru e outros resolvem partes do problema.
+        A CulturaBuilder resolve de forma mais completa — e com uma vantagem que nenhum deles tem.
+      </p>
     </div>
-    <div class="cta-note">Diagnóstico inicial incluso · Sem lock-in · LGPD nativo</div>
+
+    <div class="vs-cols">
+
+      <!-- Coluna: concorrentes -->
+      <div class="vs-col reveal">
+        <span class="vs-col-header">Edra AI / Concorrentes</span>
+
+        <div class="vs-dim">
+          <span class="vs-dim-key">Fonte do conhecimento</span>
+          <span class="vs-dim-val">Documentos, tickets, logs históricos</span>
+        </div>
+
+        <div class="vs-dim">
+          <span class="vs-dim-key">Captura do contexto</span>
+          <span class="vs-dim-val">Retroativa — processa o passado</span>
+        </div>
+
+        <div class="vs-dim">
+          <span class="vs-dim-key">Educação das equipes</span>
+          <span class="vs-dim-val">Não inclui</span>
+        </div>
+
+        <div class="vs-dim">
+          <span class="vs-dim-key">Comunidade de builders</span>
+          <span class="vs-dim-val">Não tem</span>
+        </div>
+
+        <div class="vs-dim">
+          <span class="vs-dim-key">Conhecimento descentralizado</span>
+          <span class="vs-dim-val">Centralizado no sistema</span>
+        </div>
+
+        <div class="vs-dim">
+          <span class="vs-dim-key">Prova de conceito</span>
+          <span class="vs-dim-val">Demos, pilotos controlados</span>
+        </div>
+      </div>
+
+      <!-- Coluna: CulturaBuilder -->
+      <div class="vs-col reveal">
+        <span class="vs-col-header gold">CulturaBuilder</span>
+
+        <div class="vs-dim">
+          <span class="vs-dim-key">Fonte do conhecimento</span>
+          <span class="vs-dim-val strong">Conversas em tempo real + histórico</span>
+        </div>
+
+        <div class="vs-dim">
+          <span class="vs-dim-key">Captura do contexto</span>
+          <span class="vs-dim-val strong">Contínua — participa do presente <span class="vs-tag">vantagem</span></span>
+        </div>
+
+        <div class="vs-dim">
+          <span class="vs-dim-key">Educação das equipes</span>
+          <span class="vs-dim-val strong">Integrada ao produto <span class="vs-tag">exclusivo</span></span>
+        </div>
+
+        <div class="vs-dim">
+          <span class="vs-dim-key">Comunidade de builders</span>
+          <span class="vs-dim-val strong">7.000+ pessoas formadas <span class="vs-tag">moat</span></span>
+        </div>
+
+        <div class="vs-dim">
+          <span class="vs-dim-key">Conhecimento descentralizado</span>
+          <span class="vs-dim-val strong">Distribuído para toda a organização</span>
+        </div>
+
+        <div class="vs-dim">
+          <span class="vs-dim-key">Prova de conceito</span>
+          <span class="vs-dim-val strong">Em produção há meses internamente <span class="vs-tag">live</span></span>
+        </div>
+      </div>
+
+    </div>
   </div>
 </section>
+
+
+<!-- ════ CTA ════ -->
+<section class="cta" id="cta">
+  <div class="wrap">
+
+    <span class="cta-eyebrow">Próximo passo</span>
+
+    <h2 class="cta-title reveal">
+      Comece pelo diagnóstico.<br>
+      Veja o que sua empresa já sabe —<br>
+      <em>mas não sabe que sabe.</em>
+    </h2>
+
+    <p class="cta-sub reveal">
+      Em 2–4 semanas mapeamos seus sistemas, seus fluxos reais e o conhecimento que
+      está sendo desperdiçado. O diagnóstico por si só já entrega valor —
+      independente do que vier depois.
+    </p>
+
+    <div class="cta-links reveal">
+      <a href="mailto:contato@culturabuilder.com.br" class="cta-link">
+        Falar com um especialista
+        <span class="arrow">→</span>
+      </a>
+      <a href="/" class="cta-link">
+        Ver metodologia completa
+        <span class="arrow">→</span>
+      </a>
+    </div>
+
+    <span class="cta-note">Diagnóstico inicial incluso · Sem lock-in · LGPD nativo</span>
+
+  </div>
+</section>
+
 
 <!-- FOOTER -->
 <footer>
-  <div>
-    <div class="footer-logo">Cultura<span>Builder</span></div>
-  </div>
+  <div class="footer-logo">Cultura<span>Builder</span></div>
   <div class="footer-copy">© 2026 CulturaBuilder · Todos os direitos reservados</div>
   <div class="footer-note">cb.deco.ooo/new — rascunho de novo posicionamento</div>
 </footer>
 
+
 <script>
-// Scroll suave
+// Scroll smooth
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
     const t = document.querySelector(a.getAttribute('href'));
-    if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-  });
-});
-
-// Fade in suave
-const obs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.style.opacity = '1';
-      e.target.style.transform = 'translateY(0)';
-      obs.unobserve(e.target);
+    if (t) {
+      e.preventDefault();
+      t.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   });
-}, { threshold: 0.08 });
-
-document.querySelectorAll('.phase-card, .num-card, .comp-card').forEach((el, i) => {
-  el.style.opacity = '0';
-  el.style.transform = 'translateY(16px)';
-  el.style.transition = `opacity .5s ease ${i * .06}s, transform .5s cubic-bezier(.16,1,.3,1) ${i * .06}s`;
-  obs.observe(el);
 });
+
+// IntersectionObserver — fade + translateY
+const io = new IntersectionObserver(entries => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      // small stagger within sibling groups
+      const siblings = entry.target.parentElement.querySelectorAll('.reveal');
+      const idx = Array.from(siblings).indexOf(entry.target);
+      setTimeout(() => {
+        entry.target.classList.add('visible');
+      }, idx * 80);
+      io.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.07, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 </script>
 
 </body>
