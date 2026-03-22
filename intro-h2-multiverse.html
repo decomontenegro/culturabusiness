@@ -1709,11 +1709,12 @@ footer {
   // 5 universos em perspectiva cônica, distribuídos em leque
   // Cada cilindro tem: ângulo de projeção, cor, label
   var UNIVERSES = [
-    { label: 'LIQI',          color: [80,160,255],  ang: -0.42 },
-    { label: 'MONTE DOURADO', color: [200,169,110],  ang: -0.20 },
-    { label: 'CULTURA BUILDER',color:[160,100,255], ang:  0.00 },
-    { label: 'SAFEWAY',       color: [80,200,130],  ang:  0.20 },
-    { label: 'ENERGIA',       color: [255,160,60],  ang:  0.42 },
+    // 5 cilindros distribuídos em 360° saindo do centro (72° cada)
+    { label: 'LIQI',           color: [80,160,255],   ang:  -1.26 }, // cima-dir
+    { label: 'MONTE DOURADO', color: [200,169,110],   ang:   0.00 }, // direita
+    { label: 'CULTURA BUILDER',color:[160,100,255],   ang:   1.26 }, // baixo-dir
+    { label: 'SAFEWAY',       color: [80,200,130],    ang:   2.51 }, // baixo-esq
+    { label: 'ENERGIA',       color: [255,160,60],    ang:  -2.51 }, // cima-esq
   ];
 
   // Partículas dentro de cada cilindro
@@ -1771,23 +1772,25 @@ footer {
 
   function drawCylinder(U, ud, origin, progress, elapsed) {
     var ang   = U.ang;
-    var depth = Math.min(W, H) * 0.62;
-    var radiusNear = Math.min(W, H) * 0.115;
+    // Profundidade vai até a borda da tela
+    var diagHalf = Math.sqrt(W*W + H*H) * 0.52;
+    var depth = diagHalf;
+    var radiusNear = Math.min(W, H) * 0.18;
     var rNear = radiusNear;
-    var rFar  = radiusNear * 0.08; // perspectiva — boca distante menor
+    var rFar  = radiusNear * 0.04; // perspectiva — boca distante menor
     var r     = U.color;
 
-    // Direção do cilindro
+    // Direção do cilindro (ang aponta para borda da tela)
     var dx = Math.cos(ang);
-    var dy = Math.sin(ang) * 0.4; // foreshortening vertical
+    var dy = Math.sin(ang) * 0.65; // leve achatamento vertical p/ profundidade
 
     // Ponto da boca próxima (extremidade aberta)
     var bx = origin.x + dx * depth * progress;
     var by = origin.y + dy * depth * progress;
 
     // Proporção de aplatamento da elipse (perspectiva)
-    var flatNear = 0.32;
-    var flatFar  = 0.06;
+    var flatNear = 0.28;
+    var flatFar  = 0.04;
 
     if (progress <= 0.01) return;
 
