@@ -1826,10 +1826,9 @@ footer {
     universeNodes = [];
     for (var ui = 0; ui < UNIVERSES.length; ui++) {
       var U = UNIVERSES[ui];
-      // Scale: usa 38% do menor lado da viewport como raio máximo do layout
-      var layoutR = Math.min(W, H) * 0.38;
-      var hbx = U.hubBase.bxPct * layoutR;
-      var hby = U.hubBase.byPct * layoutR;
+      // Layout: universos distribuídos em 38% da largura e 36% da altura
+      var hbx = U.hubBase.bxPct * W * 0.38;
+      var hby = U.hubBase.byPct * H * 0.36;
       var hub = {
         x: CX + hbx,
         y: CY + hby,
@@ -1844,8 +1843,8 @@ footer {
       var areas = [];
       for (var ai = 0; ai < U.areas.length; ai++) {
         var ad = U.areas[ai];
-        // Áreas: raio orbital = 14% do menor lado da viewport
-        var aScale = Math.min(W, H) * 0.14 / 90;
+        // Áreas: raio orbital proporcional (8% da largura / 90px base)
+        var aScale = W * 0.08 / 90;
         areas.push({
           name: ad.name,
           bx: ad.bx * aScale, by: ad.by * aScale,
@@ -1860,9 +1859,9 @@ footer {
 
       // 3 satellites per universe
       var satellites = [];
-      // Satélites: órbitas entre 10% e 17% do menor lado
-      var sUnit = Math.min(W, H) * 0.01;
-      var satRadii = [sUnit * 10, sUnit * 13, sUnit * 16];
+      // Satélites: órbitas 6-10% da largura
+      var sUnit = W * 0.01;
+      var satRadii = [sUnit * 6, sUnit * 8, sUnit * 10];
       var satSpeeds = [0.0005, 0.0004, 0.0003];
       for (var si = 0; si < 3; si++) {
         satellites.push({
@@ -1896,7 +1895,7 @@ footer {
       var hub = UN.hub;
 
       // Hub organic movement around base
-      var mScale = Math.min(W, H) * 0.015;
+      var mScale = W * 0.012;
       hub.x = CX + hub.bx + mScale * Math.sin(elapsed * 0.0005 + ui * 1.2);
       hub.y = CY + hub.by + mScale * Math.cos(elapsed * 0.0006 + ui * 1.2);
 
