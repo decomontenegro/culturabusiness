@@ -1631,7 +1631,7 @@ footer {
 }
 #intro-text-know {
   position: absolute;
-  bottom: 20%;
+  bottom: 15%;
   left: 50%;
   transform: translateX(-50%);
   font-family: 'DM Mono', monospace;
@@ -1745,286 +1745,395 @@ footer {
   }
 
   // ── Canvas DPR scaling ──
-  function resizeCanvas() {
-    var dpr = window.devicePixelRatio || 1;
-    canvas.width  = canvas.offsetWidth  * dpr;
-    canvas.height = canvas.offsetHeight * dpr;
-    ctx.scale(dpr, dpr);
-  }
-  resizeCanvas();
-
-  var W = canvas.offsetWidth;
-  var H = canvas.offsetHeight;
+  var dpr = window.devicePixelRatio || 1;
+  canvas.width  = window.innerWidth  * dpr;
+  canvas.height = window.innerHeight * dpr;
+  ctx.scale(dpr, dpr);
+  var W  = window.innerWidth;
+  var H  = window.innerHeight;
   var CX = W / 2;
   var CY = H / 2;
 
-  // ── Galaxy data ──
+  // ── 3D Sphere constants ──
+  var SPHERE_R  = 180;   // sphere radius (world units)
+  var FOCAL     = 500;   // perspective focal length
+  var Z_OFFSET  = 400;   // camera distance from sphere center
+
+  // Rotation speeds (rad/ms)
+  var ROT_Y = 0.00025;   // primary — spin like a globe
+  var ROT_X = 0.00008;   // secondary — "breathes"
+  var ROT_Z = 0.00004;   // micro-twist — "4D" feeling
+
+  // ── Perspective projection ──
+  function project(x3d, y3d, z3d) {
+    var zd    = z3d + Z_OFFSET;
+    var scale = FOCAL / zd;
+    return {
+      px:    CX + x3d * scale,
+      py:    CY + y3d * scale,
+      scale: scale,
+      z:     z3d
+    };
+  }
+
+  // ── Rotate a point (elapsed in ms) ──
+  function rotatePoint(x, y, z, elapsed) {
+    // Rotation Y
+    var cosY = Math.cos(ROT_Y * elapsed), sinY = Math.sin(ROT_Y * elapsed);
+    var x1 = x * cosY - z * sinY;
+    var z1 = x * sinY + z * cosY;
+    // Rotation X
+    var cosX = Math.cos(ROT_X * elapsed), sinX = Math.sin(ROT_X * elapsed);
+    var y2 = y  * cosX - z1 * sinX;
+    var z2 = y  * sinX + z1 * cosX;
+    // Rotation Z
+    var cosZ = Math.cos(ROT_Z * elapsed), sinZ = Math.sin(ROT_Z * elapsed);
+    var x3 = x1 * cosZ - y2 * sinZ;
+    var y3 = x1 * sinZ + y2 * cosZ;
+    return { x: x3, y: y3, z: z2 };
+  }
+
+  // ── Build area nodes (8) — Fibonacci sphere distribution ──
   var AREAS = [
-    { name:'Vendas',      r:7, phaseOff:0.0 },
-    { name:'Produto',     r:6, phaseOff:0.8 },
-    { name:'Financeiro',  r:8, phaseOff:1.6 },
-    { name:'RH',          r:5, phaseOff:2.4 },
-    { name:'Operações',   r:7, phaseOff:3.2 },
-    { name:'Marketing',   r:6, phaseOff:0.5 },
-    { name:'Jurídico',    r:5, phaseOff:1.2 },
-    { name:'Tecnologia',  r:8, phaseOff:2.0 }
+    { name: 'Vendas',      r_vis: 7 },
+    { name: 'Produto',     r_vis: 6 },
+    { name: 'Financeiro',  r_vis: 8 },
+    { name: 'RH',          r_vis: 5 },
+    { name: 'Operações',   r_vis: 7 },
+    { name: 'Marketing',   r_vis: 6 },
+    { name: 'Jurídico',    r_vis: 5 },
+    { name: 'Tecnologia',  r_vis: 8 }
   ];
+  var goldenAngle = Math.PI * (3 - Math.sqrt(5));
+  for (var _i = 0; _i < 8; _i++) {
+    var _phi   = Math.acos(1 - 2 * (_i + 0.5) / 8);
+    var _theta = goldenAngle * _i;
+    AREAS[_i].x0 = SPHERE_R * Math.sin(_phi) * Math.cos(_theta);
+    AREAS[_i].y0 = SPHERE_R * Math.cos(_phi);
+    AREAS[_i].z0 = SPHERE_R * Math.sin(_phi) * Math.sin(_theta);
+    // rotated (populated each frame)
+    AREAS[_i].xr = AREAS[_i].x0;
+    AREAS[_i].yr = AREAS[_i].y0;
+    AREAS[_i].zr = AREAS[_i].z0;
+  }
 
-  // Elliptical orbit base angles with organic irregularity
-  var areaAngles = [0, 0.82, 1.52, 2.38, 3.20, 4.05, 4.90, 5.60];
-  // Orbital radii (elliptic: rx != ry, slightly varied per node)
-  var areaRX = [210, 195, 225, 200, 215, 205, 220, 198];
-  var areaRY = [130, 120, 138, 125, 132, 128, 135, 122];
-  // Orbital speed (rad/frame at 60fps) → ~30-45s period
-  var areaSpeed = [
-    (2*Math.PI)/(38*60), (2*Math.PI)/(35*60), (2*Math.PI)/(42*60), (2*Math.PI)/(36*60),
-    (2*Math.PI)/(40*60), (2*Math.PI)/(33*60), (2*Math.PI)/(45*60), (2*Math.PI)/(37*60)
-  ];
+  // ── Central hub node ──
+  var HUB = { x0: 0, y0: 0, z0: 0, xr: 0, yr: 0, zr: 0 };
 
-  // Satellites (13 nodes)
+  // ── Satellite nodes (13) — fixed seed, outer shell SPHERE_R×1.6 ──
+  var SAT_R = SPHERE_R * 1.6;
+  var satSeedPhi   = [0.52,1.18,1.74,2.30,2.88,0.35,1.05,2.05,2.70,0.80,1.55,2.45,3.05];
+  var satSeedTheta = [0.30,1.25,2.10,3.35,4.60,5.50,0.95,1.85,3.00,4.20,5.10,2.60,1.55];
+  var satSizes     = [2.5, 3.0, 2.0, 3.5, 2.8, 2.2, 3.2, 2.4, 3.8, 2.0, 3.0, 2.6, 3.4];
   var satellites = [];
-  (function() {
-    var seedAngles = [0.3,0.95,1.55,2.1,2.7,3.3,3.9,4.5,5.0,5.5,0.7,2.3,4.1];
-    var satRXBase  = [290,310,280,320,295,305,285,315,300,275,325,288,308];
-    var satRYBase  = [170,185,160,190,175,180,165,188,172,158,192,162,183];
-    for (var i=0; i<13; i++) {
-      satellites.push({
-        angle: seedAngles[i],
-        rx: satRXBase[i],
-        ry: satRYBase[i],
-        r: 2 + Math.random()*2,
-        speed: (2*Math.PI)/((62 + Math.random()*18)*60),
-        alpha: 0
-      });
-    }
-  })();
-
-  // Connections
-  // Primary: hub → each area (8)
-  // Secondary: adjacent area pairs (6-8)
-  var secConnections = [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0]]; // 8 adjacent pairs
-  // Tertiary: area → nearest satellite (computed at runtime)
-
-  // Animation state
-  var galaxyAlpha   = 0; // overall galaxy opacity (0→1)
-  var connAlpha     = 0;
-  var satAlpha      = 0;
-  var synapsesActive= false;
-  var frameId       = null;
-  var startTime     = null;
-
-  // Area appearance timings (staggered from t=2.8s intro start, 200ms each)
-  var areaAlphas = [0,0,0,0,0,0,0,0];
-
-  // Synapses
-  var synapses = [];
-  var lastSynapseSpawn = 0;
-  var SYNAPSE_INTERVAL = 350; // ms
-
-  function getAreaPos(i) {
-    var a = areaAngles[i];
-    return { x: CX + Math.cos(a)*areaRX[i], y: CY + Math.sin(a)*areaRY[i] };
-  }
-  function getSatPos(i) {
-    var s = satellites[i];
-    return { x: CX + Math.cos(s.angle)*s.rx, y: CY + Math.sin(s.angle)*s.ry };
-  }
-
-  // Find nearest satellite for each area
-  function nearestSat(aIdx) {
-    var ap = getAreaPos(aIdx);
-    var best = 0, bestD = Infinity;
-    for (var i=0; i<satellites.length; i++) {
-      var sp = getSatPos(i);
-      var d = Math.hypot(sp.x-ap.x, sp.y-ap.y);
-      if (d < bestD) { bestD = d; best = i; }
-    }
-    return best;
-  }
-
-  function spawnSynapse(now) {
-    // Pick a connection type randomly
-    var type = Math.random();
-    var conn;
-    if (type < 0.5) {
-      // hub → area
-      var ai = Math.floor(Math.random() * AREAS.length);
-      conn = { from: {x:CX,y:CY}, to: getAreaPos(ai), dur: 800+Math.random()*400 };
-    } else if (type < 0.75) {
-      // area → hub
-      var ai2 = Math.floor(Math.random() * AREAS.length);
-      conn = { from: getAreaPos(ai2), to: {x:CX,y:CY}, dur: 900+Math.random()*300 };
-    } else {
-      // area → area (secondary connections)
-      var sc = secConnections[Math.floor(Math.random()*secConnections.length)];
-      conn = { from: getAreaPos(sc[0]), to: getAreaPos(sc[1]), dur: 1000+Math.random()*200 };
-    }
-    synapses.push({
-      fx: conn.from.x, fy: conn.from.y,
-      tx: conn.to.x,   ty: conn.to.y,
-      dur: conn.dur,
-      startTime: now,
-      trail: []
+  for (var _s = 0; _s < 13; _s++) {
+    var _sp  = satSeedPhi[_s];
+    var _st  = satSeedTheta[_s];
+    satellites.push({
+      x0: SAT_R * Math.sin(_sp) * Math.cos(_st),
+      y0: SAT_R * Math.cos(_sp),
+      z0: SAT_R * Math.sin(_sp) * Math.sin(_st),
+      xr: 0, yr: 0, zr: 0,
+      r_vis: satSizes[_s]
     });
   }
 
+  // ── Secondary connections (adjacent area pairs) ──
+  var SEC_CONN = [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0]];
+
+  // ── Animation state ──
+  var galaxyAlpha    = 0;
+  var connAlpha      = 0;
+  var satAlpha       = 0;
+  var synapsesActive = false;
+  var frameId        = null;
+  var areaAlphas     = [0,0,0,0,0,0,0,0];
+
+  // ── Synapses ──
+  var synapses         = [];
+  var lastSynapseSpawn = 0;
+  var SYNAPSE_INTERVAL = 350;
+
+  function lerp3(a, b, t) {
+    return {
+      x: a.x + (b.x - a.x) * t,
+      y: a.y + (b.y - a.y) * t,
+      z: a.z + (b.z - a.z) * t
+    };
+  }
+
+  function spawnSynapse3D(now) {
+    var type = Math.random();
+    var fromNode, toNode;
+    if (type < 0.5) {
+      // hub → random area
+      fromNode = HUB;
+      toNode   = AREAS[Math.floor(Math.random() * AREAS.length)];
+    } else if (type < 0.75) {
+      // random area → hub
+      fromNode = AREAS[Math.floor(Math.random() * AREAS.length)];
+      toNode   = HUB;
+    } else {
+      // area → adjacent area
+      var sc = SEC_CONN[Math.floor(Math.random() * SEC_CONN.length)];
+      fromNode = AREAS[sc[0]];
+      toNode   = AREAS[sc[1]];
+    }
+    synapses.push({
+      from:      fromNode,
+      to:        toNode,
+      dur:       800 + Math.random() * 400,
+      startTime: now,
+      trail:     []
+    });
+  }
+
+  // ── Depth normalisation helpers ──
+  // Called once per frame after all nodes are rotated
+  var _minScale = 1, _maxScale = 1;
+  function computeDepthRange() {
+    var scales = [];
+    for (var i = 0; i < AREAS.length; i++) {
+      var zd = AREAS[i].zr + Z_OFFSET;
+      scales.push(FOCAL / zd);
+    }
+    // hub always at center (z=0, scale = FOCAL/Z_OFFSET)
+    scales.push(FOCAL / Z_OFFSET);
+    for (var j = 0; j < satellites.length; j++) {
+      var zds = satellites[j].zr + Z_OFFSET;
+      scales.push(FOCAL / zds);
+    }
+    _minScale = Math.min.apply(null, scales);
+    _maxScale = Math.max.apply(null, scales);
+    if (_maxScale === _minScale) _maxScale = _minScale + 0.01;
+  }
+
+  function depthAlphaFromScale(scale) {
+    return 0.25 + 0.75 * ((scale - _minScale) / (_maxScale - _minScale));
+  }
+
+  // ── Main draw ──
   function drawGalaxy(now, elapsed) {
     ctx.clearRect(0, 0, W, H);
     if (galaxyAlpha <= 0) return;
 
-    ctx.save();
-    ctx.globalAlpha = galaxyAlpha;
-
     var t = elapsed / 1000; // seconds
 
-    // Update orbital positions
-    for (var i=0; i<AREAS.length; i++) areaAngles[i] += areaSpeed[i];
-    for (var i=0; i<satellites.length; i++) satellites[i].angle += satellites[i].speed;
+    // ── 1. Rotate all nodes ──
+    var rotHub = rotatePoint(HUB.x0, HUB.y0, HUB.z0, elapsed);
+    HUB.xr = rotHub.x; HUB.yr = rotHub.y; HUB.zr = rotHub.z;
 
-    // ── Draw tertiary connections (area → nearest sat) ──
-    ctx.globalAlpha = galaxyAlpha * connAlpha * 0.7;
-    ctx.lineWidth = 0.3;
-    ctx.strokeStyle = 'rgba(245,240,232,0.1)';
-    for (var i=0; i<AREAS.length; i++) {
-      if (areaAlphas[i] < 0.1) continue;
-      var ap = getAreaPos(i);
-      var si = nearestSat(i);
-      var sp = getSatPos(si);
-      ctx.beginPath(); ctx.moveTo(ap.x,ap.y); ctx.lineTo(sp.x,sp.y); ctx.stroke();
+    for (var i = 0; i < AREAS.length; i++) {
+      var ra = rotatePoint(AREAS[i].x0, AREAS[i].y0, AREAS[i].z0, elapsed);
+      AREAS[i].xr = ra.x; AREAS[i].yr = ra.y; AREAS[i].zr = ra.z;
+    }
+    for (var i = 0; i < satellites.length; i++) {
+      var rs = rotatePoint(satellites[i].x0, satellites[i].y0, satellites[i].z0, elapsed);
+      satellites[i].xr = rs.x; satellites[i].yr = rs.y; satellites[i].zr = rs.z;
     }
 
-    // ── Draw secondary connections (area → area adjacent) ──
-    ctx.globalAlpha = galaxyAlpha * connAlpha * 0.7;
-    ctx.lineWidth = 0.4;
-    ctx.strokeStyle = 'rgba(245,240,232,0.15)';
-    for (var k=0; k<secConnections.length; k++) {
-      var sc = secConnections[k];
-      if (areaAlphas[sc[0]] < 0.1 || areaAlphas[sc[1]] < 0.1) continue;
-      var p0 = getAreaPos(sc[0]);
-      var p1 = getAreaPos(sc[1]);
-      ctx.beginPath(); ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y); ctx.stroke();
+    // ── 2. Compute depth range for alpha normalisation ──
+    computeDepthRange();
+
+    // ── 3. Build render order (painters algorithm — back to front) ──
+    // Collect all drawable items with their projected z
+    var items = [];
+
+    // Hub
+    var hubProj = project(HUB.xr, HUB.yr, HUB.zr);
+    var hubScale = hubProj.scale;
+    var hubDA    = depthAlphaFromScale(hubScale);
+    var hubPulse = 1 + 0.2 * Math.sin(t * Math.PI);
+    items.push({ type: 'hub', z: HUB.zr, proj: hubProj, scale: hubScale, da: hubDA, pulse: hubPulse });
+
+    // Areas
+    for (var i = 0; i < AREAS.length; i++) {
+      var ap = project(AREAS[i].xr, AREAS[i].yr, AREAS[i].zr);
+      var aScale = ap.scale;
+      var aDA    = depthAlphaFromScale(aScale);
+      items.push({ type: 'area', idx: i, z: AREAS[i].zr, proj: ap, scale: aScale, da: aDA });
     }
 
-    // ── Draw primary connections (hub → areas) ──
-    ctx.globalAlpha = galaxyAlpha * connAlpha;
-    ctx.lineWidth = 0.8;
-    ctx.strokeStyle = 'rgba(200,169,110,0.3)';
-    for (var i=0; i<AREAS.length; i++) {
+    // Satellites
+    for (var i = 0; i < satellites.length; i++) {
+      var sp = project(satellites[i].xr, satellites[i].yr, satellites[i].zr);
+      var sScale = sp.scale;
+      var sDA    = depthAlphaFromScale(sScale);
+      items.push({ type: 'sat', idx: i, z: satellites[i].zr, proj: sp, scale: sScale, da: sDA });
+    }
+
+    // Sort back→front (most negative z first)
+    items.sort(function(a, b) { return a.z - b.z; });
+
+    // ── 4. Draw connections (before nodes, behind everything) ──
+    ctx.save();
+
+    // Hub → each area (primary)
+    for (var i = 0; i < AREAS.length; i++) {
       if (areaAlphas[i] < 0.01) continue;
-      var ap2 = getAreaPos(i);
-      ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(ap2.x,ap2.y); ctx.stroke();
+      var apConn  = project(AREAS[i].xr, AREAS[i].yr, AREAS[i].zr);
+      var aScConn = apConn.scale;
+      var hubSc   = hubProj.scale;
+      var avgSc   = (aScConn + hubSc) * 0.5;
+      var avgDA   = depthAlphaFromScale(avgSc);
+      ctx.globalAlpha = galaxyAlpha * connAlpha * areaAlphas[i] * (0.2 * avgDA);
+      ctx.strokeStyle = 'rgba(200,169,110,1)';
+      ctx.lineWidth   = 0.8 * avgSc;
+      ctx.beginPath();
+      ctx.moveTo(hubProj.px, hubProj.py);
+      ctx.lineTo(apConn.px,  apConn.py);
+      ctx.stroke();
     }
 
-    // ── Draw synapses ──
+    // Area → area adjacent (secondary)
+    for (var k = 0; k < SEC_CONN.length; k++) {
+      var s0 = SEC_CONN[k][0], s1 = SEC_CONN[k][1];
+      if (areaAlphas[s0] < 0.1 || areaAlphas[s1] < 0.1) continue;
+      var p0 = project(AREAS[s0].xr, AREAS[s0].yr, AREAS[s0].zr);
+      var p1 = project(AREAS[s1].xr, AREAS[s1].yr, AREAS[s1].zr);
+      var avgScSec = (p0.scale + p1.scale) * 0.5;
+      var avgDASec = depthAlphaFromScale(avgScSec);
+      ctx.globalAlpha = galaxyAlpha * connAlpha * (0.12 * avgDASec);
+      ctx.strokeStyle = 'rgba(245,240,232,1)';
+      ctx.lineWidth   = 0.4;
+      ctx.beginPath();
+      ctx.moveTo(p0.px, p0.py);
+      ctx.lineTo(p1.px, p1.py);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+
+    // ── 5. Draw synapses ──
     if (synapsesActive) {
       if (now - lastSynapseSpawn > SYNAPSE_INTERVAL) {
-        // Update dynamic positions in existing synapses and spawn new
-        spawnSynapse(now);
+        spawnSynapse3D(now);
         lastSynapseSpawn = now;
-        // Vary interval slightly
-        SYNAPSE_INTERVAL = 300 + Math.random()*200;
+        SYNAPSE_INTERVAL = 300 + Math.random() * 200;
       }
     }
 
-    // Render and update synapses
     var aliveSynapses = [];
-    for (var si=0; si<synapses.length; si++) {
-      var syn = synapses[si];
+    for (var si = 0; si < synapses.length; si++) {
+      var syn  = synapses[si];
       var prog = (now - syn.startTime) / syn.dur;
-      if (prog > 1) continue; // dead
+      if (prog > 1) continue;
       aliveSynapses.push(syn);
 
-      // Current position
-      var px = syn.fx + (syn.tx - syn.fx) * prog;
-      var py = syn.fy + (syn.ty - syn.fy) * prog;
+      // 3D interpolated position
+      var fromPt = { x: syn.from.xr, y: syn.from.yr, z: syn.from.zr };
+      var toPt   = { x: syn.to.xr,   y: syn.to.yr,   z: syn.to.zr   };
+      var cur3   = lerp3(fromPt, toPt, prog);
+      var curP   = project(cur3.x, cur3.y, cur3.z);
 
-      // Trail: store position
-      syn.trail.push({x:px, y:py, t:now});
-      // Keep only last 4 trail points
+      syn.trail.push({ x: curP.px, y: curP.py, scale: curP.scale });
       if (syn.trail.length > 4) syn.trail.shift();
 
-      // Draw trail
-      for (var ti=0; ti<syn.trail.length; ti++) {
-        var trailAlpha = (ti/syn.trail.length) * 0.35 * galaxyAlpha;
-        var tr = Math.max(1, 2.5 * (ti/syn.trail.length));
-        ctx.globalAlpha = trailAlpha;
-        ctx.fillStyle = '#C8A96E';
-        ctx.shadowBlur = 8; ctx.shadowColor = '#C8A96E';
+      // Trail
+      for (var ti = 0; ti < syn.trail.length; ti++) {
+        var trFrac   = ti / syn.trail.length;
+        var trAlpha  = trFrac * 0.35 * galaxyAlpha;
+        var trR      = Math.max(0.8, 2.5 * trFrac * syn.trail[ti].scale);
+        ctx.globalAlpha = trAlpha;
+        ctx.fillStyle    = '#C8A96E';
+        ctx.shadowBlur   = 8; ctx.shadowColor = '#C8A96E';
         ctx.beginPath();
-        ctx.arc(syn.trail[ti].x, syn.trail[ti].y, tr, 0, Math.PI*2);
+        ctx.arc(syn.trail[ti].x, syn.trail[ti].y, trR, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
       }
 
-      // Draw head
+      // Head
       ctx.globalAlpha = 0.9 * galaxyAlpha;
-      ctx.fillStyle = '#C8A96E';
-      ctx.shadowBlur = 12; ctx.shadowColor = '#C8A96E';
-      ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle   = '#C8A96E';
+      ctx.shadowBlur  = 12; ctx.shadowColor = '#C8A96E';
+      ctx.beginPath();
+      ctx.arc(curP.px, curP.py, 3 * curP.scale, 0, Math.PI * 2);
+      ctx.fill();
       ctx.shadowBlur = 0;
     }
     synapses = aliveSynapses;
 
-    // ── Draw satellite nodes ──
-    ctx.globalAlpha = galaxyAlpha * satAlpha;
-    for (var i=0; i<satellites.length; i++) {
-      var sp2 = getSatPos(i);
-      ctx.fillStyle = 'rgba(200,169,110,0.4)';
-      ctx.shadowBlur = 6; ctx.shadowColor = 'rgba(200,169,110,0.4)';
-      ctx.beginPath(); ctx.arc(sp2.x, sp2.y, satellites[i].r, 0, Math.PI*2); ctx.fill();
-      ctx.shadowBlur = 0;
+    // ── 6. Draw nodes in painters order ──
+    for (var ii = 0; ii < items.length; ii++) {
+      var item = items[ii];
+      ctx.save();
+
+      if (item.type === 'hub') {
+        var hr = 14 * item.pulse * item.scale;
+        ctx.globalAlpha = galaxyAlpha;
+        ctx.fillStyle   = '#C8A96E';
+        ctx.shadowBlur  = 30 * item.scale;
+        ctx.shadowColor = '#C8A96E';
+        ctx.beginPath();
+        ctx.arc(item.proj.px, item.proj.py, hr, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Hub label on canvas (small label under hub node)
+        var labelAlpha = item.da > 0.5 ? (item.da - 0.5) * 2 : 0;
+        if (labelAlpha > 0.02) {
+          ctx.globalAlpha  = galaxyAlpha * labelAlpha * 0.85;
+          ctx.fillStyle    = '#C8A96E';
+          ctx.font         = (Math.round(10 * item.scale)) + 'px "DM Mono", monospace';
+          ctx.textAlign    = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillText('KNOWLEDGE', item.proj.px, item.proj.py + hr + 6);
+        }
+
+      } else if (item.type === 'area') {
+        var ai   = item.idx;
+        if (areaAlphas[ai] < 0.01) { ctx.restore(); continue; }
+        var ar   = AREAS[ai].r_vis * item.scale;
+        var aPulse = 1 + 0.15 * Math.sin(t * Math.PI + ai * 0.8);
+        ar *= aPulse;
+
+        ctx.globalAlpha = areaAlphas[ai] * galaxyAlpha * item.da;
+        ctx.fillStyle   = '#F5F0E8';
+        ctx.shadowBlur  = 12 * item.scale;
+        ctx.shadowColor = '#F5F0E8';
+        ctx.beginPath();
+        ctx.arc(item.proj.px, item.proj.py, ar, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Label (only visible in front hemisphere)
+        var lAlpha = item.da > 0.5 ? (item.da - 0.5) * 2 : 0;
+        if (lAlpha > 0.02) {
+          // Offset label outward from projected center
+          var dx   = item.proj.px - CX;
+          var dy   = item.proj.py - CY;
+          var dist = Math.hypot(dx, dy) || 1;
+          var lOff = ar + 12;
+          var lx   = item.proj.px + (dx / dist) * lOff;
+          var ly   = item.proj.py + (dy / dist) * lOff;
+          ctx.globalAlpha  = areaAlphas[ai] * galaxyAlpha * lAlpha * 0.85;
+          ctx.fillStyle    = 'rgba(245,240,232,0.8)';
+          ctx.font         = (Math.round(9 * item.scale)) + 'px "DM Mono", monospace';
+          ctx.textAlign    = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(AREAS[ai].name, lx, ly);
+        }
+
+      } else if (item.type === 'sat') {
+        var si2  = item.idx;
+        var sR   = satellites[si2].r_vis * item.scale;
+        ctx.globalAlpha = satAlpha * galaxyAlpha * item.da * 0.7;
+        ctx.fillStyle   = 'rgba(200,169,110,1)';
+        ctx.shadowBlur  = 6 * item.scale;
+        ctx.shadowColor = 'rgba(200,169,110,0.5)';
+        ctx.beginPath();
+        ctx.arc(item.proj.px, item.proj.py, sR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      ctx.restore();
     }
-
-    // ── Draw area nodes ──
-    for (var i=0; i<AREAS.length; i++) {
-      if (areaAlphas[i] < 0.01) continue;
-      var ap3 = getAreaPos(i);
-      var pulse = 1 + 0.2 * Math.sin((t * Math.PI) + AREAS[i].phaseOff);
-      var nr = AREAS[i].r * pulse;
-
-      ctx.globalAlpha = areaAlphas[i] * galaxyAlpha;
-      ctx.fillStyle = '#F5F0E8';
-      ctx.shadowBlur = 12; ctx.shadowColor = '#F5F0E8';
-      ctx.beginPath(); ctx.arc(ap3.x, ap3.y, nr, 0, Math.PI*2); ctx.fill();
-      ctx.shadowBlur = 0;
-
-      // Label — WITH LABELS version
-      ctx.globalAlpha = areaAlphas[i] * galaxyAlpha * 0.85;
-      ctx.fillStyle = 'rgba(245,240,232,0.7)';
-      ctx.font = '9px "DM Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      // Offset label outward from center
-      var dx = ap3.x - CX, dy = ap3.y - CY;
-      var dist = Math.hypot(dx, dy);
-      var labelOffset = nr + 14;
-      var lx = ap3.x + (dx/dist)*labelOffset;
-      var ly = ap3.y + (dy/dist)*labelOffset;
-      ctx.fillText(AREAS[i].name, lx, ly);
-    }
-
-    // ── Draw central hub node ──
-    var hubPulse = 1 + 0.2 * Math.sin(t * Math.PI);
-    var hubR = 14 * hubPulse;
-    ctx.globalAlpha = galaxyAlpha;
-    ctx.fillStyle = '#C8A96E';
-    ctx.shadowBlur = 30; ctx.shadowColor = '#C8A96E';
-    ctx.beginPath(); ctx.arc(CX, CY, hubR, 0, Math.PI*2); ctx.fill();
-    ctx.shadowBlur = 0;
-
-    // Hub label
-    ctx.globalAlpha = galaxyAlpha * 0.9;
-    ctx.fillStyle = '#C8A96E';
-    ctx.font = '10px "DM Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillText('KNOWLEDGE', CX, CY + hubR + 8);
-
-    ctx.restore();
   }
 
   // ── Animation loop ──
-  var galaxyRunning = false;
+  var galaxyRunning  = false;
   var galaxyStartTime = null;
 
   function animLoop(now) {
@@ -2035,7 +2144,7 @@ footer {
   }
 
   function startGalaxy() {
-    galaxyRunning = true;
+    galaxyRunning   = true;
     galaxyStartTime = null;
     lastSynapseSpawn = 0;
     frameId = requestAnimationFrame(animLoop);
@@ -2060,7 +2169,7 @@ footer {
         idx++;
       } else {
         clearInterval(iv);
-        setTimeout(function() { cursor.style.display='none'; if(onComplete)onComplete(); }, 400);
+        setTimeout(function() { cursor.style.display = 'none'; if (onComplete) onComplete(); }, 400);
       }
     }, 110);
   }
@@ -2083,22 +2192,22 @@ footer {
             // Fade in central hub
             var hubFadeStart = performance.now();
             (function fadeHub() {
-              var p = Math.min((performance.now()-hubFadeStart)/400, 1);
+              var p = Math.min((performance.now() - hubFadeStart) / 400, 1);
               galaxyAlpha = p;
               if (p < 1) requestAnimationFrame(fadeHub);
             })();
 
-            // t=2.8s: areas appear one by one (200ms each)
-            for (var i=0; i<AREAS.length; i++) {
+            // t=2.8s: areas appear one by one (200ms stagger)
+            for (var i = 0; i < AREAS.length; i++) {
               (function(idx) {
                 setTimeout(function() {
                   var aStart = performance.now();
                   (function fadeArea() {
-                    var p = Math.min((performance.now()-aStart)/250, 1);
+                    var p = Math.min((performance.now() - aStart) / 250, 1);
                     areaAlphas[idx] = p;
                     if (p < 1) requestAnimationFrame(fadeArea);
                   })();
-                }, 300 + idx*200); // 300ms after galaxy starts → t=2.8s
+                }, 300 + idx * 200); // 300ms after galaxy start → t=2.8s
               })(i);
             }
 
@@ -2106,7 +2215,7 @@ footer {
             setTimeout(function() {
               var cStart = performance.now();
               (function fadeConn() {
-                var p = Math.min((performance.now()-cStart)/400, 1);
+                var p = Math.min((performance.now() - cStart) / 400, 1);
                 connAlpha = p;
                 if (p < 1) requestAnimationFrame(fadeConn);
               })();
@@ -2116,7 +2225,7 @@ footer {
             setTimeout(function() {
               var sStart = performance.now();
               (function fadeSat() {
-                var p = Math.min((performance.now()-sStart)/300, 1);
+                var p = Math.min((performance.now() - sStart) / 300, 1);
                 satAlpha = p;
                 if (p < 1) requestAnimationFrame(fadeSat);
               })();
@@ -2124,21 +2233,18 @@ footer {
 
             // t=4.3s: synapses start
             setTimeout(function() {
-              synapsesActive = true;
+              synapsesActive   = true;
               lastSynapseSpawn = performance.now();
             }, 1800); // → t=4.3s
 
             // t=6.5s: Sound 3 + KNOWLEDGE typewriter
             setTimeout(function() {
               initAudio(); playBrilho();
-              runTypewriter(function() {
-                // After typewriter (~1s later = ~t=7.8s), begin fade out at t=7.5s
-              });
+              runTypewriter(function() {});
             }, 4000); // 4000ms after galaxy start → t=6.5s
 
             // t=7.5s: fade out everything
             setTimeout(function() {
-              // Fade overlay
               overlay.style.opacity = '0';
               stopGalaxy();
               setTimeout(function() {
