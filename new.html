@@ -1530,20 +1530,35 @@ footer {
   animation-play-state: paused;
 }
 
-.ptk {
+/* ptk-item: logo + nome juntos */
+.ptk-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.ptk-logo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  opacity: 0.65;
+  flex-shrink: 0;
+}
+
+.ptk-name {
   font-family: var(--serif);
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: rgba(200,169,110,0.65);
   letter-spacing: -0.01em;
-  padding: 0 8px;
-  transition: color 0.3s;
+  white-space: nowrap;
 }
 
 .ptk-sep {
   font-family: var(--mono);
   font-size: 12px;
-  color: rgba(200,169,110,0.25);
+  color: rgba(200,169,110,0.2);
   padding: 0 4px;
 }
 </style>
@@ -1683,126 +1698,70 @@ footer {
   <!-- Ticker row 1 -->
   <div class="partners-ticker-wrap partners-ticker-wrap-1">
     <div class="partners-ticker-track partners-ticker-forward">
-      <span class="ptk">AWS</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">NVIDIA</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Notion</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Slack</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Amplitude</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Atlassian</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Scytale</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Ada</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Multiverse Computing</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Upwind</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Qdrant</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Orca Security</span>
-      <span class="ptk-sep">·</span>
-      <!-- duplicata para loop infinito -->
-      <span class="ptk">AWS</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">NVIDIA</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Notion</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Slack</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Amplitude</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Atlassian</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Scytale</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Ada</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Multiverse Computing</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Upwind</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Qdrant</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Orca Security</span>
-      <span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/amazonaws/F5F0E8" class="ptk-logo" alt="AWS"><span class="ptk-name">AWS</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/nvidia/F5F0E8" class="ptk-logo" alt="NVIDIA"><span class="ptk-name">NVIDIA</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/notion/F5F0E8" class="ptk-logo" alt="Notion"><span class="ptk-name">Notion</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/slack/F5F0E8" class="ptk-logo" alt="Slack"><span class="ptk-name">Slack</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/amplitude/F5F0E8" class="ptk-logo" alt="Amplitude"><span class="ptk-name">Amplitude</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/atlassian/F5F0E8" class="ptk-logo" alt="Atlassian"><span class="ptk-name">Atlassian</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">Scytale</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">Ada</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">Multiverse Computing</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">Upwind</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/qdrant/F5F0E8" class="ptk-logo" alt="Qdrant"><span class="ptk-name">Qdrant</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">Orca Security</span></span><span class="ptk-sep">·</span>
+      <!-- duplicata -->
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/amazonaws/F5F0E8" class="ptk-logo" alt="AWS"><span class="ptk-name">AWS</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/nvidia/F5F0E8" class="ptk-logo" alt="NVIDIA"><span class="ptk-name">NVIDIA</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/notion/F5F0E8" class="ptk-logo" alt="Notion"><span class="ptk-name">Notion</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/slack/F5F0E8" class="ptk-logo" alt="Slack"><span class="ptk-name">Slack</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/amplitude/F5F0E8" class="ptk-logo" alt="Amplitude"><span class="ptk-name">Amplitude</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/atlassian/F5F0E8" class="ptk-logo" alt="Atlassian"><span class="ptk-name">Atlassian</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">Scytale</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">Ada</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">Multiverse Computing</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">Upwind</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/qdrant/F5F0E8" class="ptk-logo" alt="Qdrant"><span class="ptk-name">Qdrant</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">Orca Security</span></span><span class="ptk-sep">·</span>
     </div>
   </div>
 
   <!-- Ticker row 2 -->
   <div class="partners-ticker-wrap partners-ticker-wrap-2">
     <div class="partners-ticker-track partners-ticker-reverse">
-      <span class="ptk">Stripe Atlas</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Modal</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Grammarly</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Asana</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">DevRev</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Mercury</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Bubble</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Zendesk</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Intercom</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Temporal</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Supabase</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Confluent</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">MongoDB</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Miro</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">HubSpot</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Firecrawl</span>
-      <span class="ptk-sep">·</span>
-      <!-- duplicata para loop infinito -->
-      <span class="ptk">Stripe Atlas</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Modal</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Grammarly</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Asana</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">DevRev</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Mercury</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Bubble</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Zendesk</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Intercom</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Temporal</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Supabase</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Confluent</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">MongoDB</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Miro</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">HubSpot</span>
-      <span class="ptk-sep">·</span>
-      <span class="ptk">Firecrawl</span>
-      <span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/stripe/F5F0E8" class="ptk-logo" alt="Stripe Atlas"><span class="ptk-name">Stripe Atlas</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">Modal</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/grammarly/F5F0E8" class="ptk-logo" alt="Grammarly"><span class="ptk-name">Grammarly</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/asana/F5F0E8" class="ptk-logo" alt="Asana"><span class="ptk-name">Asana</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">DevRev</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">Mercury</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/bubble/F5F0E8" class="ptk-logo" alt="Bubble"><span class="ptk-name">Bubble</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/zendesk/F5F0E8" class="ptk-logo" alt="Zendesk"><span class="ptk-name">Zendesk</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/intercom/F5F0E8" class="ptk-logo" alt="Intercom"><span class="ptk-name">Intercom</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">Temporal</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/supabase/F5F0E8" class="ptk-logo" alt="Supabase"><span class="ptk-name">Supabase</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/confluent/F5F0E8" class="ptk-logo" alt="Confluent"><span class="ptk-name">Confluent</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/mongodb/F5F0E8" class="ptk-logo" alt="MongoDB"><span class="ptk-name">MongoDB</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/miro/F5F0E8" class="ptk-logo" alt="Miro"><span class="ptk-name">Miro</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/hubspot/F5F0E8" class="ptk-logo" alt="HubSpot"><span class="ptk-name">HubSpot</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/firecrawl/F5F0E8" class="ptk-logo" alt="Firecrawl"><span class="ptk-name">Firecrawl</span></span><span class="ptk-sep">·</span>
+      <!-- duplicata -->
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/stripe/F5F0E8" class="ptk-logo" alt="Stripe Atlas"><span class="ptk-name">Stripe Atlas</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">Modal</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/grammarly/F5F0E8" class="ptk-logo" alt="Grammarly"><span class="ptk-name">Grammarly</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/asana/F5F0E8" class="ptk-logo" alt="Asana"><span class="ptk-name">Asana</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">DevRev</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">Mercury</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/bubble/F5F0E8" class="ptk-logo" alt="Bubble"><span class="ptk-name">Bubble</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/zendesk/F5F0E8" class="ptk-logo" alt="Zendesk"><span class="ptk-name">Zendesk</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/intercom/F5F0E8" class="ptk-logo" alt="Intercom"><span class="ptk-name">Intercom</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><span class="ptk-name">Temporal</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/supabase/F5F0E8" class="ptk-logo" alt="Supabase"><span class="ptk-name">Supabase</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/confluent/F5F0E8" class="ptk-logo" alt="Confluent"><span class="ptk-name">Confluent</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/mongodb/F5F0E8" class="ptk-logo" alt="MongoDB"><span class="ptk-name">MongoDB</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/miro/F5F0E8" class="ptk-logo" alt="Miro"><span class="ptk-name">Miro</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/hubspot/F5F0E8" class="ptk-logo" alt="HubSpot"><span class="ptk-name">HubSpot</span></span><span class="ptk-sep">·</span>
+      <span class="ptk-item"><img src="https://cdn.simpleicons.org/firecrawl/F5F0E8" class="ptk-logo" alt="Firecrawl"><span class="ptk-name">Firecrawl</span></span><span class="ptk-sep">·</span>
     </div>
   </div>
 </section>
