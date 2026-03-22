@@ -1741,16 +1741,8 @@ footer {
   /* ── DRAW ── */
   var DURATION = 9500;
   var startTime=null;
-  var frameCount=0;
 
-  function frame(ts){
-    if(!startTime) startTime=ts;
-    frameCount++;
-    // elapsed baseado em frames reais (33ms/frame garantido), não em performance.now()
-    // Isso evita bugs com performance.now() em browsers headless/backgrounded
-    var elapsed=frameCount*33;
-    var p=elapsed/DURATION;
-    if(p>1) p=1;
+  function frameDraw(p){
 
     // Fade-out global nos últimos 13%
     var gA = p>0.87 ? clamp(1-(p-0.87)/0.13,0,1) : 1;
@@ -1957,17 +1949,22 @@ footer {
   function runIntro(){
     resize(); makeStars();
     playSound();
-    // Usar setTimeout como motor principal (funciona mesmo em tabs não focadas)
-    // rAF fica pausado em tabs ocultas — setTimeout é mais confiável para intro
-    var TICK=33; // ~30fps
-    startTime=performance.now();
-    function tick(){
-      frame(performance.now());
-      if(overlay.style.display!=='none'){
-        setTimeout(tick,TICK);
-      }
-    }
-    tick();
+    // Motor principal: setInterval com Date.now() para controlar elapsed real
+    // Date.now() é monotônico e não depende de foreground/background
+    var t0=Date.now();
+    var intId=setInterval(function(){
+      var elapsed=Date.now()-t0;
+      if(!startTime) startTime=0; // dummy — usamos elapsed direto
+      // Chamar frame com elapsed como se fosse ts com startTime=0
+      frameElapsed(elapsed);
+      if(overlay.style.display==='none') clearInterval(intId);
+    },33);
+  }
+
+  function frameElapsed(elapsed){
+    var p=elapsed/DURATION;
+    if(p>1) p=1;
+    frameDraw(p);
   }
 
   setTimeout(runIntro,200);
