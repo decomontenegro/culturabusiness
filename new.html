@@ -1414,6 +1414,94 @@ footer {
   line-height: 1.6;
 }
 
+/* ── NVIDIA INCEPTION BADGE ── */
+.nvidia-badge-row {
+  display: flex;
+  gap: 48px;
+  margin-top: 48px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.nvidia-badge-label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+/* Versão A */
+.nvidia-badge-img {
+  display: block;
+  width: 180px;
+  height: auto;
+  filter: grayscale(100%) brightness(1.8) contrast(0.9);
+  opacity: 0.75;
+  transition: opacity 0.3s, filter 0.3s;
+}
+.nvidia-badge-img:hover {
+  opacity: 1;
+  filter: grayscale(80%) brightness(2) contrast(1);
+}
+
+/* Versão B — tipográfica */
+.nvidia-typo-badge {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 20px;
+  border: 1px solid rgba(200,169,110,0.2);
+  border-radius: 2px;
+}
+
+.nvidia-typo-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nvidia-typo-name {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: 0.05em;
+}
+
+.nvidia-typo-divider {
+  color: rgba(200,169,110,0.3);
+  font-size: 16px;
+}
+
+.nvidia-typo-program {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.nvidia-typo-member {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.nvidia-badge-desc {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 200px;
+  line-height: 1.5;
+}
+
 /* Tickers */
 .partners-ticker-wrap {
   position: relative;
@@ -1602,6 +1690,39 @@ footer {
       <div class="partners-stat">
         <span class="partners-stat-value">$150k<span class="partners-stat-plus">+</span></span>
         <span class="partners-stat-label">em benefícios exclusivos para membros CulturaBuilder</span>
+      </div>
+
+      <!-- NVIDIA Inception Badge — duas versões para escolha -->
+      <div class="nvidia-badge-row">
+        <!-- Versão A: imagem com filtro grayscale -->
+        <div class="nvidia-badge-a">
+          <span class="nvidia-badge-label">Versão A — imagem</span>
+          <img
+            src="https://www.nvidia.com/content/nvidiaGDC/us/en_US/startups/inception-program/_jcr_content/root/responsivegrid/nv_container_392921705/container/nv_image.coreimg.svg/1739983744884/nvidia-inception-program-badge-rgb-for-screen.svg"
+            alt="NVIDIA Inception Program Member"
+            class="nvidia-badge-img"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+          />
+          <div class="nvidia-badge-fallback" style="display:none">
+            <span class="nvidia-wordmark">NVIDIA</span>
+            <span class="nvidia-inception-text">INCEPTION PROGRAM MEMBER</span>
+          </div>
+          <p class="nvidia-badge-desc">CulturaBuilder é membro oficial do NVIDIA Inception Program</p>
+        </div>
+
+        <!-- Versão B: tipográfica -->
+        <div class="nvidia-badge-b">
+          <span class="nvidia-badge-label">Versão B — tipográfica</span>
+          <div class="nvidia-typo-badge">
+            <div class="nvidia-typo-top">
+              <span class="nvidia-typo-name">NVIDIA</span>
+              <span class="nvidia-typo-divider">|</span>
+              <span class="nvidia-typo-program">INCEPTION<br>PROGRAM</span>
+            </div>
+            <div class="nvidia-typo-member">MEMBER</div>
+          </div>
+          <p class="nvidia-badge-desc">CulturaBuilder é membro oficial do NVIDIA Inception Program</p>
+        </div>
       </div>
     </div>
   </div>
