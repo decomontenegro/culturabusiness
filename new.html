@@ -441,6 +441,25 @@ nav {
 }
 .logo-wordmark:hover { opacity: 0.85; }
 
+.logo-img-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.logo-img {
+  height: 36px;
+  width: auto;
+  max-width: 120px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.55;
+  transition: opacity 0.3s ease;
+}
+
+.logo-img-wrap:hover .logo-img { opacity: 0.85; }
+
 
 /* ════════════════════════════════
    FEATURE SHOWCASE
@@ -1671,11 +1690,15 @@ footer {
   <div class="wrap">
     <span class="logos-eyebrow">Empresas que já estruturaram seu conhecimento</span>
     <div class="logos-row">
-      <span class="logo-wordmark">Meridian Capital</span>
-      <span class="logo-wordmark">Atlântico Ventures</span>
-      <span class="logo-wordmark">Vértice Group</span>
-      <span class="logo-wordmark">Solara Partners</span>
-      <span class="logo-wordmark">Nexum Advisory</span>
+      <a href="https://liqi.com.br" target="_blank" rel="noopener" class="logo-img-wrap" title="Liqi Digital Assets">
+        <img src="https://liqi.com.br/ppt-images/liqibr_logo.jpeg" alt="Liqi" class="logo-img" />
+      </a>
+      <span class="logo-wordmark">Klini</span>
+      <span class="logo-wordmark">Monte Dourado</span>
+      <span class="logo-wordmark">Decorp Energia</span>
+      <a href="https://www.gazetadopovo.com.br" target="_blank" rel="noopener" class="logo-img-wrap" title="Gazeta do Povo">
+        <img src="https://media.gazetadopovo.com.br/2025/02/11140703/og-image-192x192-1.png" alt="Gazeta do Povo" class="logo-img" />
+      </a>
     </div>
   </div>
 </section>
