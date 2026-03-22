@@ -1910,9 +1910,142 @@ footer {
 
     buildParticles(ptsA, ptsB);
 
+    // ── Web Audio API — sintetizadores sincronizados ──
+    var audioCtx = null;
+    var sound1Played = false; // Fragmentação  ~1s
+    var sound2Played = false; // Impacto/Formação ~3s
+    var sound3Played = false; // Pulso/Brilho   ~5s
+
+    function initAudio() {
+      if (audioCtx) return;
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      } catch(e) { audioCtx = null; }
+    }
+
+    // Som 1: Fragmentação — burst de ruído branco band-pass ~800Hz
+    function playFragmentacao() {
+      if (!audioCtx) return;
+      try {
+        var bufSize = audioCtx.sampleRate * 0.3; // 0.3s
+        var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+        var data = buf.getChannelData(0);
+        for (var i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+
+        var src = audioCtx.createBufferSource();
+        src.buffer = buf;
+
+        var bpf = audioCtx.createBiquadFilter();
+        bpf.type = 'bandpass';
+        bpf.frequency.value = 800;
+        bpf.Q.value = 2;
+
+        var gain = audioCtx.createGain();
+        var t = audioCtx.currentTime;
+        gain.gain.setValueAtTime(0.4, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+
+        src.connect(bpf);
+        bpf.connect(gain);
+        gain.connect(audioCtx.destination);
+        src.start(t);
+        src.stop(t + 0.35);
+      } catch(e) {}
+    }
+
+    // Som 2: Impacto/Formação — boom grave 70Hz + ruído low-pass 200Hz
+    function playImpacto() {
+      if (!audioCtx) return;
+      try {
+        var t = audioCtx.currentTime;
+
+        // Sub-bass boom
+        var osc = audioCtx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(70, t);
+        osc.frequency.exponentialRampToValueAtTime(30, t + 0.5);
+        var gainOsc = audioCtx.createGain();
+        gainOsc.gain.setValueAtTime(0.5, t);
+        gainOsc.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+        osc.connect(gainOsc);
+        gainOsc.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.55);
+
+        // Ruído com corpo baixo
+        var bufSize = Math.floor(audioCtx.sampleRate * 0.5);
+        var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+        var data = buf.getChannelData(0);
+        for (var i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+        var noiseSrc = audioCtx.createBufferSource();
+        noiseSrc.buffer = buf;
+        var lpf = audioCtx.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.value = 200;
+        var gainNoise = audioCtx.createGain();
+        gainNoise.gain.setValueAtTime(0.25, t);
+        gainNoise.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+        noiseSrc.connect(lpf);
+        lpf.connect(gainNoise);
+        gainNoise.connect(audioCtx.destination);
+        noiseSrc.start(t);
+        noiseSrc.stop(t + 0.55);
+      } catch(e) {}
+    }
+
+    // Som 3: Pulso/Brilho — tom alto 1760Hz com envelope ADSR suave + high-pass
+    function playBrilho() {
+      if (!audioCtx) return;
+      try {
+        var t = audioCtx.currentTime;
+
+        var osc = audioCtx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.value = 1760;
+
+        var hpf = audioCtx.createBiquadFilter();
+        hpf.type = 'highpass';
+        hpf.frequency.value = 1200;
+
+        var gain = audioCtx.createGain();
+        // ADSR: attack 100ms, decay 400ms, sustain 0.3, release 200ms
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.2, t + 0.1);          // attack
+        gain.gain.linearRampToValueAtTime(0.2 * 0.3, t + 0.5);    // decay → sustain
+        gain.gain.setValueAtTime(0.2 * 0.3, t + 0.9);             // hold sustain
+        gain.gain.linearRampToValueAtTime(0, t + 1.1);            // release
+
+        osc.connect(hpf);
+        hpf.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 1.15);
+      } catch(e) {}
+    }
+
     startTime = performance.now();
 
     function loop(now) {
+      // Inicializa AudioContext no primeiro frame (tenta autoplay — browser pode bloquear,
+      // mas a animação continua sem som em caso de erro)
+      if (!audioCtx) initAudio();
+
+      var elapsed = now - startTime;
+
+      // Dispara sons nos pontos de tempo corretos (flags evitam duplo disparo)
+      if (!sound1Played && elapsed >= 1000) {
+        sound1Played = true;
+        playFragmentacao();
+      }
+      if (!sound2Played && elapsed >= 3000) {
+        sound2Played = true;
+        playImpacto();
+      }
+      if (!sound3Played && elapsed >= 5000) {
+        sound3Played = true;
+        playBrilho();
+      }
+
       draw(now);
       if (now - startTime < T_TOTAL + 200) {
         requestAnimationFrame(loop);
