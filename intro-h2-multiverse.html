@@ -1740,7 +1740,7 @@ footer {
 
   /* ── DRAW ── */
   var DURATION = 9500;
-  var startTime=null, rafId=null;
+  var startTime=null;
 
   function frame(ts){
     if(!startTime) startTime=ts;
@@ -1944,9 +1944,7 @@ footer {
     // Fade overlay
     overlay.style.opacity=''+gA;
 
-    if(p<1){
-      rafId=requestAnimationFrame(frame);
-    } else {
+    if(p>=1){
       overlay.style.display='none';
       localStorage.setItem(SEEN_KEY,'1');
     }
@@ -1955,7 +1953,17 @@ footer {
   function runIntro(){
     resize(); makeStars();
     playSound();
-    rafId=requestAnimationFrame(frame);
+    // Usar setTimeout como motor principal (funciona mesmo em tabs não focadas)
+    // rAF fica pausado em tabs ocultas — setTimeout é mais confiável para intro
+    var TICK=33; // ~30fps
+    startTime=performance.now();
+    function tick(){
+      frame(performance.now());
+      if(overlay.style.display!=='none'){
+        setTimeout(tick,TICK);
+      }
+    }
+    tick();
   }
 
   setTimeout(runIntro,200);
