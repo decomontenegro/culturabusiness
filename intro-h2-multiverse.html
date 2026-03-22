@@ -1597,13 +1597,13 @@ footer {
 <!-- ── INTRO SPLASH SCREEN — CONCEPT H2: MULTI-UNIVERSE DARK MATTER ── -->
 <div id="intro-overlay">
   <canvas id="intro-canvas"></canvas>
-  <div id="intro-text-cb">CULTURA BUILDER</div>
+  <div id="intro-label-origin">CULTURA BUILDER</div>
   <div id="intro-text-know"></div>
 </div>
 
 <style>
 #intro-overlay {
-  position:fixed;inset:0;z-index:9999;background:#040408;
+  position:fixed;inset:0;z-index:9999;background:#02020a;
   transition: opacity 1.5s ease;
   overflow:hidden;
 }
@@ -1611,789 +1611,473 @@ footer {
   position:absolute;inset:0;width:100%;height:100%;
   pointer-events:none;
 }
-#intro-text-cb {
+#intro-label-origin {
   position:absolute;top:50%;left:50%;
   transform:translate(-50%,-50%);
-  font-family:'Inter',sans-serif;font-weight:300;
-  font-size:clamp(12px,1.5vw,18px);
-  letter-spacing:0.45em;color:#F5F0E8;opacity:0;
+  font-family:'Inter',sans-serif;font-weight:200;
+  font-size:clamp(11px,1.2vw,16px);
+  letter-spacing:0.55em;color:#F5F0E8;opacity:0;
   white-space:nowrap;pointer-events:none;
   -webkit-font-smoothing:antialiased;
+  text-transform:uppercase;
 }
 #intro-text-know {
-  position:absolute;bottom:15%;left:50%;
+  position:absolute;bottom:12%;left:50%;
   transform:translateX(-50%);
   font-family:'DM Mono',monospace;font-weight:400;
-  font-size:clamp(18px,2.5vw,32px);
-  letter-spacing:0.1em;color:#C8A96E;opacity:0;
+  font-size:clamp(20px,3vw,42px);
+  letter-spacing:0.08em;color:#C8A96E;opacity:0;
   white-space:nowrap;pointer-events:none;
   -webkit-font-smoothing:antialiased;
-}
-#intro-cursor {
-  animation: blink 0.5s step-end infinite;
-  color: #C8A96E;
-}
-@keyframes blink {
-  0%,100%{opacity:1}50%{opacity:0}
 }
 </style>
 
 <script>
 (function() {
-  var overlay  = document.getElementById('intro-overlay');
-  var textCB   = document.getElementById('intro-text-cb');
-  var textKnow = document.getElementById('intro-text-know');
-  var canvas   = document.getElementById('intro-canvas');
+  var overlay   = document.getElementById('intro-overlay');
+  var labelCB   = document.getElementById('intro-label-origin');
+  var textKnow  = document.getElementById('intro-text-know');
+  var canvas    = document.getElementById('intro-canvas');
+  var ctx       = canvas.getContext('2d');
 
-  // ── Skip on repeat visits ──
-  if (localStorage.getItem('cb_intro_multiverse_seen')) {
-    overlay.style.display = 'none';
-    return;
+  var SEEN_KEY  = 'cb_intro_multiverse2_seen';
+  // if (localStorage.getItem(SEEN_KEY)) { overlay.style.display='none'; return; }
+
+  // ── AUDIO ──────────────────────────────────────────────────────────────────
+  var AC = null;
+  function getAC() {
+    if (!AC) { try { AC = new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} }
+    return AC;
   }
-  localStorage.setItem('cb_intro_multiverse_seen', '1');
-
-  // ── Web Audio API ──
-  var audioCtx = null;
-  function initAudio() {
-    if (audioCtx) return;
-    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { audioCtx = null; }
+  function playTone(freq, dur, type, vol, delay) {
+    var ac = getAC(); if (!ac) return;
+    var t = ac.currentTime + (delay||0);
+    var osc = ac.createOscillator();
+    var gain = ac.createGain();
+    osc.connect(gain); gain.connect(ac.destination);
+    osc.type = type||'sine'; osc.frequency.setValueAtTime(freq, t);
+    osc.frequency.exponentialRampToValueAtTime(freq*0.3, t+dur*0.7);
+    gain.gain.setValueAtTime(0,t);
+    gain.gain.linearRampToValueAtTime(vol||0.15, t+0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, t+dur);
+    osc.start(t); osc.stop(t+dur);
   }
-
-  function playFragmentacao() {
-    if (!audioCtx) return;
-    try {
-      var bufSize = Math.floor(audioCtx.sampleRate * 0.3);
-      var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
-      var data = buf.getChannelData(0);
-      for (var i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
-      var src = audioCtx.createBufferSource(); src.buffer = buf;
-      var bpf = audioCtx.createBiquadFilter(); bpf.type='bandpass'; bpf.frequency.value=800; bpf.Q.value=2;
-      var gain = audioCtx.createGain();
-      var t = audioCtx.currentTime;
-      gain.gain.setValueAtTime(0.35, t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t+0.3);
-      src.connect(bpf); bpf.connect(gain); gain.connect(audioCtx.destination);
-      src.start(t); src.stop(t+0.35);
-    } catch(e) {}
+  function playNoise(dur, vol, delay) {
+    var ac = getAC(); if (!ac) return;
+    var t = ac.currentTime + (delay||0);
+    var bufSize = ac.sampleRate * dur;
+    var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i=0;i<bufSize;i++) d[i]=Math.random()*2-1;
+    var src = ac.createBufferSource();
+    src.buffer = buf;
+    var gain = ac.createGain();
+    src.connect(gain); gain.connect(ac.destination);
+    gain.gain.setValueAtTime(vol||0.05, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t+dur);
+    src.start(t); src.stop(t+dur);
   }
-
-  function playImpacto() {
-    if (!audioCtx) return;
-    try {
-      var t = audioCtx.currentTime;
-      var osc = audioCtx.createOscillator(); osc.type='sine';
-      osc.frequency.setValueAtTime(80, t);
-      osc.frequency.exponentialRampToValueAtTime(35, t+0.5);
-      var gainOsc = audioCtx.createGain();
-      gainOsc.gain.setValueAtTime(0.45, t);
-      gainOsc.gain.exponentialRampToValueAtTime(0.001, t+0.5);
-      osc.connect(gainOsc); gainOsc.connect(audioCtx.destination);
-      osc.start(t); osc.stop(t+0.55);
-    } catch(e) {}
-  }
-
-  function playBrilho() {
-    if (!audioCtx) return;
-    try {
-      var t = audioCtx.currentTime;
-      // 440hz base
-      var osc1 = audioCtx.createOscillator(); osc1.type='sine'; osc1.frequency.value=440;
-      var gain1 = audioCtx.createGain();
-      gain1.gain.setValueAtTime(0, t);
-      gain1.gain.linearRampToValueAtTime(0.15, t+0.1);
-      gain1.gain.linearRampToValueAtTime(0.05, t+0.6);
-      gain1.gain.linearRampToValueAtTime(0, t+1.0);
-      osc1.connect(gain1); gain1.connect(audioCtx.destination);
-      osc1.start(t); osc1.stop(t+1.05);
-      // 880hz shimmer
-      var osc2 = audioCtx.createOscillator(); osc2.type='sine'; osc2.frequency.value=880;
-      var gain2 = audioCtx.createGain();
-      gain2.gain.setValueAtTime(0, t+0.05);
-      gain2.gain.linearRampToValueAtTime(0.1, t+0.15);
-      gain2.gain.linearRampToValueAtTime(0.03, t+0.7);
-      gain2.gain.linearRampToValueAtTime(0, t+1.1);
-      osc2.connect(gain2); gain2.connect(audioCtx.destination);
-      osc2.start(t+0.05); osc2.stop(t+1.15);
-    } catch(e) {}
+  function playCosmic() {
+    // Deep rumble on impact
+    playTone(40, 3.5, 'sine', 0.18, 0);
+    playTone(60, 2.5, 'sine', 0.10, 0.1);
+    playNoise(2.0, 0.06, 0);
+    // Harmonic shimmer
+    playTone(220, 4, 'sine', 0.06, 0.5);
+    playTone(440, 3, 'sine', 0.04, 0.8);
+    // Gold glow
+    playTone(528, 2, 'sine', 0.08, 5.5);
+    playTone(660, 1.5, 'sine', 0.05, 6);
   }
 
-  // ── Canvas setup ──
-  var ctx = canvas.getContext('2d');
-  var dpr = Math.min(window.devicePixelRatio || 1, 2);
-  var W = window.innerWidth;
-  var H = window.innerHeight;
-  canvas.width  = W * dpr;
-  canvas.height = H * dpr;
-  canvas.style.width  = W + 'px';
-  canvas.style.height = H + 'px';
-  ctx.scale(dpr, dpr);
-  var CX = W / 2;
-  var CY = H / 2;
+  // ── GEOMETRY ───────────────────────────────────────────────────────────────
+  var W, H, CX, CY, DPR;
 
-  // ── Universe definitions ──
+  function resize() {
+    DPR = window.devicePixelRatio || 1;
+    W   = window.innerWidth;
+    H   = window.innerHeight;
+    canvas.width  = W * DPR;
+    canvas.height = H * DPR;
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.scale(DPR, DPR);
+    CX = W / 2;
+    CY = H / 2;
+  }
+
+  // 5 universos em perspectiva cônica, distribuídos em leque
+  // Cada cilindro tem: ângulo de projeção, cor, label
   var UNIVERSES = [
-    {
-      name: 'Liqi',
-      color: 'rgba(100,180,255,',
-      glowColor: 'rgba(100,180,255,0.5)',
-      hubBase: { bxPct: -0.28, byPct: -0.28 },
-      areas: [
-        { name: 'Tokenização', bx: -80, by: -60, fx: 0.0008, fy: 0.0010, fase: 0.0 },
-        { name: 'Compliance',  bx: +60, by: -40, fx: 0.0007, fy: 0.0009, fase: 1.5 },
-        { name: 'Mercado',     bx: -20, by: +80, fx: 0.0009, fy: 0.0007, fase: 3.0 }
-      ]
-    },
-    {
-      name: 'Monte Dourado',
-      color: 'rgba(255,200,100,',
-      glowColor: 'rgba(255,200,100,0.5)',
-      hubBase: { bxPct: +0.28, byPct: -0.28 },
-      areas: [
-        { name: 'Projetos', bx: +80, by: -50, fx: 0.0007, fy: 0.0011, fase: 0.8 },
-        { name: 'Obras',    bx: -60, by: -70, fx: 0.0009, fy: 0.0008, fase: 2.3 },
-        { name: 'Vendas',   bx: +50, by: +80, fx: 0.0006, fy: 0.0009, fase: 4.1 }
-      ]
-    },
-    {
-      name: 'Cultura Builder',
-      color: 'rgba(180,120,255,',
-      glowColor: 'rgba(180,120,255,0.5)',
-      hubBase: { bxPct: 0, byPct: +0.33 },
-      areas: [
-        { name: 'Comunidade', bx: -80, by: +50, fx: 0.0008, fy: 0.0009, fase: 1.2 },
-        { name: 'Conteúdo',   bx: +90, by: +40, fx: 0.0007, fy: 0.0010, fase: 2.7 },
-        { name: 'Agentes',    bx: +20, by: -70, fx: 0.0010, fy: 0.0008, fase: 0.4 },
-        { name: 'Eventos',    bx: -60, by: -50, fx: 0.0006, fy: 0.0011, fase: 3.5 }
-      ]
-    },
-    {
-      name: 'Safeway',
-      color: 'rgba(100,220,160,',
-      glowColor: 'rgba(100,220,160,0.5)',
-      hubBase: { bxPct: -0.28, byPct: +0.28 },
-      areas: [
-        { name: 'Pagamentos', bx: -70, by: -60, fx: 0.0009, fy: 0.0008, fase: 0.6 },
-        { name: 'Compliance', bx: +60, by: -40, fx: 0.0007, fy: 0.0010, fase: 2.1 },
-        { name: 'Banking',    bx: -30, by: +75, fx: 0.0008, fy: 0.0007, fase: 3.8 }
-      ]
-    },
-    {
-      name: 'Energia',
-      color: 'rgba(255,140,80,',
-      glowColor: 'rgba(255,140,80,0.5)',
-      hubBase: { bxPct: +0.28, byPct: +0.28 },
-      areas: [
-        { name: 'Geração',      bx: +75, by: -55, fx: 0.0008, fy: 0.0009, fase: 1.0 },
-        { name: 'Distribuição', bx: -65, by: -45, fx: 0.0007, fy: 0.0008, fase: 2.5 },
-        { name: 'GD',           bx: +40, by: +70, fx: 0.0010, fy: 0.0007, fase: 4.2 }
-      ]
-    }
+    { label: 'LIQI',          color: [80,160,255],  ang: -0.42 },
+    { label: 'MONTE DOURADO', color: [200,169,110],  ang: -0.20 },
+    { label: 'CULTURA BUILDER',color:[160,100,255], ang:  0.00 },
+    { label: 'SAFEWAY',       color: [80,200,130],  ang:  0.20 },
+    { label: 'ENERGIA',       color: [255,160,60],  ang:  0.42 },
   ];
 
-  // ── Runtime state ──
-  // holdingHub: the central holding node
-  var holdingHub = {
-    x: CX, y: CY,
-    r: 0, targetR: 22,
-    opacity: 0,
-    visible: false,
-    isHolding: true
-  };
+  // Partículas dentro de cada cilindro
+  function makeCylParticles(count) {
+    var pts = [];
+    for (var i=0;i<count;i++) {
+      var angle = Math.random() * Math.PI * 2;
+      var rFrac = Math.pow(Math.random(), 0.5); // concentrar no centro
+      pts.push({
+        rFrac: rFrac,
+        angle: angle,
+        z: Math.random(),           // 0 = boca próxima, 1 = fundo
+        speed: 0.0002 + Math.random()*0.0003,
+        twinkle: Math.random()*Math.PI*2,
+        twinkleSpeed: 0.002 + Math.random()*0.003,
+        size: 0.5 + Math.random()*1.5,
+      });
+    }
+    return pts;
+  }
 
-  // Per-universe hub and area nodes
-  var universeNodes = []; // array of { hub: {...}, areas: [...], satellites: [...] }
+  // Gerar estrelas de fundo
+  var bgStars = [];
+  function makeBgStars() {
+    bgStars = [];
+    for (var i=0;i<200;i++) {
+      bgStars.push({
+        x: Math.random(),
+        y: Math.random(),
+        r: 0.3 + Math.random()*1.2,
+        opacity: 0.1 + Math.random()*0.5,
+        twinkle: Math.random()*Math.PI*2,
+        speed: 0.001+Math.random()*0.002,
+      });
+    }
+  }
 
-  // Synapse array
-  var synapses = [];
+  // Init universes com partículas
+  var univData = UNIVERSES.map(function() {
+    return { particles: makeCylParticles(60), labelOpacity: 0 };
+  });
 
-  // Timers for synapse spawning
-  var lastSyn1Time = 0, syn1Interval = 275;
-  var lastSyn2Time = 0, syn2Interval = 1000;
-  var lastSyn3Time = 0, syn3Interval = 2750;
+  // ── DRAW ───────────────────────────────────────────────────────────────────
 
-  // Animation phases
-  var synapsesType12Active = false;
-  var synapsesType3Active = false;
+  // Desenha um cilindro em perspectiva cônica
+  // origin: ponto de fuga (origem da singularidade)
+  // ang: ângulo de abertura do cilindro (rad, em relação ao eixo X)
+  // depth: comprimento do cilindro em px
+  // radiusNear: raio da elipse na boca próxima
+  // color: [r,g,b]
+  // progress: 0→1 (quanto do cilindro foi revelado)
+  // elapsed: para animação
+  // particles: array
+  // labelOpacity: 0→1
 
-  // Connection fade opacity
-  var connIntraOpacity = 0;
-  var connInterOpacity = 0;
+  function drawCylinder(U, ud, origin, progress, elapsed) {
+    var ang   = U.ang;
+    var depth = Math.min(W, H) * 0.62;
+    var radiusNear = Math.min(W, H) * 0.115;
+    var rNear = radiusNear;
+    var rFar  = radiusNear * 0.08; // perspectiva — boca distante menor
+    var r     = U.color;
 
+    // Direção do cilindro
+    var dx = Math.cos(ang);
+    var dy = Math.sin(ang) * 0.4; // foreshortening vertical
+
+    // Ponto da boca próxima (extremidade aberta)
+    var bx = origin.x + dx * depth * progress;
+    var by = origin.y + dy * depth * progress;
+
+    // Proporção de aplatamento da elipse (perspectiva)
+    var flatNear = 0.32;
+    var flatFar  = 0.06;
+
+    if (progress <= 0.01) return;
+
+    // ── Interior (nebulosa) ──
+    var interiorAlpha = Math.min(progress * 2, 1);
+    ctx.save();
+    ctx.globalAlpha = interiorAlpha * 0.85;
+
+    // Desenha o corpo do cilindro como gradiente radial de fuga
+    // Clip ao trapézio do cilindro
+    var edgeLeft  = ang + Math.PI/2;
+    var edgeRight = ang - Math.PI/2;
+
+    // Pontos do trapézio (4 cantos)
+    var ox = origin.x, oy = origin.y;
+    var p1x = ox + Math.cos(edgeLeft )*rFar  * flatFar;
+    var p1y = oy + Math.sin(edgeLeft )*rFar;
+    var p2x = ox + Math.cos(edgeRight)*rFar  * flatFar;
+    var p2y = oy + Math.sin(edgeRight)*rFar;
+    var p3x = bx + Math.cos(edgeRight)*rNear * flatNear * progress;
+    var p3y = by + Math.sin(edgeRight)*rNear             * progress;
+    var p4x = bx + Math.cos(edgeLeft )*rNear * flatNear * progress;
+    var p4y = by + Math.sin(edgeLeft )*rNear             * progress;
+
+    ctx.beginPath();
+    ctx.moveTo(p1x,p1y); ctx.lineTo(p2x,p2y);
+    ctx.lineTo(p3x,p3y); ctx.lineTo(p4x,p4y);
+    ctx.closePath();
+    ctx.clip();
+
+    // Gradiente de profundidade
+    var grad = ctx.createLinearGradient(ox,oy, bx,by);
+    grad.addColorStop(0,   'rgba('+r[0]+','+r[1]+','+r[2]+',0.02)');
+    grad.addColorStop(0.3, 'rgba('+r[0]+','+r[1]+','+r[2]+',0.18)');
+    grad.addColorStop(0.7, 'rgba('+r[0]+','+r[1]+','+r[2]+',0.30)');
+    grad.addColorStop(1,   'rgba('+r[0]+','+r[1]+','+r[2]+',0.08)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,W,H);
+
+    // Partículas nebulosas dentro do cilindro
+    for (var i=0;i<ud.particles.length;i++) {
+      var pt = ud.particles[i];
+      if (pt.z > progress) continue; // ainda não revelada
+
+      // Interpolação ao longo do eixo do cilindro
+      var t = pt.z / progress;
+      var px = ox + (bx-ox)*t;
+      var py = oy + (by-oy)*t;
+
+      // Raio e achatamento interpolado
+      var rAtZ = rFar + (rNear*progress - rFar)*t;
+      var flatAtZ = flatFar + (flatNear*progress - flatFar)*t;
+
+      // Posição no disco
+      var ptAngle = pt.angle + elapsed * pt.speed;
+      var ptX = px + Math.cos(ptAngle) * pt.rFrac * rAtZ * flatAtZ;
+      var ptY = py + Math.sin(ptAngle) * pt.rFrac * rAtZ * 0.85;
+
+      // Twinkle
+      pt.twinkle += pt.twinkleSpeed;
+      var twinkAlpha = 0.4 + 0.6 * Math.abs(Math.sin(pt.twinkle));
+
+      ctx.beginPath();
+      ctx.arc(ptX, ptY, pt.size * (0.5 + t*0.5), 0, Math.PI*2);
+      ctx.fillStyle = 'rgba('+r[0]+','+r[1]+','+r[2]+','+twinkAlpha+')';
+      ctx.fill();
+    }
+
+    ctx.restore();
+
+    // ── Borda elipse boca próxima ──
+    if (progress > 0.1) {
+      var edgeAlpha = Math.min((progress-0.1)*3, 1);
+      ctx.save();
+      ctx.globalAlpha = edgeAlpha * 0.9;
+      ctx.beginPath();
+      ctx.ellipse(bx, by, rNear * flatNear * progress, rNear * progress, ang, 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba('+r[0]+','+r[1]+','+r[2]+',0.9)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Glow na borda
+      ctx.beginPath();
+      ctx.ellipse(bx, by, rNear * flatNear * progress, rNear * progress, ang, 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba('+r[0]+','+r[1]+','+r[2]+',0.25)';
+      ctx.lineWidth = 6;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // ── Linhas de borda do cilindro ──
+    if (progress > 0.05) {
+      var borderAlpha = Math.min(progress * 4, 0.5);
+      ctx.save();
+      ctx.globalAlpha = borderAlpha;
+      ctx.strokeStyle = 'rgba('+r[0]+','+r[1]+','+r[2]+',0.6)';
+      ctx.lineWidth = 1;
+      // Linha superior
+      ctx.beginPath();
+      ctx.moveTo(p1x, p1y);
+      ctx.lineTo(p4x, p4y);
+      ctx.stroke();
+      // Linha inferior
+      ctx.beginPath();
+      ctx.moveTo(p2x, p2y);
+      ctx.lineTo(p3x, p3y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // ── Elipse do fundo (boca distante / singularidade) ──
+    if (progress > 0.02) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(progress * 5, 0.7);
+      ctx.beginPath();
+      ctx.ellipse(ox, oy, rFar * flatFar, rFar, ang, 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba('+r[0]+','+r[1]+','+r[2]+',0.5)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // ── Label da empresa ──
+    if (ud.labelOpacity > 0) {
+      ctx.save();
+      ctx.globalAlpha = ud.labelOpacity;
+      ctx.font = 'clamp(9px,0.7vw,11px) / 1 "DM Mono", monospace';
+      ctx.font = (Math.max(9, Math.min(W*0.007, 11))) + 'px "DM Mono", monospace';
+      ctx.letterSpacing = '0.2em';
+      ctx.fillStyle = 'rgba('+r[0]+','+r[1]+','+r[2]+',1)';
+      ctx.textAlign = 'center';
+      // Label aparece na boca do cilindro
+      var labelX = bx + Math.cos(ang + Math.PI/2) * rNear * flatNear * progress * 1.4;
+      var labelY = by + Math.sin(ang + Math.PI/2) * rNear * progress * 1.4 + 4;
+      ctx.fillText(U.label, labelX, labelY);
+      ctx.restore();
+    }
+  }
+
+  // ── TIMELINE ───────────────────────────────────────────────────────────────
+  var DURATION = 9000;
   var startTime = null;
   var animRunning = false;
 
-  function buildNodes() {
-    universeNodes = [];
-    for (var ui = 0; ui < UNIVERSES.length; ui++) {
-      var U = UNIVERSES[ui];
-      // Layout: universos distribuídos em 38% da largura e 36% da altura
-      var hbx = U.hubBase.bxPct * W * 0.38;
-      var hby = U.hubBase.byPct * H * 0.36;
-      var hub = {
-        x: CX + hbx,
-        y: CY + hby,
-        bx: hbx,
-        by: hby,
-        r: 0, targetR: 13,
-        opacity: 0,
-        visible: false,
-        universeIdx: ui
-      };
+  function easeOut(t) { return 1 - Math.pow(1-t,3); }
+  function easeIn(t)  { return t*t*t; }
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function clamp01(v) { return Math.max(0,Math.min(1,v)); }
 
-      var areas = [];
-      for (var ai = 0; ai < U.areas.length; ai++) {
-        var ad = U.areas[ai];
-        // Áreas: raio orbital proporcional (8% da largura / 90px base)
-        var aScale = W * 0.08 / 90;
-        areas.push({
-          name: ad.name,
-          bx: ad.bx * aScale, by: ad.by * aScale,
-          fx: ad.fx, fy: ad.fy, fase: ad.fase,
-          x: 0, y: 0,
-          r: 5, targetR: 5,
-          opacity: 0,
-          visible: false,
-          universeIdx: ui
-        });
-      }
+  function frame(ts) {
+    if (!animRunning) return;
+    if (!startTime) startTime = ts;
+    var elapsed = ts - startTime;
+    var p = elapsed / DURATION;
 
-      // 3 satellites per universe
-      var satellites = [];
-      // Satélites: órbitas 6-10% da largura
-      var sUnit = W * 0.01;
-      var satRadii = [sUnit * 6, sUnit * 8, sUnit * 10];
-      var satSpeeds = [0.0005, 0.0004, 0.0003];
-      for (var si = 0; si < 3; si++) {
-        satellites.push({
-          orbitR: satRadii[si],
-          speed: satSpeeds[si],
-          angleOffset: (si * Math.PI * 2 / 3),
-          x: 0, y: 0,
-          r: 1.5,
-          opacity: 0,
-          visible: false,
-          universeIdx: ui
-        });
-      }
-
-      universeNodes.push({ hub: hub, areas: areas, satellites: satellites });
-    }
-  }
-
-  function updateNodes(elapsed) {
-    // Holding hub stays centered
-    holdingHub.x = CX;
-    holdingHub.y = CY;
-
-    // Smooth radius growth
-    if (holdingHub.visible && holdingHub.r < holdingHub.targetR) {
-      holdingHub.r = Math.min(holdingHub.r + holdingHub.targetR * 0.04, holdingHub.targetR);
-    }
-
-    for (var ui = 0; ui < universeNodes.length; ui++) {
-      var UN = universeNodes[ui];
-      var hub = UN.hub;
-
-      // Hub organic movement around base
-      var mScale = W * 0.012;
-      hub.x = CX + hub.bx + mScale * Math.sin(elapsed * 0.0005 + ui * 1.2);
-      hub.y = CY + hub.by + mScale * Math.cos(elapsed * 0.0006 + ui * 1.2);
-
-      // Smooth radius
-      if (hub.visible && hub.r < hub.targetR) {
-        hub.r = Math.min(hub.r + hub.targetR * 0.04, hub.targetR);
-      }
-
-      // Areas move relative to hub
-      for (var ai = 0; ai < UN.areas.length; ai++) {
-        var a = UN.areas[ai];
-        a.x = hub.x + a.bx + mScale * 0.5 * Math.sin(elapsed * a.fx + a.fase);
-        a.y = hub.y + a.by + mScale * 0.4 * Math.cos(elapsed * a.fy + a.fase);
-        if (a.visible && a.r < a.targetR) {
-          a.r = Math.min(a.r + a.targetR * 0.04, a.targetR);
-        }
-      }
-
-      // Satellites orbit around hub
-      for (var si = 0; si < UN.satellites.length; si++) {
-        var sat = UN.satellites[si];
-        var angle = sat.angleOffset + elapsed * sat.speed;
-        sat.x = hub.x + Math.cos(angle) * sat.orbitR;
-        sat.y = hub.y + Math.sin(angle) * sat.orbitR;
-      }
-    }
-
-    // Update synapses
-    for (var i = synapses.length - 1; i >= 0; i--) {
-      var syn = synapses[i];
-      syn.progress += syn.speed;
-      // Record trail
-      syn.trail.push({ x: syn.x, y: syn.y });
-      if (syn.trail.length > syn.trailLen) syn.trail.shift();
-      // Lerp position
-      syn.x = syn.fromX + (syn.toX - syn.fromX) * Math.min(syn.progress, 1);
-      syn.y = syn.fromY + (syn.toY - syn.fromY) * Math.min(syn.progress, 1);
-      // On arrival
-      if (syn.progress >= 1 && !syn.arrived) {
-        syn.arrived = true;
-        if (syn.onArrive) syn.onArrive();
-      }
-      if (syn.progress >= 1.05) {
-        synapses.splice(i, 1);
-      }
-    }
-  }
-
-  function spawnSynapse(fromNode, toNode, color, r, trailLen, speed, onArrive) {
-    synapses.push({
-      fromX: fromNode.x, fromY: fromNode.y,
-      toX: toNode.x, toY: toNode.y,
-      x: fromNode.x, y: fromNode.y,
-      progress: 0,
-      speed: speed,
-      color: color,
-      r: r,
-      trail: [],
-      trailLen: trailLen,
-      arrived: false,
-      onArrive: onArrive || null
-    });
-  }
-
-  function maybeSpawnSynapses(elapsed, now) {
-    if (!synapsesType12Active) return;
-
-    // Type 1 — intra-universe
-    if (now - lastSyn1Time > syn1Interval) {
-      // pick random active universe
-      var activeUnis = universeNodes.filter(function(UN) {
-        return UN.hub.opacity > 0.3 && UN.areas.some(function(a){ return a.opacity > 0.3; });
-      });
-      if (activeUnis.length > 0) {
-        var UN = activeUnis[Math.floor(Math.random() * activeUnis.length)];
-        var U = UNIVERSES[UN.hub.universeIdx];
-        var validAreas = UN.areas.filter(function(a){ return a.opacity > 0.3; });
-        if (validAreas.length > 0) {
-          var area = validAreas[Math.floor(Math.random() * validAreas.length)];
-          spawnSynapse(area, UN.hub, U.color + '0.9)', 2, 4, 0.022, null);
-        }
-      }
-      lastSyn1Time = now;
-      syn1Interval = 200 + Math.random() * 150;
-    }
-
-    // Type 2 — hub empresa → hub central
-    if (now - lastSyn2Time > syn2Interval) {
-      var activeHubs = universeNodes.filter(function(UN){ return UN.hub.opacity > 0.3; });
-      if (activeHubs.length > 0 && holdingHub.opacity > 0.3) {
-        var UN2 = activeHubs[Math.floor(Math.random() * activeHubs.length)];
-        spawnSynapse(UN2.hub, holdingHub, 'rgba(200,169,110,0.85)', 2.5, 5, 0.015, null);
-      }
-      lastSyn2Time = now;
-      syn2Interval = 800 + Math.random() * 400;
-    }
-
-    // Type 3 — cross-universe via hub central
-    if (synapsesType3Active && (now - lastSyn3Time > syn3Interval)) {
-      var activeUnis3 = universeNodes.filter(function(UN){ return UN.hub.opacity > 0.4; });
-      if (activeUnis3.length >= 2 && holdingHub.opacity > 0.3) {
-        var idxA = Math.floor(Math.random() * activeUnis3.length);
-        var idxB;
-        do { idxB = Math.floor(Math.random() * activeUnis3.length); } while (idxB === idxA);
-        var UNA = activeUnis3[idxA];
-        var UNB = activeUnis3[idxB];
-        var colorA = UNIVERSES[UNA.hub.universeIdx].color + '0.85)';
-        var colorB = UNIVERSES[UNB.hub.universeIdx].color + '0.85)';
-
-        // Phase 1: A → holding
-        spawnSynapse(UNA.hub, holdingHub, colorA, 3, 6, 0.012, function() {
-          // Phase 2: holding → B (spawned on arrival of phase 1)
-          spawnSynapse(holdingHub, UNB.hub, colorB, 3, 6, 0.012, null);
-        });
-      }
-      lastSyn3Time = now;
-      syn3Interval = 2000 + Math.random() * 1500;
-    }
-  }
-
-  function drawFrame(elapsed) {
+    // Redimensionar canvas se necessário
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.clearRect(0, 0, W, H);
 
-    // ── 1. Inter-universe lines (hub empresa → holding) — deepest ──
-    if (connInterOpacity > 0.001) {
-      for (var ui = 0; ui < universeNodes.length; ui++) {
-        var hub = universeNodes[ui].hub;
-        if (hub.opacity < 0.05) continue;
-        var dx = hub.x - holdingHub.x, dy = hub.y - holdingHub.y;
-        var dist = Math.sqrt(dx*dx + dy*dy);
-        var ratio = Math.max(0, 1 - dist / 500);
-        var lw = Math.max(0.3, 0.5 + ratio * 1.5);
-        var alpha = (0.12 + 0.08 * Math.sin(elapsed * 0.001 + ui)) * connInterOpacity * Math.min(hub.opacity, holdingHub.opacity);
-        ctx.lineWidth = lw;
-        ctx.strokeStyle = 'rgba(200,169,110,' + alpha + ')';
-        ctx.beginPath();
-        ctx.moveTo(hub.x, hub.y);
-        ctx.lineTo(holdingHub.x, holdingHub.y);
-        ctx.stroke();
-      }
-    }
+    // BG
+    ctx.fillStyle = '#02020a';
+    ctx.fillRect(0, 0, W, H);
 
-    // ── 2. Cross-universe lines (hub empresa → hub empresa) ──
-    if (connInterOpacity > 0.001) {
-      for (var ui = 0; ui < universeNodes.length; ui++) {
-        for (var uj = ui + 1; uj < universeNodes.length; uj++) {
-          var hubA = universeNodes[ui].hub;
-          var hubB = universeNodes[uj].hub;
-          if (hubA.opacity < 0.05 || hubB.opacity < 0.05) continue;
-          var dx = hubA.x - hubB.x, dy = hubA.y - hubB.y;
-          var dist = Math.sqrt(dx*dx + dy*dy);
-          if (dist < 350) {
-            var proximity = 1 - dist / 350;
-            var alpha = proximity * 0.12 * connInterOpacity * Math.min(hubA.opacity, hubB.opacity);
-            ctx.lineWidth = 0.1 + proximity * 0.8;
-            ctx.strokeStyle = 'rgba(245,240,232,' + alpha + ')';
-            ctx.beginPath();
-            ctx.moveTo(hubA.x, hubA.y);
-            ctx.lineTo(hubB.x, hubB.y);
-            ctx.stroke();
-          }
-        }
-      }
-    }
-
-    // ── 3. Intra-universe lines (area → hub empresa) ──
-    if (connIntraOpacity > 0.001) {
-      for (var ui = 0; ui < universeNodes.length; ui++) {
-        var UN = universeNodes[ui];
-        var U = UNIVERSES[ui];
-        for (var ai = 0; ai < UN.areas.length; ai++) {
-          var area = UN.areas[ai];
-          if (area.opacity < 0.05 || UN.hub.opacity < 0.05) continue;
-          var dx = area.x - UN.hub.x, dy = area.y - UN.hub.y;
-          var dist = Math.sqrt(dx*dx + dy*dy);
-          if (dist < 250) {
-            var proximity = 1 - dist / 250;
-            var alpha = proximity * 0.45 * connIntraOpacity * Math.min(area.opacity, UN.hub.opacity);
-            ctx.lineWidth = 0.2 + proximity * 2.5;
-            ctx.strokeStyle = U.color + alpha + ')';
-            ctx.beginPath();
-            ctx.moveTo(area.x, area.y);
-            ctx.lineTo(UN.hub.x, UN.hub.y);
-            ctx.stroke();
-          }
-        }
-      }
-    }
-
-    // ── 4. Satellites ──
-    for (var ui = 0; ui < universeNodes.length; ui++) {
-      var UN = universeNodes[ui];
-      var U = UNIVERSES[ui];
-      if (UN.hub.opacity < 0.05) continue;
-      for (var si = 0; si < UN.satellites.length; si++) {
-        var sat = UN.satellites[si];
-        var alpha = 0.3 * UN.hub.opacity;
-        ctx.fillStyle = U.color + alpha + ')';
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
-        ctx.beginPath();
-        ctx.arc(sat.x, sat.y, sat.r, 0, Math.PI*2);
-        ctx.fill();
-      }
-    }
-
-    // ── 5. Area nodes ──
-    for (var ui = 0; ui < universeNodes.length; ui++) {
-      var UN = universeNodes[ui];
-      var U = UNIVERSES[ui];
-      for (var ai = 0; ai < UN.areas.length; ai++) {
-        var area = UN.areas[ai];
-        if (area.opacity < 0.01) continue;
-        ctx.shadowColor = U.glowColor;
-        ctx.shadowBlur = 12;
-        ctx.fillStyle = U.color + (0.75 * area.opacity) + ')';
-        ctx.beginPath();
-        ctx.arc(area.x, area.y, area.r, 0, Math.PI*2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      }
-    }
-
-    // ── 6. Universe hub nodes ──
-    for (var ui = 0; ui < universeNodes.length; ui++) {
-      var UN = universeNodes[ui];
-      var U = UNIVERSES[ui];
-      var hub = UN.hub;
-      if (hub.opacity < 0.01) continue;
-      var pulseMult = 1 + 0.2 * Math.sin(elapsed * (Math.PI * 2 / 2500) + ui * 0.5);
-      var hubBlur = 25 * pulseMult;
-      // Extract color string for shadow (replace 'rgba(' prefix and trailing comma)
-      var shadowCol = U.color + '0.5)';
-      ctx.shadowColor = shadowCol;
-      ctx.shadowBlur = hubBlur;
-      ctx.fillStyle = U.color + hub.opacity + ')';
+    // Stars de fundo
+    var starAlpha = Math.min(elapsed/1500, 1) * (p > 0.85 ? (1-(p-0.85)/0.15) : 1);
+    for (var s=0;s<bgStars.length;s++) {
+      var st = bgStars[s];
+      st.twinkle += st.speed;
+      var sa = st.opacity * (0.6+0.4*Math.abs(Math.sin(st.twinkle)));
       ctx.beginPath();
-      ctx.arc(hub.x, hub.y, hub.r, 0, Math.PI*2);
+      ctx.arc(st.x*W, st.y*H, st.r, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(255,255,255,'+sa*starAlpha+')';
       ctx.fill();
-      ctx.shadowBlur = 0;
     }
 
-    // ── 7. Holding hub glow radial + node ──
-    if (holdingHub.opacity > 0.01) {
-      // Radial glow
-      var grad = ctx.createRadialGradient(holdingHub.x, holdingHub.y, 0, holdingHub.x, holdingHub.y, 100);
-      grad.addColorStop(0, 'rgba(200,169,110,' + (0.15 * holdingHub.opacity) + ')');
-      grad.addColorStop(1, 'rgba(200,169,110,0)');
-      ctx.fillStyle = grad;
+    // Origem — ponto de singularidade (explosão de luz)
+    var origin = { x: CX, y: CY };
+
+    // Glow central
+    var glowP = clamp01(elapsed/1000);
+    if (glowP > 0) {
+      var glowR = Math.min(W,H) * 0.08 * glowP;
+      var gGrad = ctx.createRadialGradient(CX,CY,0,CX,CY,glowR);
+      gGrad.addColorStop(0,   'rgba(200,169,110,'+0.9*glowP+')');
+      gGrad.addColorStop(0.3, 'rgba(200,169,110,'+0.4*glowP+')');
+      gGrad.addColorStop(1,   'rgba(200,169,110,0)');
+      ctx.fillStyle = gGrad;
       ctx.beginPath();
-      ctx.arc(holdingHub.x, holdingHub.y, 100, 0, Math.PI*2);
+      ctx.arc(CX,CY, glowR, 0, Math.PI*2);
       ctx.fill();
-
-      // Pulsing shadowBlur
-      var hBlur = (60 + 18 * Math.sin(elapsed * 0.003)) * holdingHub.opacity;
-      ctx.shadowColor = '#C8A96E';
-      ctx.shadowBlur = hBlur;
-      ctx.fillStyle = '#C8A96E';
-      ctx.globalAlpha = holdingHub.opacity;
-      ctx.beginPath();
-      ctx.arc(holdingHub.x, holdingHub.y, holdingHub.r, 0, Math.PI*2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-      ctx.shadowBlur = 0;
     }
 
-    // ── 8. Synapses (on top of everything) ──
-    for (var i = 0; i < synapses.length; i++) {
-      var syn = synapses[i];
-      // Draw trail
-      for (var t = 0; t < syn.trail.length; t++) {
-        var trailAlpha = ((t + 1) / syn.trail.length) * 0.7;
-        var trailR = syn.r * ((t + 1) / syn.trail.length) * 0.8;
-        ctx.fillStyle = syn.color.replace(/,[^,]+\)$/, ',' + trailAlpha + ')');
-        ctx.shadowColor = syn.color;
-        ctx.shadowBlur = 4;
-        ctx.beginPath();
-        ctx.arc(syn.trail[t].x, syn.trail[t].y, trailR, 0, Math.PI*2);
-        ctx.fill();
-      }
-      // Head
-      ctx.shadowColor = syn.color;
-      ctx.shadowBlur = 10;
-      ctx.fillStyle = syn.color;
-      ctx.beginPath();
-      ctx.arc(syn.x, syn.y, syn.r, 0, Math.PI*2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-    }
+    // Cilindros — revelação escalonada
+    // 0.0–0.15: aparecem todos juntos saindo da singularidade
+    // 0.15–0.7: se expandem para suas posições finais
+    // 0.7–0.85: labels aparecem
+    // 0.85–1.0: fade out
 
-    // ── 9. Labels (always on top, always legible) ──
-    ctx.shadowBlur = 0;
-    ctx.textAlign = 'center';
+    var cylStart = 0.10;
+    var cylEnd   = 0.72;
 
-    // Holding hub label
-    if (holdingHub.opacity > 0.1) {
-      ctx.font = '9px "DM Mono",monospace';
-      ctx.fillStyle = 'rgba(200,169,110,' + (0.6 * holdingHub.opacity) + ')';
-      ctx.fillText('HOLDING', holdingHub.x, holdingHub.y - holdingHub.r - 8);
-    }
+    for (var ui=0;ui<UNIVERSES.length;ui++) {
+      var U  = UNIVERSES[ui];
+      var ud = univData[ui];
 
-    // Universe hub labels
-    for (var ui = 0; ui < universeNodes.length; ui++) {
-      var UN = universeNodes[ui];
-      var U = UNIVERSES[ui];
-      var hub = UN.hub;
-      if (hub.opacity < 0.1) continue;
-      ctx.font = '10px "DM Mono",monospace';
-      ctx.fillStyle = U.color + (0.8 * hub.opacity) + ')';
-      ctx.fillText(U.name, hub.x, hub.y + hub.r + 14);
-
-      // Area labels
-      for (var ai = 0; ai < UN.areas.length; ai++) {
-        var area = UN.areas[ai];
-        if (area.opacity < 0.2) continue;
-        ctx.font = '8px "DM Mono",monospace';
-        ctx.fillStyle = U.color + (0.5 * area.opacity) + ')';
-        ctx.fillText(area.name, area.x, area.y + area.r + 13);
-      }
-    }
-  }
-
-  // ── Smooth opacity helpers ──
-  function fadeElement(el, from, to, durationMs, cb) {
-    var st = null;
-    el.style.opacity = from;
-    function step(now) {
-      if (!st) st = now;
-      var p = Math.min((now - st) / durationMs, 1);
-      el.style.opacity = from + (to - from) * p;
-      if (p < 1) requestAnimationFrame(step);
-      else if (cb) cb();
-    }
-    requestAnimationFrame(step);
-  }
-
-  function fadeNodeOpacity(node, durationMs, cb) {
-    var st = null;
-    function step(now) {
-      if (!st) st = now;
-      var p = Math.min((now - st) / durationMs, 1);
-      node.opacity = p;
-      if (p < 1) requestAnimationFrame(step);
-      else if (cb) cb();
-    }
-    requestAnimationFrame(step);
-  }
-
-  function fadeValue(setter, from, to, durationMs, cb) {
-    var st = null;
-    setter(from);
-    function step(now) {
-      if (!st) st = now;
-      var p = Math.min((now - st) / durationMs, 1);
-      setter(from + (to - from) * p);
-      if (p < 1) requestAnimationFrame(step);
-      else if (cb) cb();
-    }
-    requestAnimationFrame(step);
-  }
-
-  // ── Typewriter ──
-  var WORD = 'KNOWLEDGE';
-  function runTypewriter(cb) {
-    textKnow.style.opacity = '1';
-    textKnow.innerHTML = '';
-    var cursor = document.createElement('span');
-    cursor.id = 'intro-cursor';
-    cursor.textContent = '\u2588';
-    textKnow.appendChild(cursor);
-    var idx = 0;
-    var iv = setInterval(function() {
-      if (idx < WORD.length) {
-        textKnow.insertBefore(document.createTextNode(WORD[idx]), cursor);
-        idx++;
+      // Progress do cilindro
+      var cylP;
+      if (p < cylStart) {
+        cylP = 0;
+      } else if (p < cylEnd) {
+        cylP = easeOut(clamp01((p - cylStart) / (cylEnd - cylStart)));
       } else {
-        clearInterval(iv);
-        setTimeout(function() {
-          cursor.style.display = 'none';
-          if (cb) cb();
-        }, 400);
+        cylP = 1;
       }
-    }, 120);
+
+      // Labels
+      var labStart = 0.68;
+      var labEnd   = 0.82;
+      if (p < labStart) ud.labelOpacity = 0;
+      else if (p < labEnd) ud.labelOpacity = (p-labStart)/(labEnd-labStart);
+      else ud.labelOpacity = 1;
+
+      // Fade out geral (0.85–1.0)
+      if (p > 0.86) {
+        var fadeP = clamp01((p - 0.86) / 0.14);
+        ud.labelOpacity *= (1 - fadeP);
+      }
+
+      drawCylinder(U, ud, origin, cylP, elapsed);
+    }
+
+    // Ponto central (singularidade visível)
+    ctx.save();
+    var cP = Math.min(elapsed/600, 1);
+    ctx.globalAlpha = cP * (p > 0.86 ? (1 - clamp01((p-0.86)/0.14)) : 1);
+    ctx.beginPath();
+    ctx.arc(CX, CY, 3, 0, Math.PI*2);
+    ctx.fillStyle = '#C8A96E';
+    ctx.fill();
+    ctx.restore();
+
+    // Texto "CULTURA BUILDER" — fase 0–0.10
+    var cbAlpha = 0;
+    if (p < 0.05) cbAlpha = p/0.05;
+    else if (p < 0.09) cbAlpha = 1;
+    else if (p < 0.12) cbAlpha = 1 - (p-0.09)/0.03;
+    labelCB.style.opacity = cbAlpha;
+
+    // Texto "KNOWLEDGE" — fase 0.72–0.85
+    var kwAlpha = 0;
+    var kwPhase = clamp01((p - 0.72) / 0.1);
+    kwAlpha = kwPhase * (p > 0.86 ? (1 - clamp01((p-0.86)/0.14)) : 1);
+    textKnow.style.opacity = kwAlpha;
+
+    if (kwPhase > 0 && !textKnow._typed) {
+      var kw = 'KNOWLEDGE';
+      var charsToShow = Math.floor(kwPhase * kw.length);
+      textKnow.textContent = kw.substring(0, charsToShow) + (charsToShow < kw.length ? '_' : '');
+      if (charsToShow >= kw.length) textKnow._typed = true;
+    }
+
+    // Fade out overlay
+    if (p > 0.86) {
+      var fadeOut = clamp01((p - 0.86) / 0.14);
+      overlay.style.opacity = 1 - fadeOut;
+    }
+
+    if (elapsed < DURATION) {
+      requestAnimationFrame(frame);
+    } else {
+      overlay.style.display = 'none';
+      localStorage.setItem(SEEN_KEY, '1');
+      animRunning = false;
+    }
   }
 
-  // ── Main loop ──
-  function animLoop(now) {
-    if (!animRunning) return;
-    if (!startTime) startTime = now;
-    var elapsed = now - startTime;
-    updateNodes(elapsed);
-    drawFrame(elapsed);
-    maybeSpawnSynapses(elapsed, now);
-    requestAnimationFrame(animLoop);
-  }
-
-  // ── Intro sequence ──
   function runIntro() {
-    buildNodes();
+    makeBgStars();
+    resize();
     animRunning = true;
-    requestAnimationFrame(animLoop);
-
-    // t=0–1s: fade in "CULTURA BUILDER"
-    fadeElement(textCB, 0, 1, 800, function() {
-      // hold ~0.4s → ~1.2s mark
-      setTimeout(function() {
-        // t=1–2s: fade out + fragmentacao
-        initAudio();
-        playFragmentacao();
-        fadeElement(textCB, 1, 0, 700, function() {
-
-          // t=2.5s: hub central aparece + impacto
-          setTimeout(function() {
-            initAudio();
-            playImpacto();
-            holdingHub.visible = true;
-            fadeNodeOpacity(holdingHub, 700, null);
-
-            // t=3.0–4.0s: hubs de empresa stagger 200ms
-            setTimeout(function() {
-              for (var ui = 0; ui < universeNodes.length; ui++) {
-                (function(idx) {
-                  setTimeout(function() {
-                    var hub = universeNodes[idx].hub;
-                    hub.visible = true;
-                    fadeNodeOpacity(hub, 400, null);
-                  }, idx * 200);
-                })(ui);
-              }
-
-              // t=4.0–4.5s: áreas surgem stagger 100ms por área
-              setTimeout(function() {
-                var areaDelay = 0;
-                for (var ui = 0; ui < universeNodes.length; ui++) {
-                  var UN = universeNodes[ui];
-                  for (var ai = 0; ai < UN.areas.length; ai++) {
-                    (function(area) {
-                      setTimeout(function() {
-                        area.visible = true;
-                        fadeNodeOpacity(area, 300, null);
-                      }, areaDelay);
-                    })(UN.areas[ai]);
-                    areaDelay += 100;
-                  }
-                }
-
-                // t=4.5s: conexões intra-universo fade in
-                setTimeout(function() {
-                  fadeValue(function(v){ connIntraOpacity = v; }, 0, 1, 400, null);
-
-                  // t=4.8s: conexões inter-universo fade in
-                  setTimeout(function() {
-                    fadeValue(function(v){ connInterOpacity = v; }, 0, 1, 400, null);
-
-                    // t=5.0s: sinapses tipo 1 e 2
-                    setTimeout(function() {
-                      synapsesType12Active = true;
-
-                      // t=5.5s: tipo 3
-                      setTimeout(function() {
-                        synapsesType3Active = true;
-
-                        // t=6.5s: playBrilho + KNOWLEDGE typewriter
-                        setTimeout(function() {
-                          initAudio();
-                          playBrilho();
-                          runTypewriter(function() {
-                            // t=7.5–9s: fade out
-                            setTimeout(function() {
-                              overlay.style.opacity = '0';
-                              animRunning = false;
-                              setTimeout(function() {
-                                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-                              }, 1550);
-                            }, 500);
-                          });
-                        }, 1000); // 5.5 → 6.5s
-                      }, 500);   // 5.0 → 5.5s
-                    }, 200);     // 4.8 → 5.0s
-
-                  }, 300);       // 4.5 → 4.8s
-                }, 500);         // 4.0 → 4.5s (areas end at ~4.0 + stagger)
-
-              }, 1000);          // 3.0 → 4.0s (hubs fully in)
-            }, 500);             // 2.5 → 3.0s
-
-          }, 800);               // fade out CB ends ~2s, +500ms → ~2.5s
-        });
-      }, 400);                   // hold CB after fade-in
-    });
+    playCosmic();
+    requestAnimationFrame(frame);
   }
 
-  // Start when fonts ready
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(runIntro);
-  } else {
-    setTimeout(runIntro, 300);
-  }
+  window.addEventListener('resize', function() {
+    resize();
+    makeBgStars();
+  });
+
+  setTimeout(runIntro, 300);
 })();
 </script>
 
