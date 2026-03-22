@@ -1415,40 +1415,13 @@ footer {
 }
 
 /* ── NVIDIA INCEPTION BADGE ── */
-.nvidia-badge-row {
-  display: flex;
-  gap: 48px;
+.nvidia-inception-wrap {
   margin-top: 48px;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.nvidia-badge-label {
-  display: block;
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--gold);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  margin-bottom: 16px;
-  opacity: 0.6;
-}
-
-/* Versão A */
-.nvidia-badge-img {
-  display: block;
-  width: 180px;
-  height: auto;
-  filter: grayscale(100%) brightness(1.8) contrast(0.9);
-  opacity: 0.75;
-  transition: opacity 0.3s, filter 0.3s;
-}
-.nvidia-badge-img:hover {
-  opacity: 1;
-  filter: grayscale(80%) brightness(2) contrast(1);
-}
-
-/* Versão B — tipográfica */
 .nvidia-typo-badge {
   display: inline-flex;
   flex-direction: column;
@@ -1692,37 +1665,17 @@ footer {
         <span class="partners-stat-label">em benefícios exclusivos para membros CulturaBuilder</span>
       </div>
 
-      <!-- NVIDIA Inception Badge — duas versões para escolha -->
-      <div class="nvidia-badge-row">
-        <!-- Versão A: imagem com filtro grayscale -->
-        <div class="nvidia-badge-a">
-          <span class="nvidia-badge-label">Versão A — imagem</span>
-          <img
-            src="https://www.nvidia.com/content/nvidiaGDC/us/en_US/startups/inception-program/_jcr_content/root/responsivegrid/nv_container_392921705/container/nv_image.coreimg.svg/1739983744884/nvidia-inception-program-badge-rgb-for-screen.svg"
-            alt="NVIDIA Inception Program Member"
-            class="nvidia-badge-img"
-            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-          />
-          <div class="nvidia-badge-fallback" style="display:none">
-            <span class="nvidia-wordmark">NVIDIA</span>
-            <span class="nvidia-inception-text">INCEPTION PROGRAM MEMBER</span>
+      <!-- NVIDIA Inception Badge -->
+      <div class="nvidia-inception-wrap">
+        <div class="nvidia-typo-badge">
+          <div class="nvidia-typo-top">
+            <span class="nvidia-typo-name">NVIDIA</span>
+            <span class="nvidia-typo-divider">|</span>
+            <span class="nvidia-typo-program">INCEPTION<br>PROGRAM</span>
           </div>
-          <p class="nvidia-badge-desc">CulturaBuilder é membro oficial do NVIDIA Inception Program</p>
+          <div class="nvidia-typo-member">MEMBER</div>
         </div>
-
-        <!-- Versão B: tipográfica -->
-        <div class="nvidia-badge-b">
-          <span class="nvidia-badge-label">Versão B — tipográfica</span>
-          <div class="nvidia-typo-badge">
-            <div class="nvidia-typo-top">
-              <span class="nvidia-typo-name">NVIDIA</span>
-              <span class="nvidia-typo-divider">|</span>
-              <span class="nvidia-typo-program">INCEPTION<br>PROGRAM</span>
-            </div>
-            <div class="nvidia-typo-member">MEMBER</div>
-          </div>
-          <p class="nvidia-badge-desc">CulturaBuilder é membro oficial do NVIDIA Inception Program</p>
-        </div>
+        <p class="nvidia-badge-desc">CulturaBuilder é membro oficial do NVIDIA Inception Program</p>
       </div>
     </div>
   </div>
