@@ -1736,7 +1736,7 @@ footer {
       name: 'Liqi',
       color: 'rgba(100,180,255,',
       glowColor: 'rgba(100,180,255,0.5)',
-      hubBase: { bx: -230, by: -160 },
+      hubBase: { bxPct: -0.28, byPct: -0.28 },
       areas: [
         { name: 'Tokenização', bx: -80, by: -60, fx: 0.0008, fy: 0.0010, fase: 0.0 },
         { name: 'Compliance',  bx: +60, by: -40, fx: 0.0007, fy: 0.0009, fase: 1.5 },
@@ -1747,7 +1747,7 @@ footer {
       name: 'Monte Dourado',
       color: 'rgba(255,200,100,',
       glowColor: 'rgba(255,200,100,0.5)',
-      hubBase: { bx: +230, by: -150 },
+      hubBase: { bxPct: +0.28, byPct: -0.28 },
       areas: [
         { name: 'Projetos', bx: +80, by: -50, fx: 0.0007, fy: 0.0011, fase: 0.8 },
         { name: 'Obras',    bx: -60, by: -70, fx: 0.0009, fy: 0.0008, fase: 2.3 },
@@ -1758,7 +1758,7 @@ footer {
       name: 'Cultura Builder',
       color: 'rgba(180,120,255,',
       glowColor: 'rgba(180,120,255,0.5)',
-      hubBase: { bx: 0, by: +220 },
+      hubBase: { bxPct: 0, byPct: +0.33 },
       areas: [
         { name: 'Comunidade', bx: -80, by: +50, fx: 0.0008, fy: 0.0009, fase: 1.2 },
         { name: 'Conteúdo',   bx: +90, by: +40, fx: 0.0007, fy: 0.0010, fase: 2.7 },
@@ -1770,7 +1770,7 @@ footer {
       name: 'Safeway',
       color: 'rgba(100,220,160,',
       glowColor: 'rgba(100,220,160,0.5)',
-      hubBase: { bx: -230, by: +150 },
+      hubBase: { bxPct: -0.28, byPct: +0.28 },
       areas: [
         { name: 'Pagamentos', bx: -70, by: -60, fx: 0.0009, fy: 0.0008, fase: 0.6 },
         { name: 'Compliance', bx: +60, by: -40, fx: 0.0007, fy: 0.0010, fase: 2.1 },
@@ -1781,7 +1781,7 @@ footer {
       name: 'Energia',
       color: 'rgba(255,140,80,',
       glowColor: 'rgba(255,140,80,0.5)',
-      hubBase: { bx: +230, by: +140 },
+      hubBase: { bxPct: +0.28, byPct: +0.28 },
       areas: [
         { name: 'Geração',      bx: +75, by: -55, fx: 0.0008, fy: 0.0009, fase: 1.0 },
         { name: 'Distribuição', bx: -65, by: -45, fx: 0.0007, fy: 0.0008, fase: 2.5 },
@@ -1826,11 +1826,13 @@ footer {
     universeNodes = [];
     for (var ui = 0; ui < UNIVERSES.length; ui++) {
       var U = UNIVERSES[ui];
+      var hbx = U.hubBase.bxPct * Math.min(W * 0.45, 220);
+      var hby = U.hubBase.byPct * Math.min(H * 0.45, 200);
       var hub = {
-        x: CX + U.hubBase.bx,
-        y: CY + U.hubBase.by,
-        bx: U.hubBase.bx,
-        by: U.hubBase.by,
+        x: CX + hbx,
+        y: CY + hby,
+        bx: hbx,
+        by: hby,
         r: 0, targetR: 13,
         opacity: 0,
         visible: false,
@@ -1840,9 +1842,10 @@ footer {
       var areas = [];
       for (var ai = 0; ai < U.areas.length; ai++) {
         var ad = U.areas[ai];
+        var aScale = Math.min(W, H) / 700;
         areas.push({
           name: ad.name,
-          bx: ad.bx, by: ad.by,
+          bx: ad.bx * aScale, by: ad.by * aScale,
           fx: ad.fx, fy: ad.fy, fase: ad.fase,
           x: 0, y: 0,
           r: 5, targetR: 5,
@@ -1854,7 +1857,8 @@ footer {
 
       // 3 satellites per universe
       var satellites = [];
-      var satRadii = [90, 110, 130];
+      var sScale = Math.min(W, H) / 700;
+      var satRadii = [90 * sScale, 110 * sScale, 130 * sScale];
       var satSpeeds = [0.0005, 0.0004, 0.0003];
       for (var si = 0; si < 3; si++) {
         satellites.push({
@@ -1888,8 +1892,9 @@ footer {
       var hub = UN.hub;
 
       // Hub organic movement around base
-      hub.x = CX + hub.bx + 15 * Math.sin(elapsed * 0.0005 + ui * 1.2);
-      hub.y = CY + hub.by + 12 * Math.cos(elapsed * 0.0006 + ui * 1.2);
+      var mScale = Math.min(W, H) / 700;
+      hub.x = CX + hub.bx + 10 * mScale * Math.sin(elapsed * 0.0005 + ui * 1.2);
+      hub.y = CY + hub.by + 8  * mScale * Math.cos(elapsed * 0.0006 + ui * 1.2);
 
       // Smooth radius
       if (hub.visible && hub.r < hub.targetR) {
@@ -1899,8 +1904,8 @@ footer {
       // Areas move relative to hub
       for (var ai = 0; ai < UN.areas.length; ai++) {
         var a = UN.areas[ai];
-        a.x = hub.x + a.bx + 10 * Math.sin(elapsed * a.fx + a.fase);
-        a.y = hub.y + a.by + 8  * Math.cos(elapsed * a.fy + a.fase);
+        a.x = hub.x + a.bx + 7 * mScale * Math.sin(elapsed * a.fx + a.fase);
+        a.y = hub.y + a.by + 6 * mScale * Math.cos(elapsed * a.fy + a.fase);
         if (a.visible && a.r < a.targetR) {
           a.r = Math.min(a.r + a.targetR * 0.04, a.targetR);
         }
