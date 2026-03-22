@@ -1597,493 +1597,476 @@ footer {
 <!-- ── INTRO SPLASH SCREEN — CONCEPT H2: MULTI-UNIVERSE DARK MATTER ── -->
 <div id="intro-overlay">
   <canvas id="intro-canvas"></canvas>
-  <div id="intro-label-origin">CULTURA BUILDER</div>
+  <div id="intro-label-cb">CULTURA BUILDER</div>
   <div id="intro-text-know"></div>
 </div>
 
 <style>
 #intro-overlay {
-  position:fixed;inset:0;z-index:9999;background:#02020a;
-  transition: opacity 1.5s ease;
-  overflow:hidden;
+  position:fixed;inset:0;z-index:9999;background:#02020e;
+  transition:opacity 1.5s ease;overflow:hidden;
 }
 #intro-canvas {
-  position:absolute;inset:0;width:100%;height:100%;
-  pointer-events:none;
+  position:absolute;inset:0;width:100%;height:100%;pointer-events:none;
 }
-#intro-label-origin {
+#intro-label-cb {
   position:absolute;top:50%;left:50%;
   transform:translate(-50%,-50%);
   font-family:'Inter',sans-serif;font-weight:200;
-  font-size:clamp(11px,1.2vw,16px);
-  letter-spacing:0.55em;color:#F5F0E8;opacity:0;
-  white-space:nowrap;pointer-events:none;
-  -webkit-font-smoothing:antialiased;
-  text-transform:uppercase;
+  font-size:clamp(10px,1.1vw,15px);letter-spacing:0.6em;
+  color:#F5F0E8;opacity:0;white-space:nowrap;pointer-events:none;
+  -webkit-font-smoothing:antialiased;text-transform:uppercase;
 }
 #intro-text-know {
-  position:absolute;bottom:12%;left:50%;
-  transform:translateX(-50%);
+  position:absolute;bottom:11%;left:50%;transform:translateX(-50%);
   font-family:'DM Mono',monospace;font-weight:400;
-  font-size:clamp(20px,3vw,42px);
-  letter-spacing:0.08em;color:#C8A96E;opacity:0;
-  white-space:nowrap;pointer-events:none;
+  font-size:clamp(22px,3.2vw,48px);letter-spacing:0.08em;
+  color:#C8A96E;opacity:0;white-space:nowrap;pointer-events:none;
   -webkit-font-smoothing:antialiased;
 }
 </style>
 
 <script>
-(function() {
-  var overlay   = document.getElementById('intro-overlay');
-  var labelCB   = document.getElementById('intro-label-origin');
-  var textKnow  = document.getElementById('intro-text-know');
-  var canvas    = document.getElementById('intro-canvas');
-  var ctx       = canvas.getContext('2d');
+(function(){
+  var overlay  = document.getElementById('intro-overlay');
+  var labelCB  = document.getElementById('intro-label-cb');
+  var textKnow = document.getElementById('intro-text-know');
+  var canvas   = document.getElementById('intro-canvas');
+  var ctx      = canvas.getContext('2d');
+  var SEEN_KEY = 'cb_intro_quantum_seen';
+  // if(localStorage.getItem(SEEN_KEY)){overlay.style.display='none';return;}
 
-  var SEEN_KEY  = 'cb_intro_multiverse2_seen';
-  // if (localStorage.getItem(SEEN_KEY)) { overlay.style.display='none'; return; }
-
-  // ── AUDIO ──────────────────────────────────────────────────────────────────
-  var AC = null;
-  function getAC() {
-    if (!AC) { try { AC = new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} }
-    return AC;
+  /* ── AUDIO ── */
+  var AC=null;
+  function ac(){if(!AC)try{AC=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}return AC;}
+  function tone(f,d,type,vol,delay){
+    var a=ac();if(!a)return;
+    var t=a.currentTime+(delay||0);
+    var o=a.createOscillator(),g=a.createGain();
+    o.connect(g);g.connect(a.destination);
+    o.type=type||'sine';o.frequency.setValueAtTime(f,t);
+    o.frequency.exponentialRampToValueAtTime(f*0.25,t+d*0.8);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||0.12,t+0.06);
+    g.gain.exponentialRampToValueAtTime(0.001,t+d);
+    o.start(t);o.stop(t+d);
   }
-  function playTone(freq, dur, type, vol, delay) {
-    var ac = getAC(); if (!ac) return;
-    var t = ac.currentTime + (delay||0);
-    var osc = ac.createOscillator();
-    var gain = ac.createGain();
-    osc.connect(gain); gain.connect(ac.destination);
-    osc.type = type||'sine'; osc.frequency.setValueAtTime(freq, t);
-    osc.frequency.exponentialRampToValueAtTime(freq*0.3, t+dur*0.7);
-    gain.gain.setValueAtTime(0,t);
-    gain.gain.linearRampToValueAtTime(vol||0.15, t+0.05);
-    gain.gain.exponentialRampToValueAtTime(0.001, t+dur);
-    osc.start(t); osc.stop(t+dur);
+  function noise(d,vol,delay){
+    var a=ac();if(!a)return;
+    var t=a.currentTime+(delay||0);
+    var buf=a.createBuffer(1,a.sampleRate*d,a.sampleRate);
+    var data=buf.getChannelData(0);
+    for(var i=0;i<data.length;i++)data[i]=Math.random()*2-1;
+    var src=a.createBufferSource(),g=a.createGain();
+    src.buffer=buf;src.connect(g);g.connect(a.destination);
+    g.gain.setValueAtTime(vol||0.04,t);
+    g.gain.exponentialRampToValueAtTime(0.001,t+d);
+    src.start(t);src.stop(t+d);
   }
-  function playNoise(dur, vol, delay) {
-    var ac = getAC(); if (!ac) return;
-    var t = ac.currentTime + (delay||0);
-    var bufSize = ac.sampleRate * dur;
-    var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
-    var d = buf.getChannelData(0);
-    for (var i=0;i<bufSize;i++) d[i]=Math.random()*2-1;
-    var src = ac.createBufferSource();
-    src.buffer = buf;
-    var gain = ac.createGain();
-    src.connect(gain); gain.connect(ac.destination);
-    gain.gain.setValueAtTime(vol||0.05, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t+dur);
-    src.start(t); src.stop(t+dur);
-  }
-  function playCosmic() {
-    // Deep rumble on impact
-    playTone(40, 3.5, 'sine', 0.18, 0);
-    playTone(60, 2.5, 'sine', 0.10, 0.1);
-    playNoise(2.0, 0.06, 0);
-    // Harmonic shimmer
-    playTone(220, 4, 'sine', 0.06, 0.5);
-    playTone(440, 3, 'sine', 0.04, 0.8);
-    // Gold glow
-    playTone(528, 2, 'sine', 0.08, 5.5);
-    playTone(660, 1.5, 'sine', 0.05, 6);
+  function playSound(){
+    noise(2.5,0.07,0);
+    tone(38,4,'sine',0.18,0);tone(55,3,'sine',0.09,0.1);
+    tone(110,3,'sine',0.06,0.4);tone(220,2.5,'sine',0.04,0.7);
+    tone(440,2,'sine',0.05,5.2);tone(528,1.8,'sine',0.07,5.6);
+    tone(660,1.4,'sine',0.04,6.0);
   }
 
-  // ── GEOMETRY ───────────────────────────────────────────────────────────────
-  var W, H, CX, CY, DPR;
+  /* ── VIEWPORT ── */
+  var W,H,CX,CY,DPR;
+  function resize(){
+    DPR=window.devicePixelRatio||1;
+    W=window.innerWidth;H=window.innerHeight;
+    canvas.width=W*DPR;canvas.height=H*DPR;
+    canvas.style.width=W+'px';canvas.style.height=H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    CX=W/2;CY=H/2;
+  }
+  window.addEventListener('resize',function(){resize();});
 
-  function resize() {
-    DPR = window.devicePixelRatio || 1;
-    W   = window.innerWidth;
-    H   = window.innerHeight;
-    canvas.width  = W * DPR;
-    canvas.height = H * DPR;
-    canvas.style.width  = W + 'px';
-    canvas.style.height = H + 'px';
-    ctx.scale(DPR, DPR);
-    CX = W / 2;
-    CY = H / 2;
+  /* ── 3D PROJECTION ──
+     Eixo quântico: linha diagonal em perspectiva
+     Ponto de fuga: canto sup-dir (fundo)
+     Câmera: ligeiramente à esquerda e acima do centro
+     
+     Os universos ficam ao longo do eixo Z,
+     distribuídos em z=0 (fundo) até z=1 (primeiro plano)
+  */
+
+  // Perspectiva: converte coordenada 3D em 2D na tela
+  // O eixo quântico vai de (fundo, topo-esq) a (frente, baixo-dir)
+  // em perspectiva de 3/4
+  function project(x3, y3, z) {
+    // z: 0=fundo/longe, 1=frente/perto
+    var fov   = 0.55; // campo de visão
+    var scale = 0.25 + z * 0.75; // perspectiva: fundo pequeno, frente grande
+    var axisX = CX - W*0.28 + z * W*0.56; // o eixo vai de esquerda p/ direita conforme z cresce
+    var axisY = CY - H*0.28 + z * H*0.35; // e de cima p/ baixo
+    return {
+      x: axisX + x3 * scale,
+      y: axisY + y3 * scale,
+      scale: scale
+    };
   }
 
-  // 5 universos em perspectiva cônica, distribuídos em leque
-  // Cada cilindro tem: ângulo de projeção, cor, label
+  /* ── UNIVERSOS ──
+     Cada universo = empresa, posicionado em z diferente no eixo
+     Tem um hub central + 7 áreas em órbita
+     O disco fica inclinado (rotação em torno do eixo do disco)
+  */
+  var AREAS = ['VENDAS','PRODUTO','RH','FINANCEIRO','OPERAÇÕES','MARKETING','JURÍDICO'];
+
   var UNIVERSES = [
-    // 5 cilindros distribuídos em 360° saindo do centro (72° cada)
-    { label: 'LIQI',           color: [80,160,255],   ang:  -1.26 }, // cima-dir
-    { label: 'MONTE DOURADO', color: [200,169,110],   ang:   0.00 }, // direita
-    { label: 'CULTURA BUILDER',color:[160,100,255],   ang:   1.26 }, // baixo-dir
-    { label: 'SAFEWAY',       color: [80,200,130],    ang:   2.51 }, // baixo-esq
-    { label: 'ENERGIA',       color: [255,160,60],    ang:  -2.51 }, // cima-esq
+    { label:'LIQI',          color:[80,160,255],  z:0.10, rotOffset:0.0,   tilt:0.30 },
+    { label:'MONTE DOURADO', color:[200,169,110], z:0.32, rotOffset:1.1,   tilt:0.38 },
+    { label:'CULTURA BUILDER',color:[160,90,255], z:0.56, rotOffset:2.3,   tilt:0.42 },
+    { label:'SAFEWAY',       color:[80,200,130],  z:0.76, rotOffset:0.7,   tilt:0.35 },
+    { label:'ENERGIA',       color:[255,150,50],  z:0.94, rotOffset:1.8,   tilt:0.28 },
   ];
 
-  // Partículas dentro de cada cilindro
-  function makeCylParticles(count) {
-    var pts = [];
-    for (var i=0;i<count;i++) {
-      var angle = Math.random() * Math.PI * 2;
-      var rFrac = Math.pow(Math.random(), 0.5); // concentrar no centro
-      pts.push({
-        rFrac: rFrac,
-        angle: angle,
-        z: Math.random(),           // 0 = boca próxima, 1 = fundo
-        speed: 0.0002 + Math.random()*0.0003,
-        twinkle: Math.random()*Math.PI*2,
-        twinkleSpeed: 0.002 + Math.random()*0.003,
-        size: 0.5 + Math.random()*1.5,
-      });
-    }
-    return pts;
-  }
+  // Raio de órbita das áreas (em espaço 3D, antes da projeção)
+  var AREA_RADIUS_BASE = Math.min(W,H) * 0.22;
+  // Hub radius
+  var HUB_R_BASE = 4;
 
-  // Gerar estrelas de fundo
-  var bgStars = [];
-  function makeBgStars() {
-    bgStars = [];
-    for (var i=0;i<200;i++) {
-      bgStars.push({
-        x: Math.random(),
-        y: Math.random(),
-        r: 0.3 + Math.random()*1.2,
-        opacity: 0.1 + Math.random()*0.5,
-        twinkle: Math.random()*Math.PI*2,
-        speed: 0.001+Math.random()*0.002,
+  // Partículas de fundo (flutuam no espaço entre universos)
+  var bgPts = [];
+  function makeBgPts(){
+    bgPts=[];
+    for(var i=0;i<180;i++){
+      bgPts.push({
+        x:(Math.random()-0.5)*W*1.6,
+        y:(Math.random()-0.5)*H*1.6,
+        z:Math.random(),
+        r:0.4+Math.random()*1.0,
+        op:0.08+Math.random()*0.35,
+        tw:Math.random()*Math.PI*2,
+        ts:0.001+Math.random()*0.002,
       });
     }
   }
 
-  // Init universes com partículas
-  var univData = UNIVERSES.map(function() {
-    return { particles: makeCylParticles(60), labelOpacity: 0 };
+  // Pulsos no eixo quântico
+  var pulses=[];
+  function spawnPulse(){
+    pulses.push({ z:0, speed:0.0006+Math.random()*0.0004, op:0.7+Math.random()*0.3 });
+  }
+
+  // Estado de cada universo
+  var univState = UNIVERSES.map(function(U,i){
+    var areas=[];
+    for(var a=0;a<AREAS.length;a++){
+      areas.push({
+        label:AREAS[a],
+        angle: (a/AREAS.length)*Math.PI*2,
+        orbitSpeed: 0.00025 + Math.random()*0.00015,
+        r: HUB_R_BASE*0.55,
+        opacity:0, targetR:0,
+        sinapseTimer:Math.random()*2000,
+      });
+    }
+    return {
+      areas:areas,
+      labelOpacity:0,
+      hubOpacity:0,
+      discOpacity:0,
+      revealed:0, // 0→1
+    };
   });
 
-  // ── DRAW ───────────────────────────────────────────────────────────────────
+  /* ── HELPERS ── */
+  function clamp01(v){return Math.max(0,Math.min(1,v));}
+  function easeOut3(t){return 1-Math.pow(1-t,3);}
+  function lerp(a,b,t){return a+(b-a)*t;}
 
-  // Desenha um cilindro em perspectiva cônica
-  // origin: ponto de fuga (origem da singularidade)
-  // ang: ângulo de abertura do cilindro (rad, em relação ao eixo X)
-  // depth: comprimento do cilindro em px
-  // radiusNear: raio da elipse na boca próxima
-  // color: [r,g,b]
-  // progress: 0→1 (quanto do cilindro foi revelado)
-  // elapsed: para animação
-  // particles: array
-  // labelOpacity: 0→1
+  /* ── DRAW UNIVERSE ──
+     Desenha um universo na posição 3D (z ao longo do eixo)
+     O disco é inclinado em relação à câmera (tilt)
+     Áreas orbitam o hub no plano do disco
+  */
+  function drawUniverse(U, us, elapsed, globalAlpha){
+    if(us.revealed < 0.01) return;
 
-  function drawCylinder(U, ud, origin, progress, elapsed) {
-    var ang   = U.ang;
-    // Profundidade vai até a borda da tela
-    var diagHalf = Math.sqrt(W*W + H*H) * 0.52;
-    var depth = diagHalf;
-    var radiusNear = Math.min(W, H) * 0.18;
-    var rNear = radiusNear;
-    var rFar  = radiusNear * 0.04; // perspectiva — boca distante menor
-    var r     = U.color;
+    var rev = us.revealed;
+    var pos = project(0, 0, U.z);
+    var S   = pos.scale;
+    var px  = pos.x, py = pos.y;
+    var r   = U.color;
+    var aR  = AREA_RADIUS_BASE * S;
+    var tilt = U.tilt; // quanto o disco está inclinado (0=de frente, 1=de lado)
 
-    // Direção do cilindro (ang aponta para borda da tela)
-    var dx = Math.cos(ang);
-    var dy = Math.sin(ang) * 0.65; // leve achatamento vertical p/ profundidade
-
-    // Ponto da boca próxima (extremidade aberta)
-    var bx = origin.x + dx * depth * progress;
-    var by = origin.y + dy * depth * progress;
-
-    // Proporção de aplatamento da elipse (perspectiva)
-    var flatNear = 0.28;
-    var flatFar  = 0.04;
-
-    if (progress <= 0.01) return;
-
-    // ── Interior (nebulosa) ──
-    var interiorAlpha = Math.min(progress * 2, 1);
     ctx.save();
-    ctx.globalAlpha = interiorAlpha * 0.85;
+    ctx.globalAlpha = globalAlpha * rev;
 
-    // Desenha o corpo do cilindro como gradiente radial de fuga
-    // Clip ao trapézio do cilindro
-    var edgeLeft  = ang + Math.PI/2;
-    var edgeRight = ang - Math.PI/2;
-
-    // Pontos do trapézio (4 cantos)
-    var ox = origin.x, oy = origin.y;
-    var p1x = ox + Math.cos(edgeLeft )*rFar  * flatFar;
-    var p1y = oy + Math.sin(edgeLeft )*rFar;
-    var p2x = ox + Math.cos(edgeRight)*rFar  * flatFar;
-    var p2y = oy + Math.sin(edgeRight)*rFar;
-    var p3x = bx + Math.cos(edgeRight)*rNear * flatNear * progress;
-    var p3y = by + Math.sin(edgeRight)*rNear             * progress;
-    var p4x = bx + Math.cos(edgeLeft )*rNear * flatNear * progress;
-    var p4y = by + Math.sin(edgeLeft )*rNear             * progress;
-
+    /* -- Halo/nebulosa do universo -- */
+    var haloR = aR * 1.6;
+    var hGrad = ctx.createRadialGradient(px,py,0,px,py,haloR);
+    hGrad.addColorStop(0,'rgba('+r[0]+','+r[1]+','+r[2]+','+(0.12*rev)+')');
+    hGrad.addColorStop(0.5,'rgba('+r[0]+','+r[1]+','+r[2]+','+(0.07*rev)+')');
+    hGrad.addColorStop(1,'rgba('+r[0]+','+r[1]+','+r[2]+',0)');
+    ctx.fillStyle=hGrad;
     ctx.beginPath();
-    ctx.moveTo(p1x,p1y); ctx.lineTo(p2x,p2y);
-    ctx.lineTo(p3x,p3y); ctx.lineTo(p4x,p4y);
-    ctx.closePath();
-    ctx.clip();
+    ctx.arc(px,py,haloR,0,Math.PI*2);
+    ctx.fill();
 
-    // Gradiente de profundidade
-    var grad = ctx.createLinearGradient(ox,oy, bx,by);
-    grad.addColorStop(0,   'rgba('+r[0]+','+r[1]+','+r[2]+',0.02)');
-    grad.addColorStop(0.3, 'rgba('+r[0]+','+r[1]+','+r[2]+',0.18)');
-    grad.addColorStop(0.7, 'rgba('+r[0]+','+r[1]+','+r[2]+',0.30)');
-    grad.addColorStop(1,   'rgba('+r[0]+','+r[1]+','+r[2]+',0.08)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0,0,W,H);
-
-    // Partículas nebulosas dentro do cilindro
-    for (var i=0;i<ud.particles.length;i++) {
-      var pt = ud.particles[i];
-      if (pt.z > progress) continue; // ainda não revelada
-
-      // Interpolação ao longo do eixo do cilindro
-      var t = pt.z / progress;
-      var px = ox + (bx-ox)*t;
-      var py = oy + (by-oy)*t;
-
-      // Raio e achatamento interpolado
-      var rAtZ = rFar + (rNear*progress - rFar)*t;
-      var flatAtZ = flatFar + (flatNear*progress - flatFar)*t;
-
-      // Posição no disco
-      var ptAngle = pt.angle + elapsed * pt.speed;
-      var ptX = px + Math.cos(ptAngle) * pt.rFrac * rAtZ * flatAtZ;
-      var ptY = py + Math.sin(ptAngle) * pt.rFrac * rAtZ * 0.85;
-
-      // Twinkle
-      pt.twinkle += pt.twinkleSpeed;
-      var twinkAlpha = 0.4 + 0.6 * Math.abs(Math.sin(pt.twinkle));
-
+    /* -- Disco (elipse inclinada) -- */
+    if(us.discOpacity > 0){
+      ctx.globalAlpha = globalAlpha * rev * us.discOpacity * 0.35;
       ctx.beginPath();
-      ctx.arc(ptX, ptY, pt.size * (0.5 + t*0.5), 0, Math.PI*2);
-      ctx.fillStyle = 'rgba('+r[0]+','+r[1]+','+r[2]+','+twinkAlpha+')';
+      // Elipse do disco: largura = aR*2, altura = aR*2*tilt (perspectiva)
+      ctx.ellipse(px, py, aR*1.05, aR*1.05*tilt, -0.35, 0, Math.PI*2);
+      ctx.strokeStyle='rgba('+r[0]+','+r[1]+','+r[2]+',0.5)';
+      ctx.lineWidth=1;
+      ctx.stroke();
+      ctx.globalAlpha = globalAlpha * rev * us.discOpacity * 0.08;
+      ctx.fillStyle='rgba('+r[0]+','+r[1]+','+r[2]+',1)';
       ctx.fill();
+    }
+    ctx.globalAlpha = globalAlpha * rev;
+
+    /* -- Hub central -- */
+    var hubR = Math.max(3, 5*S);
+    if(us.hubOpacity > 0){
+      ctx.globalAlpha = globalAlpha * rev * us.hubOpacity;
+      // Glow
+      var hg = ctx.createRadialGradient(px,py,0,px,py,hubR*4);
+      hg.addColorStop(0,'rgba('+r[0]+','+r[1]+','+r[2]+',0.9)');
+      hg.addColorStop(0.3,'rgba('+r[0]+','+r[1]+','+r[2]+',0.4)');
+      hg.addColorStop(1,'rgba('+r[0]+','+r[1]+','+r[2]+',0)');
+      ctx.fillStyle=hg;
+      ctx.beginPath();ctx.arc(px,py,hubR*4,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(px,py,hubR,0,Math.PI*2);
+      ctx.fillStyle='rgba('+r[0]+','+r[1]+','+r[2]+',1)';ctx.fill();
+    }
+
+    /* -- Áreas em órbita -- */
+    ctx.globalAlpha = globalAlpha * rev;
+    var visibleAreas=[];
+    for(var ai=0;ai<us.areas.length;ai++){
+      var a=us.areas[ai];
+      if(a.opacity < 0.01) continue;
+      // Posição no disco inclinado
+      // x no disco = cos(angle)*aR
+      // y no disco = sin(angle)*aR, mas projetado com tilt
+      var ax3 = Math.cos(a.angle)*aR;
+      var ay3 = Math.sin(a.angle)*aR*tilt; // tilt achata o eixo y (perspectiva)
+      var ax  = px + ax3;
+      var ay  = py + ay3 - ay3*0.1; // pequeno offset vertical da rotação
+      var ar  = Math.max(2, a.r*S);
+      visibleAreas.push({ax:ax,ay:ay,ar:ar,a:a});
+
+      // Conexão hub → área
+      ctx.globalAlpha = globalAlpha*rev*a.opacity*0.45;
+      ctx.beginPath();
+      ctx.moveTo(px,py); ctx.lineTo(ax,ay);
+      ctx.strokeStyle='rgba('+r[0]+','+r[1]+','+r[2]+',0.5)';
+      ctx.lineWidth=0.5;
+      ctx.stroke();
+
+      // Nó da área
+      ctx.globalAlpha = globalAlpha*rev*a.opacity;
+      var ag=ctx.createRadialGradient(ax,ay,0,ax,ay,ar*2.5);
+      ag.addColorStop(0,'rgba('+r[0]+','+r[1]+','+r[2]+',0.8)');
+      ag.addColorStop(1,'rgba('+r[0]+','+r[1]+','+r[2]+',0)');
+      ctx.fillStyle=ag;ctx.beginPath();ctx.arc(ax,ay,ar*2.5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='rgba('+r[0]+','+r[1]+','+r[2]+',1)';
+      ctx.beginPath();ctx.arc(ax,ay,ar,0,Math.PI*2);ctx.fill();
+    }
+
+    // Conexões entre áreas (sinapses)
+    if(visibleAreas.length > 1){
+      for(var i=0;i<visibleAreas.length;i++){
+        var va=visibleAreas[i];
+        var vb=visibleAreas[(i+1)%visibleAreas.length];
+        var dist=Math.hypot(va.ax-vb.ax,va.ay-vb.ay);
+        if(dist<aR*1.3){
+          ctx.globalAlpha=globalAlpha*rev*va.a.opacity*vb.a.opacity*0.2;
+          ctx.beginPath();ctx.moveTo(va.ax,va.ay);ctx.lineTo(vb.ax,vb.ay);
+          ctx.strokeStyle='rgba('+r[0]+','+r[1]+','+r[2]+',0.6)';
+          ctx.lineWidth=0.5;ctx.stroke();
+        }
+      }
+    }
+
+    /* -- Label da empresa -- */
+    if(us.labelOpacity > 0){
+      ctx.globalAlpha=globalAlpha*rev*us.labelOpacity;
+      var lfs=Math.max(8,Math.min(W*0.008,12))*S;
+      ctx.font=''+lfs+'px "DM Mono",monospace';
+      ctx.fillStyle='rgba('+r[0]+','+r[1]+','+r[2]+',1)';
+      ctx.textAlign='center';
+      ctx.fillText(U.label, px, py - aR*tilt*1.3 - hubR*2);
     }
 
     ctx.restore();
-
-    // ── Borda elipse boca próxima ──
-    if (progress > 0.1) {
-      var edgeAlpha = Math.min((progress-0.1)*3, 1);
-      ctx.save();
-      ctx.globalAlpha = edgeAlpha * 0.9;
-      ctx.beginPath();
-      ctx.ellipse(bx, by, rNear * flatNear * progress, rNear * progress, ang, 0, Math.PI*2);
-      ctx.strokeStyle = 'rgba('+r[0]+','+r[1]+','+r[2]+',0.9)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-
-      // Glow na borda
-      ctx.beginPath();
-      ctx.ellipse(bx, by, rNear * flatNear * progress, rNear * progress, ang, 0, Math.PI*2);
-      ctx.strokeStyle = 'rgba('+r[0]+','+r[1]+','+r[2]+',0.25)';
-      ctx.lineWidth = 6;
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // ── Linhas de borda do cilindro ──
-    if (progress > 0.05) {
-      var borderAlpha = Math.min(progress * 4, 0.5);
-      ctx.save();
-      ctx.globalAlpha = borderAlpha;
-      ctx.strokeStyle = 'rgba('+r[0]+','+r[1]+','+r[2]+',0.6)';
-      ctx.lineWidth = 1;
-      // Linha superior
-      ctx.beginPath();
-      ctx.moveTo(p1x, p1y);
-      ctx.lineTo(p4x, p4y);
-      ctx.stroke();
-      // Linha inferior
-      ctx.beginPath();
-      ctx.moveTo(p2x, p2y);
-      ctx.lineTo(p3x, p3y);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // ── Elipse do fundo (boca distante / singularidade) ──
-    if (progress > 0.02) {
-      ctx.save();
-      ctx.globalAlpha = Math.min(progress * 5, 0.7);
-      ctx.beginPath();
-      ctx.ellipse(ox, oy, rFar * flatFar, rFar, ang, 0, Math.PI*2);
-      ctx.strokeStyle = 'rgba('+r[0]+','+r[1]+','+r[2]+',0.5)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // ── Label da empresa ──
-    if (ud.labelOpacity > 0) {
-      ctx.save();
-      ctx.globalAlpha = ud.labelOpacity;
-      ctx.font = 'clamp(9px,0.7vw,11px) / 1 "DM Mono", monospace';
-      ctx.font = (Math.max(9, Math.min(W*0.007, 11))) + 'px "DM Mono", monospace';
-      ctx.letterSpacing = '0.2em';
-      ctx.fillStyle = 'rgba('+r[0]+','+r[1]+','+r[2]+',1)';
-      ctx.textAlign = 'center';
-      // Label aparece na boca do cilindro
-      var labelX = bx + Math.cos(ang + Math.PI/2) * rNear * flatNear * progress * 1.4;
-      var labelY = by + Math.sin(ang + Math.PI/2) * rNear * progress * 1.4 + 4;
-      ctx.fillText(U.label, labelX, labelY);
-      ctx.restore();
-    }
   }
 
-  // ── TIMELINE ───────────────────────────────────────────────────────────────
-  var DURATION = 9000;
-  var startTime = null;
-  var animRunning = false;
-
-  function easeOut(t) { return 1 - Math.pow(1-t,3); }
-  function easeIn(t)  { return t*t*t; }
-  function lerp(a,b,t){ return a+(b-a)*t; }
-  function clamp01(v) { return Math.max(0,Math.min(1,v)); }
-
-  function frame(ts) {
-    if (!animRunning) return;
-    if (!startTime) startTime = ts;
-    var elapsed = ts - startTime;
-    var p = elapsed / DURATION;
-
-    // Redimensionar canvas se necessário
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    ctx.clearRect(0, 0, W, H);
-
-    // BG
-    ctx.fillStyle = '#02020a';
-    ctx.fillRect(0, 0, W, H);
-
-    // Stars de fundo
-    var starAlpha = Math.min(elapsed/1500, 1) * (p > 0.85 ? (1-(p-0.85)/0.15) : 1);
-    for (var s=0;s<bgStars.length;s++) {
-      var st = bgStars[s];
-      st.twinkle += st.speed;
-      var sa = st.opacity * (0.6+0.4*Math.abs(Math.sin(st.twinkle)));
-      ctx.beginPath();
-      ctx.arc(st.x*W, st.y*H, st.r, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(255,255,255,'+sa*starAlpha+')';
-      ctx.fill();
-    }
-
-    // Origem — ponto de singularidade (explosão de luz)
-    var origin = { x: CX, y: CY };
-
-    // Glow central
-    var glowP = clamp01(elapsed/1000);
-    if (glowP > 0) {
-      var glowR = Math.min(W,H) * 0.08 * glowP;
-      var gGrad = ctx.createRadialGradient(CX,CY,0,CX,CY,glowR);
-      gGrad.addColorStop(0,   'rgba(200,169,110,'+0.9*glowP+')');
-      gGrad.addColorStop(0.3, 'rgba(200,169,110,'+0.4*glowP+')');
-      gGrad.addColorStop(1,   'rgba(200,169,110,0)');
-      ctx.fillStyle = gGrad;
-      ctx.beginPath();
-      ctx.arc(CX,CY, glowR, 0, Math.PI*2);
-      ctx.fill();
-    }
-
-    // Cilindros — revelação escalonada
-    // 0.0–0.15: aparecem todos juntos saindo da singularidade
-    // 0.15–0.7: se expandem para suas posições finais
-    // 0.7–0.85: labels aparecem
-    // 0.85–1.0: fade out
-
-    var cylStart = 0.10;
-    var cylEnd   = 0.72;
-
-    for (var ui=0;ui<UNIVERSES.length;ui++) {
-      var U  = UNIVERSES[ui];
-      var ud = univData[ui];
-
-      // Progress do cilindro
-      var cylP;
-      if (p < cylStart) {
-        cylP = 0;
-      } else if (p < cylEnd) {
-        cylP = easeOut(clamp01((p - cylStart) / (cylEnd - cylStart)));
-      } else {
-        cylP = 1;
-      }
-
-      // Labels
-      var labStart = 0.68;
-      var labEnd   = 0.82;
-      if (p < labStart) ud.labelOpacity = 0;
-      else if (p < labEnd) ud.labelOpacity = (p-labStart)/(labEnd-labStart);
-      else ud.labelOpacity = 1;
-
-      // Fade out geral (0.85–1.0)
-      if (p > 0.86) {
-        var fadeP = clamp01((p - 0.86) / 0.14);
-        ud.labelOpacity *= (1 - fadeP);
-      }
-
-      drawCylinder(U, ud, origin, cylP, elapsed);
-    }
-
-    // Ponto central (singularidade visível)
+  /* ── DRAW AXIS (linha quântica) ── */
+  function drawAxis(elapsed, axisOpacity, pulseList){
+    if(axisOpacity < 0.01) return;
     ctx.save();
-    var cP = Math.min(elapsed/600, 1);
-    ctx.globalAlpha = cP * (p > 0.86 ? (1 - clamp01((p-0.86)/0.14)) : 1);
-    ctx.beginPath();
-    ctx.arc(CX, CY, 3, 0, Math.PI*2);
-    ctx.fillStyle = '#C8A96E';
-    ctx.fill();
+
+    // Pontos do eixo: do fundo (z=0) à frente (z=1)
+    var p0=project(0,0,0);
+    var p1=project(0,0,1);
+
+    // Gradiente ao longo do eixo
+    var grad=ctx.createLinearGradient(p0.x,p0.y,p1.x,p1.y);
+    grad.addColorStop(0,'rgba(200,169,110,0.0)');
+    grad.addColorStop(0.2,'rgba(200,169,110,'+0.5*axisOpacity+')');
+    grad.addColorStop(0.5,'rgba(200,169,110,'+0.8*axisOpacity+')');
+    grad.addColorStop(0.8,'rgba(200,169,110,'+0.5*axisOpacity+')');
+    grad.addColorStop(1,'rgba(200,169,110,0.0)');
+
+    ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);
+    ctx.strokeStyle=grad;ctx.lineWidth=1.5;ctx.stroke();
+
+    // Glow do eixo
+    ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);
+    var gGrad=ctx.createLinearGradient(p0.x,p0.y,p1.x,p1.y);
+    gGrad.addColorStop(0,'rgba(200,169,110,0)');
+    gGrad.addColorStop(0.5,'rgba(200,169,110,'+0.15*axisOpacity+')');
+    gGrad.addColorStop(1,'rgba(200,169,110,0)');
+    ctx.strokeStyle=gGrad;ctx.lineWidth=8;ctx.stroke();
+
+    // Pulsos viajando pelo eixo
+    for(var pi=0;pi<pulseList.length;pi++){
+      var pulse=pulseList[pi];
+      var pp=project(0,0,pulse.z);
+      var pr=Math.max(2,4*pp.scale);
+      var pg=ctx.createRadialGradient(pp.x,pp.y,0,pp.x,pp.y,pr*3);
+      pg.addColorStop(0,'rgba(200,169,110,'+0.9*pulse.op*axisOpacity+')');
+      pg.addColorStop(0.4,'rgba(200,169,110,'+0.4*pulse.op*axisOpacity+')');
+      pg.addColorStop(1,'rgba(200,169,110,0)');
+      ctx.fillStyle=pg;ctx.beginPath();ctx.arc(pp.x,pp.y,pr*3,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='rgba(200,169,110,'+pulse.op*axisOpacity+')';
+      ctx.beginPath();ctx.arc(pp.x,pp.y,pr,0,Math.PI*2);ctx.fill();
+    }
+
     ctx.restore();
+  }
 
-    // Texto "CULTURA BUILDER" — fase 0–0.10
-    var cbAlpha = 0;
-    if (p < 0.05) cbAlpha = p/0.05;
-    else if (p < 0.09) cbAlpha = 1;
-    else if (p < 0.12) cbAlpha = 1 - (p-0.09)/0.03;
-    labelCB.style.opacity = cbAlpha;
+  /* ── TIMELINE ── */
+  var DURATION=9500;
+  var startTime=null, animRunning=false;
+  var lastPulse=0;
 
-    // Texto "KNOWLEDGE" — fase 0.72–0.85
-    var kwAlpha = 0;
-    var kwPhase = clamp01((p - 0.72) / 0.1);
-    kwAlpha = kwPhase * (p > 0.86 ? (1 - clamp01((p-0.86)/0.14)) : 1);
-    textKnow.style.opacity = kwAlpha;
+  function frame(ts){
+    if(!animRunning)return;
+    if(!startTime)startTime=ts;
+    var elapsed=ts-startTime;
+    var p=elapsed/DURATION;
 
-    if (kwPhase > 0 && !textKnow._typed) {
-      var kw = 'KNOWLEDGE';
-      var charsToShow = Math.floor(kwPhase * kw.length);
-      textKnow.textContent = kw.substring(0, charsToShow) + (charsToShow < kw.length ? '_' : '');
-      if (charsToShow >= kw.length) textKnow._typed = true;
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#02020e';ctx.fillRect(0,0,W,H);
+
+    // Fade global (0.86→1.0)
+    var gAlpha = p>0.87 ? clamp01(1-(p-0.87)/0.13) : 1;
+
+    /* -- Estrelas de fundo -- */
+    var starAlpha=clamp01(elapsed/1200)*gAlpha;
+    for(var si=0;si<bgPts.length;si++){
+      var st=bgPts[si];
+      st.tw+=st.ts;
+      var sop=st.op*(0.6+0.4*Math.abs(Math.sin(st.tw)));
+      var sp=project(st.x,st.y,st.z);
+      ctx.globalAlpha=sop*starAlpha;
+      ctx.beginPath();ctx.arc(sp.x,sp.y,st.r*sp.scale,0,Math.PI*2);
+      ctx.fillStyle='#fff';ctx.fill();
+    }
+    ctx.globalAlpha=1;
+
+    /* -- Eixo quântico -- */
+    // Aparece em 0.05–0.20
+    var axisP=clamp01((p-0.05)/0.15)*gAlpha;
+    // Pulsos: spawna a cada ~600ms depois que o eixo aparece
+    if(p>0.12 && p<0.87){
+      if(elapsed-lastPulse>650){lastPulse=elapsed;spawnPulse();}
+    }
+    for(var pi=pulses.length-1;pi>=0;pi--){
+      pulses[pi].z+=pulses[pi].speed*16;
+      if(pulses[pi].z>1.05)pulses.splice(pi,1);
+    }
+    drawAxis(elapsed,axisP,pulses);
+
+    /* -- Universos -- */
+    // Universo i aparece em staggered: 0.10 + i*0.12
+    for(var ui=0;ui<UNIVERSES.length;ui++){
+      var U=UNIVERSES[ui];
+      var us=univState[ui];
+      var uStart=0.10+ui*0.11;
+      var uEnd=uStart+0.25;
+
+      // revealed
+      if(p<uStart) us.revealed=0;
+      else if(p<uEnd) us.revealed=easeOut3(clamp01((p-uStart)/(uEnd-uStart)));
+      else us.revealed=1;
+
+      // hub
+      var hStart=uStart+0.02;
+      us.hubOpacity=p>hStart?clamp01((p-hStart)/0.08):0;
+
+      // disco
+      var dStart=uStart+0.05;
+      us.discOpacity=p>dStart?clamp01((p-dStart)/0.10):0;
+
+      // áreas (staggered por área)
+      for(var ai=0;ai<us.areas.length;ai++){
+        var a=us.areas[ai];
+        var aStart=uStart+0.08+ai*0.02;
+        var aOp=p>aStart?clamp01((p-aStart)/0.08):0;
+        a.opacity=aOp;
+        a.targetR=aOp>0.05?3:0;
+        if(a.r<a.targetR) a.r=Math.min(a.r+0.15,a.targetR);
+        // Orbitar
+        a.angle+=a.orbitSpeed*(16);
+      }
+
+      // labels
+      var lStart=0.65;
+      us.labelOpacity=p>lStart?clamp01((p-lStart)/0.10):0;
+
+      drawUniverse(U,us,elapsed,gAlpha);
     }
 
-    // Fade out overlay
-    if (p > 0.86) {
-      var fadeOut = clamp01((p - 0.86) / 0.14);
-      overlay.style.opacity = 1 - fadeOut;
+    /* -- "CULTURA BUILDER" texto -- */
+    var cbA=0;
+    if(p<0.04) cbA=p/0.04;
+    else if(p<0.08) cbA=1;
+    else if(p<0.12) cbA=1-(p-0.08)/0.04;
+    labelCB.style.opacity=cbA;
+
+    /* -- "KNOWLEDGE" texto -- */
+    var kwP=clamp01((p-0.72)/0.10)*gAlpha;
+    textKnow.style.opacity=kwP;
+    if(kwP>0 && !textKnow._typed){
+      var kw='KNOWLEDGE';
+      var ch=Math.floor(clamp01((p-0.72)/0.08)*kw.length);
+      textKnow.textContent=kw.substring(0,ch)+(ch<kw.length?'_':'');
+      if(ch>=kw.length) textKnow._typed=true;
     }
 
-    if (elapsed < DURATION) {
+    // Fade overlay
+    if(p>0.87){ overlay.style.opacity=''+(gAlpha); }
+
+    if(elapsed<DURATION){
       requestAnimationFrame(frame);
     } else {
-      overlay.style.display = 'none';
-      localStorage.setItem(SEEN_KEY, '1');
-      animRunning = false;
+      overlay.style.display='none';
+      localStorage.setItem(SEEN_KEY,'1');
+      animRunning=false;
     }
   }
 
-  function runIntro() {
-    makeBgStars();
-    resize();
-    animRunning = true;
-    playCosmic();
+  function runIntro(){
+    resize(); makeBgPts();
+    animRunning=true;
+    playSound();
     requestAnimationFrame(frame);
   }
 
-  window.addEventListener('resize', function() {
-    resize();
-    makeBgStars();
-  });
-
-  setTimeout(runIntro, 300);
+  setTimeout(runIntro,300);
 })();
 </script>
-
 
 <!-- NAV -->
 <nav>
