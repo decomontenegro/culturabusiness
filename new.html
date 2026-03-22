@@ -1373,6 +1373,123 @@ footer {
   position: relative;
   z-index: 1;
 }
+
+/* ── PARTNERS ── */
+.partners-section {
+  padding: 120px 0;
+  border-top: 1px solid rgba(245,240,232,0.05);
+  overflow: hidden;
+}
+
+.partners-header {
+  margin-bottom: 72px;
+}
+
+.partners-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+
+.partners-stat-value {
+  font-family: var(--serif);
+  font-size: clamp(64px, 8vw, 120px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--text);
+}
+
+.partners-stat-plus {
+  color: var(--gold);
+}
+
+.partners-stat-label {
+  font-size: 15px;
+  color: var(--muted);
+  font-weight: 300;
+  max-width: 260px;
+  line-height: 1.6;
+}
+
+/* Tickers */
+.partners-ticker-wrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+/* fade nas bordas */
+.partners-ticker-wrap::before,
+.partners-ticker-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 160px;
+  z-index: 2;
+  pointer-events: none;
+}
+.partners-ticker-wrap::before {
+  left: 0;
+  background: linear-gradient(to right, #080808, transparent);
+}
+.partners-ticker-wrap::after {
+  right: 0;
+  background: linear-gradient(to left, #080808, transparent);
+}
+
+.partners-ticker-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: max-content;
+  white-space: nowrap;
+}
+
+.partners-ticker-forward {
+  animation: ptk-forward 45s linear infinite;
+}
+.partners-ticker-reverse {
+  animation: ptk-reverse 50s linear infinite;
+}
+
+@keyframes ptk-forward {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes ptk-reverse {
+  0%   { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+/* pausa no hover */
+.partners-ticker-wrap:hover .partners-ticker-track {
+  animation-play-state: paused;
+}
+
+.ptk {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: rgba(245,240,232,0.18);
+  letter-spacing: -0.01em;
+  padding: 0 8px;
+  transition: color 0.3s;
+}
+
+.partners-ticker-wrap:hover .ptk {
+  color: rgba(245,240,232,0.35);
+}
+
+.ptk-sep {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: rgba(200,169,110,0.25);
+  padding: 0 4px;
+}
 </style>
 </head>
 <body>
@@ -1478,6 +1595,145 @@ footer {
       <span class="logo-wordmark">Vértice Group</span>
       <span class="logo-wordmark">Solara Partners</span>
       <span class="logo-wordmark">Nexum Advisory</span>
+    </div>
+  </div>
+</section>
+
+<!-- ════ PARCEIROS ════ -->
+<section class="partners-section">
+  <div class="wrap">
+    <div class="partners-header reveal">
+      <span class="eyebrow">Ecossistema exclusivo</span>
+      <div class="partners-stat">
+        <span class="partners-stat-value">$150k<span class="partners-stat-plus">+</span></span>
+        <span class="partners-stat-label">em benefícios exclusivos para membros CulturaBuilder</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ticker row 1 -->
+  <div class="partners-ticker-wrap partners-ticker-wrap-1">
+    <div class="partners-ticker-track partners-ticker-forward">
+      <span class="ptk">AWS</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">NVIDIA</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Notion</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Slack</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Amplitude</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Atlassian</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Scytale</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Ada</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Multiverse Computing</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Upwind</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Qdrant</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Orca Security</span>
+      <span class="ptk-sep">·</span>
+      <!-- duplicata para loop infinito -->
+      <span class="ptk">AWS</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">NVIDIA</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Notion</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Slack</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Amplitude</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Atlassian</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Scytale</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Ada</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Multiverse Computing</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Upwind</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Qdrant</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Orca Security</span>
+      <span class="ptk-sep">·</span>
+    </div>
+  </div>
+
+  <!-- Ticker row 2 -->
+  <div class="partners-ticker-wrap partners-ticker-wrap-2">
+    <div class="partners-ticker-track partners-ticker-reverse">
+      <span class="ptk">Stripe Atlas</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Modal</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Grammarly</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Asana</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">DevRev</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Mercury</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Bubble</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Zendesk</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Intercom</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Temporal</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Supabase</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Confluent</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">MongoDB</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Miro</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">HubSpot</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Firecrawl</span>
+      <span class="ptk-sep">·</span>
+      <!-- duplicata para loop infinito -->
+      <span class="ptk">Stripe Atlas</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Modal</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Grammarly</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Asana</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">DevRev</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Mercury</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Bubble</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Zendesk</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Intercom</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Temporal</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Supabase</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Confluent</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">MongoDB</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Miro</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">HubSpot</span>
+      <span class="ptk-sep">·</span>
+      <span class="ptk">Firecrawl</span>
+      <span class="ptk-sep">·</span>
     </div>
   </div>
 </section>
