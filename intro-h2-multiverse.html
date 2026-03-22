@@ -1753,6 +1753,7 @@ footer {
     ctx.fillRect(0,0,W,H);
 
     // ── ESTRELAS DE FUNDO ──
+    var elapsed=p*DURATION;
     var starA=clamp(elapsed/1500,0,1)*gA;
     if(starA>0){
       for(var si=0;si<stars.length;si++){
