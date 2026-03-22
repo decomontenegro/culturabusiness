@@ -1594,399 +1594,560 @@ footer {
 </head>
 <body>
 
-<!-- ── INTRO SPLASH SCREEN — CONCEPT H2: MULTI-UNIVERSE DARK MATTER ── -->
+<!-- ── INTRO SPLASH SCREEN — CONCEITO F: NEBULOSA HOLOGRÁFICA ── -->
 <div id="intro-overlay">
   <canvas id="intro-canvas"></canvas>
-  <div id="intro-label-cb">CULTURA BUILDER</div>
+  <div id="intro-text-cb">CULTURA BUILDER</div>
   <div id="intro-text-know"></div>
 </div>
 
 <style>
 #intro-overlay {
-  position:fixed;inset:0;z-index:9999;background:#020210;
-  overflow:hidden;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #060810;
+  transition: opacity 1.5s ease;
 }
+
 #intro-canvas {
-  position:absolute;inset:0;width:100%;height:100%;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
-#intro-label-cb {
-  position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  font-family:'Inter',sans-serif;font-weight:200;
-  font-size:clamp(10px,1.2vw,16px);letter-spacing:0.65em;
-  color:#F5F0E8;opacity:0;white-space:nowrap;pointer-events:none;
-  text-transform:uppercase;
+
+#intro-text-cb {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: clamp(12px, 1.5vw, 18px);
+  letter-spacing: 0.45em;
+  color: #F5F0E8;
+  opacity: 0;
+  white-space: nowrap;
+  pointer-events: none;
+  -webkit-font-smoothing: antialiased;
 }
+
 #intro-text-know {
-  position:absolute;bottom:11%;left:50%;transform:translateX(-50%);
-  font-family:'DM Mono',monospace;font-weight:400;
-  font-size:clamp(20px,3vw,44px);letter-spacing:0.08em;
-  color:#C8A96E;opacity:0;white-space:nowrap;pointer-events:none;
+  position: absolute;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'DM Mono', monospace;
+  font-weight: 400;
+  font-size: clamp(18px, 2.5vw, 32px);
+  letter-spacing: 0.1em;
+  color: #C8A96E;
+  opacity: 0;
+  white-space: nowrap;
+  pointer-events: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+#intro-cursor-holo {
+  animation: blink-holo 0.5s step-end infinite;
+  color: #C8A96E;
+}
+
+@keyframes blink-holo {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
 }
 </style>
 
 <script>
-(function(){
+(function() {
   var overlay  = document.getElementById('intro-overlay');
-  var labelCB  = document.getElementById('intro-label-cb');
-  var textKnow = document.getElementById('intro-text-know');
   var canvas   = document.getElementById('intro-canvas');
-  var ctx      = canvas.getContext('2d');
-  var SEEN_KEY = 'cb_intro_quantum_v2';
-  if(location.search.indexOf('reset')>-1) localStorage.removeItem(SEEN_KEY);
-  if(localStorage.getItem(SEEN_KEY)){overlay.style.display='none';return;}
+  var textCB   = document.getElementById('intro-text-cb');
+  var textKnow = document.getElementById('intro-text-know');
 
-  /* ── AUDIO ── */
-  var AC=null;
-  function getAC(){if(!AC)try{AC=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}return AC;}
-  function tone(f,d,type,vol,delay){
-    var a=getAC();if(!a)return;
-    var t=a.currentTime+(delay||0);
-    var o=a.createOscillator(),g=a.createGain();
-    o.connect(g);g.connect(a.destination);
-    o.type=type||'sine';o.frequency.setValueAtTime(f,t);
-    o.frequency.exponentialRampToValueAtTime(f*0.4,t+d*0.7);
-    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||0.1,t+0.08);
-    g.gain.exponentialRampToValueAtTime(0.001,t+d);
-    o.start(t);o.stop(t+d);
+  // ── Skip on repeat visits ──
+  if (localStorage.getItem('cb_intro_nebulaholo_seen')) {
+    overlay.style.display = 'none';
+    return;
   }
-  function playSound(){
-    tone(40,5,'sine',0.15,0);tone(60,4,'sine',0.08,0.2);
-    tone(120,3,'sine',0.05,0.6);tone(80,4,'triangle',0.06,0);
-    tone(440,2,'sine',0.07,5.5);tone(528,1.8,'sine',0.09,6.0);
-    tone(660,1.5,'sine',0.05,6.4);
-  }
+  localStorage.setItem('cb_intro_nebulaholo_seen', '1');
 
-  /* ── VIEWPORT ── */
-  var W,H,CX,CY;
-  function resize(){
-    var dpr=window.devicePixelRatio||1;
-    W=window.innerWidth;H=window.innerHeight;
-    canvas.width=W*dpr;canvas.height=H*dpr;
-    canvas.style.width=W+'px';canvas.style.height=H+'px';
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    CX=W/2;CY=H/2;
-  }
-  window.addEventListener('resize',resize);
+  // ── Canvas setup with DPR scaling ──
+  var ctx = canvas.getContext('2d');
+  var W, H, CX, CY;
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-  // Eixo diagonal: sup-esq → inf-dir
-  function axisPoint(t) {
-    return {
-      x: W*0.12 + t*(W*0.76),
-      y: H*0.15 + t*(H*0.70),
-      scale: 0.30 + t*0.70
-    };
+  function resizeCanvas() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+    CX = W / 2;
+    CY = H / 2;
+  }
+  resizeCanvas();
+
+  // ── Web Audio API ──
+  var audioCtx = null;
+  function initAudio() {
+    if (audioCtx) return;
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { audioCtx = null; }
   }
 
-  /*
-   * Cada UNIVERSO = uma área da empresa
-   * Cada PLANET = um funcionário
-   */
-  var UNIVERSES = [
-    {
-      label: 'VENDAS',
-      color: [255, 130, 50],   // laranja
-      t: 0.08,
-      planets: ['Ana Lima','Rafael Torres','Juliana Melo','Pedro Assis','Carla Braga']
-    },
-    {
-      label: 'PRODUTO',
-      color: [80, 160, 255],   // azul
-      t: 0.26,
-      planets: ['Thiago Neves','Marina Costa','Lucas Dini','Beatriz Saad']
-    },
-    {
-      label: 'FINANCEIRO',
-      color: [60, 210, 130],   // verde
-      t: 0.44,
-      planets: ['Roberto Faro','Fernanda Cruz','Diego Leal']
-    },
-    {
-      label: 'RH',
-      color: [255, 100, 160],  // rosa
-      t: 0.56,
-      planets: ['Camila Rios','Eduardo Pinto','Priya Shah']
-    },
-    {
-      label: 'OPERAÇÕES',
-      color: [255, 200, 50],   // âmbar
-      t: 0.68,
-      planets: ['Marcos Oliveira','Sofia Barros','André Queiroz','Tatiana Lins']
-    },
-    {
-      label: 'MARKETING',
-      color: [170, 80, 255],   // roxo
-      t: 0.80,
-      planets: ['Leticia Vaz','Bruno Dias','Isabel Mota']
-    },
-    {
-      label: 'TECNOLOGIA',
-      color: [50, 220, 220],   // ciano
-      t: 0.92,
-      planets: ['Victor Alves','Hannah Park','Felipe Roque','Rodrigo Maia']
+  function playFragmentacao() {
+    if (!audioCtx) return;
+    try {
+      var bufSize = audioCtx.sampleRate * 0.3;
+      var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+      var src = audioCtx.createBufferSource(); src.buffer = buf;
+      var bpf = audioCtx.createBiquadFilter(); bpf.type = 'bandpass'; bpf.frequency.value = 800; bpf.Q.value = 2;
+      var gain = audioCtx.createGain(); var t = audioCtx.currentTime;
+      gain.gain.setValueAtTime(0.4, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      src.connect(bpf); bpf.connect(gain); gain.connect(audioCtx.destination);
+      src.start(t); src.stop(t + 0.35);
+    } catch(e) {}
+  }
+
+  function playImpacto() {
+    if (!audioCtx) return;
+    try {
+      var t = audioCtx.currentTime;
+      var osc = audioCtx.createOscillator(); osc.type = 'sine';
+      osc.frequency.setValueAtTime(70, t); osc.frequency.exponentialRampToValueAtTime(30, t + 0.5);
+      var gainOsc = audioCtx.createGain();
+      gainOsc.gain.setValueAtTime(0.5, t); gainOsc.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      osc.connect(gainOsc); gainOsc.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 0.55);
+      var bufSize = Math.floor(audioCtx.sampleRate * 0.5);
+      var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+      var noiseSrc = audioCtx.createBufferSource(); noiseSrc.buffer = buf;
+      var lpf = audioCtx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.frequency.value = 200;
+      var gainNoise = audioCtx.createGain();
+      gainNoise.gain.setValueAtTime(0.25, t); gainNoise.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      noiseSrc.connect(lpf); lpf.connect(gainNoise); gainNoise.connect(audioCtx.destination);
+      noiseSrc.start(t); noiseSrc.stop(t + 0.55);
+    } catch(e) {}
+  }
+
+  function playBrilho() {
+    if (!audioCtx) return;
+    try {
+      var t = audioCtx.currentTime;
+      var osc = audioCtx.createOscillator(); osc.type = 'sine'; osc.frequency.value = 1760;
+      var hpf = audioCtx.createBiquadFilter(); hpf.type = 'highpass'; hpf.frequency.value = 1200;
+      var gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.2, t + 0.1);
+      gain.gain.linearRampToValueAtTime(0.06, t + 0.5);
+      gain.gain.setValueAtTime(0.06, t + 0.9);
+      gain.gain.linearRampToValueAtTime(0, t + 1.1);
+      osc.connect(hpf); hpf.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 1.15);
+    } catch(e) {}
+  }
+
+  // ── Fade helper ──
+  function fadeElement(el, from, to, dur, cb) {
+    var start = null;
+    el.style.opacity = from;
+    function step(now) {
+      if (!start) start = now;
+      var p = Math.min((now - start) / dur, 1);
+      el.style.opacity = from + (to - from) * p;
+      if (p < 1) requestAnimationFrame(step);
+      else if (cb) cb();
     }
+    requestAnimationFrame(step);
+  }
+
+  // ── Nebulosa Holográfica — State ──
+  var FOCAL = 500, Z_OFFSET = 700;
+
+  function project(x2d, y2d, z) {
+    var zd = z + Z_OFFSET;
+    var s = FOCAL / zd;
+    return { px: CX + (x2d - CX) * s, py: CY + (y2d - CY) * s, scale: s, z: z };
+  }
+
+  // 8 áreas
+  var AREAS = [
+    { name: 'Vendas',     bx: -130, by: -65,  bz: -100, fx: 0.0008, fy: 0.0011, fz: 0.0006, fase: 0.0, faseZ: 0.0 },
+    { name: 'Produto',    bx:  +40, by: -145, bz:  +80, fx: 0.0007, fy: 0.0009, fz: 0.0007, fase: 1.1, faseZ: 1.0 },
+    { name: 'Financeiro', bx: +145, by:  -35, bz:  -60, fx: 0.0009, fy: 0.0007, fz: 0.0005, fase: 2.2, faseZ: 2.1 },
+    { name: 'RH',         bx: +115, by: +100, bz: +120, fx: 0.0006, fy: 0.0010, fz: 0.0008, fase: 3.3, faseZ: 3.2 },
+    { name: 'Operações',  bx:  -15, by: +155, bz:  -80, fx: 0.0010, fy: 0.0008, fz: 0.0006, fase: 4.4, faseZ: 4.3 },
+    { name: 'Marketing',  bx: -140, by:  +85, bz: +100, fx: 0.0008, fy: 0.0012, fz: 0.0007, fase: 5.5, faseZ: 5.4 },
+    { name: 'Jurídico',   bx:  -80, by:  +50, bz:  -40, fx: 0.0011, fy: 0.0007, fz: 0.0009, fase: 0.7, faseZ: 0.6 },
+    { name: 'Tecnologia', bx:  +75, by:  +65, bz:  +60, fx: 0.0007, fy: 0.0011, fz: 0.0005, fase: 1.8, faseZ: 1.7 }
   ];
 
-  // Estado por universo
-  var univState = UNIVERSES.map(function(U,i){
-    var planets = U.planets.map(function(name, pi){
-      return {
-        name: name,
-        angle: (pi / U.planets.length) * Math.PI * 2 + i * 1.1,
-        speed: 0.00015 + Math.random() * 0.0001,
-        opacity: 0
-      };
-    });
-    return { planets: planets, hubOpacity: 0, discOpacity: 0, labelOpacity: 0, reveal: 0 };
-  });
-
-  // Pulsos no eixo
-  var pulses = [];
-  var lastPulseTime = 0;
-
-  // Estrelas de fundo
-  var stars = [];
-  function makeStars(){
-    stars = [];
-    for(var i=0;i<280;i++){
-      stars.push({
-        x: Math.random()*W, y: Math.random()*H,
-        r: 0.3+Math.random()*1.2,
-        op: 0.04+Math.random()*0.35,
-        tw: Math.random()*Math.PI*2,
-        ts: 0.0008+Math.random()*0.0015
+  // 8 satélites
+  var SATELLITES = (function() {
+    var sats = [];
+    for (var i = 0; i < 8; i++) {
+      var ang = (i / 8) * Math.PI * 2;
+      sats.push({
+        bx: Math.cos(ang) * 80,
+        by: Math.sin(ang) * 60,
+        bz: (Math.random() - 0.5) * 100,
+        fx: 0.0005 + Math.random() * 0.0005,
+        fy: 0.0005 + Math.random() * 0.0005,
+        fz: 0.0004 + Math.random() * 0.0004,
+        fase: Math.random() * Math.PI * 2,
+        faseZ: Math.random() * Math.PI * 2
       });
     }
+    return sats;
+  })();
+
+  // Sinapses
+  var sinapses = [];
+  function spawnSinapse() {
+    var ai = Math.floor(Math.random() * AREAS.length);
+    var bi = Math.floor(Math.random() * AREAS.length);
+    if (ai === bi) bi = (bi + 1) % AREAS.length;
+    sinapses.push({ ai: ai, bi: bi, t: 0, speed: 0.008 + Math.random() * 0.012 });
   }
 
-  function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
-  function easeOut(t){return 1-Math.pow(1-t,2.5);}
+  // Scan lines
+  var scanY = [0, H / 3, 2 * H / 3];
 
-  var DURATION = 11000; // 11s — mais universos = precisa de mais tempo
+  // Animation state
+  var startTime = null;
+  var animRunning = false;
+  var hubAlpha = 0;
+  var areasAlpha = 0;
+  var connAlpha = 0;
+  var satellitesAlpha = 0;
+  var sinapseActive = false;
+  var overlayAlpha = 1;
+  var done = false;
 
-  function frameDraw(p){
-    var elapsed = p * DURATION;
+  // Per-area visibility
+  var areaVisible = [false, false, false, false, false, false, false, false];
+  var areaAlpha   = [0, 0, 0, 0, 0, 0, 0, 0];
 
-    // Fade-out global nos últimos 12%
-    var gA = p > 0.88 ? clamp(1-(p-0.88)/0.12, 0, 1) : 1;
+  function lerp(a, b, t) { return a + (b - a) * t; }
 
-    // Clear
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = '#020210';
-    ctx.fillRect(0, 0, W, H);
+  function drawFrame(now) {
+    if (!startTime) startTime = now;
+    if (done) return;
 
-    // ── ESTRELAS ──
-    var starA = clamp(elapsed/1500, 0, 1) * gA;
-    if(starA > 0){
-      for(var si=0;si<stars.length;si++){
-        var s = stars[si];
-        s.tw += s.ts;
-        var sop = s.op * (0.5 + 0.5*Math.abs(Math.sin(s.tw)));
-        ctx.globalAlpha = sop * starA;
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
-      }
+    var elapsed = now - startTime;
+    var dt = 16; // ~60fps
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Compute area positions
+    var positions = AREAS.map(function(a) {
+      var x2d = CX + a.bx + 12 * Math.sin(elapsed * a.fx + a.fase);
+      var y2d = CY + a.by + 10 * Math.cos(elapsed * a.fy + a.fase);
+      var z   = a.bz + 60 * Math.sin(elapsed * a.fz + a.faseZ);
+      return project(x2d, y2d, z);
+    });
+
+    // Satellite positions
+    var satPos = SATELLITES.map(function(s) {
+      var x2d = CX + s.bx + 10 * Math.sin(elapsed * s.fx + s.fase);
+      var y2d = CY + s.by + 8 * Math.cos(elapsed * s.fy + s.fase);
+      var z   = s.bz + 60 * Math.sin(elapsed * s.fz + s.faseZ);
+      return project(x2d, y2d, z);
+    });
+
+    // Depth alpha normalization
+    var scales = positions.map(function(p) { return p.scale; });
+    var minScale = Math.min.apply(null, scales);
+    var maxScale = Math.max.apply(null, scales);
+    var scaleRange = maxScale - minScale || 0.001;
+
+    function depthAlphaOf(scale) {
+      return 0.3 + 0.7 * ((scale - minScale) / scaleRange);
     }
-    ctx.globalAlpha = 1;
 
-    // ── EIXO QUÂNTICO ──
-    var axisA = clamp((p-0.03)/0.12, 0, 1) * gA;
-    if(axisA > 0){
-      var p0 = axisPoint(0), p1 = axisPoint(1);
-      var axGrad = ctx.createLinearGradient(p0.x,p0.y,p1.x,p1.y);
-      axGrad.addColorStop(0,'rgba(200,169,110,0)');
-      axGrad.addColorStop(0.1,'rgba(200,169,110,'+(0.22*axisA)+')');
-      axGrad.addColorStop(0.5,'rgba(200,169,110,'+(0.38*axisA)+')');
-      axGrad.addColorStop(0.9,'rgba(200,169,110,'+(0.22*axisA)+')');
-      axGrad.addColorStop(1,'rgba(200,169,110,0)');
-      ctx.strokeStyle = axGrad; ctx.lineWidth = 10; ctx.globalAlpha = 1;
-      ctx.beginPath(); ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y); ctx.stroke();
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = 'rgba(200,169,110,'+(0.80*axisA)+')';
-      ctx.beginPath(); ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y); ctx.stroke();
+    // Hub
+    var hubProj = project(CX, CY, 0);
+
+    // ── Scan lines ──
+    for (var sl = 0; sl < 3; sl++) {
+      scanY[sl] = (scanY[sl] + 1) % H;
+      ctx.beginPath();
+      ctx.moveTo(0, scanY[sl]);
+      ctx.lineTo(W, scanY[sl]);
+      ctx.strokeStyle = 'rgba(160,200,255,0.025)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
     }
 
-    // Pulsos no eixo
-    if(p > 0.08 && p < 0.88){
-      if(elapsed - lastPulseTime > 650){
-        lastPulseTime = elapsed;
-        pulses.push({t:0, speed:0.00035+Math.random()*0.0003, op:0.8+Math.random()*0.2});
-      }
-    }
-    for(var pi=pulses.length-1;pi>=0;pi--){
-      pulses[pi].t += pulses[pi].speed * 16;
-      if(pulses[pi].t > 1.05){ pulses.splice(pi,1); continue; }
-      var pp = axisPoint(pulses[pi].t);
-      var pr = Math.max(3, 6*pp.scale);
-      ctx.globalAlpha = pulses[pi].op * axisA;
-      var pg = ctx.createRadialGradient(pp.x,pp.y,0,pp.x,pp.y,pr*3);
-      pg.addColorStop(0,'rgba(255,220,140,1)');
-      pg.addColorStop(0.3,'rgba(200,169,110,0.6)');
-      pg.addColorStop(1,'rgba(200,169,110,0)');
-      ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(pp.x,pp.y,pr*3,0,Math.PI*2); ctx.fill();
-      ctx.globalAlpha = pulses[pi].op * axisA;
-      ctx.fillStyle = 'rgba(255,230,160,1)';
-      ctx.beginPath(); ctx.arc(pp.x,pp.y,pr*0.6,0,Math.PI*2); ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-
-    // ── UNIVERSOS ──
-    for(var ui=0;ui<UNIVERSES.length;ui++){
-      var U = UNIVERSES[ui];
-      var us = univState[ui];
-      var uStart = 0.08 + ui * 0.09; // cada área aparece 9% mais tarde
-
-      us.reveal = clamp(easeOut(clamp((p-uStart)/0.18, 0, 1)), 0, 1);
-      if(us.reveal < 0.01) continue;
-
-      var ap = axisPoint(U.t);
-      var S = ap.scale;
-      var px = ap.x, py = ap.y;
-      var aR = Math.min(W,H) * 0.16 * S;
-      var r = U.color;
-      var rev = us.reveal;
-
-      // Halo nebulosa
-      ctx.globalAlpha = rev * 0.18;
-      var hg = ctx.createRadialGradient(px,py,0,px,py,aR*1.6);
-      hg.addColorStop(0,'rgba('+r[0]+','+r[1]+','+r[2]+',0.7)');
-      hg.addColorStop(0.4,'rgba('+r[0]+','+r[1]+','+r[2]+',0.25)');
-      hg.addColorStop(1,'rgba('+r[0]+','+r[1]+','+r[2]+',0)');
-      ctx.fillStyle = hg;
-      ctx.beginPath(); ctx.arc(px,py,aR*1.6,0,Math.PI*2); ctx.fill();
-
-      // Disco de órbita (elipse inclinada)
-      us.discOpacity = clamp((p-(uStart+0.04))/0.07, 0, 1);
-      if(us.discOpacity > 0){
-        ctx.globalAlpha = rev * us.discOpacity * 0.45;
-        ctx.strokeStyle = 'rgba('+r[0]+','+r[1]+','+r[2]+',0.85)';
-        ctx.lineWidth = 1.0;
+    // ── Connections (hub → areas + adjacent) ──
+    if (connAlpha > 0) {
+      // Hub → area (Bézier)
+      positions.forEach(function(p, i) {
+        if (!areaVisible[i]) return;
+        var da = depthAlphaOf(p.scale);
+        var alpha = connAlpha * 0.2 * da * areaAlpha[i];
+        if (alpha < 0.005) return;
         ctx.beginPath();
-        ctx.ellipse(px,py,aR,aR*0.35, 0.12, 0, Math.PI*2);
+        ctx.moveTo(hubProj.px, hubProj.py);
+        var cp1x = hubProj.px + (p.px - hubProj.px) * 0.25 + (Math.sin(elapsed * 0.001 + i) * 30);
+        var cp1y = hubProj.py + (p.py - hubProj.py) * 0.25 + (Math.cos(elapsed * 0.001 + i) * 20);
+        var cp2x = hubProj.px + (p.px - hubProj.px) * 0.75 + (Math.sin(elapsed * 0.0013 + i) * 20);
+        var cp2y = hubProj.py + (p.py - hubProj.py) * 0.75 + (Math.cos(elapsed * 0.0013 + i) * 15);
+        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p.px, p.py);
+        ctx.strokeStyle = 'rgba(200,169,110,' + alpha + ')';
+        ctx.lineWidth = 0.8 * p.scale;
+        ctx.stroke();
+      });
+
+      // Adjacent pairs (quadratic)
+      for (var ai = 0; ai < AREAS.length; ai++) {
+        var aj = (ai + 1) % AREAS.length;
+        if (!areaVisible[ai] || !areaVisible[aj]) continue;
+        var pa = positions[ai], pb = positions[aj];
+        var daAvg = (depthAlphaOf(pa.scale) + depthAlphaOf(pb.scale)) / 2;
+        var alpha2 = connAlpha * 0.1 * daAvg * Math.min(areaAlpha[ai], areaAlpha[aj]);
+        if (alpha2 < 0.003) continue;
+        ctx.beginPath();
+        ctx.moveTo(pa.px, pa.py);
+        var cpx = (pa.px + pb.px) / 2 + Math.sin(elapsed * 0.0009 + ai) * 25;
+        var cpy = (pa.py + pb.py) / 2 + Math.cos(elapsed * 0.0009 + ai) * 25;
+        ctx.quadraticCurveTo(cpx, cpy, pb.px, pb.py);
+        ctx.strokeStyle = 'rgba(160,200,255,' + alpha2 + ')';
+        ctx.lineWidth = 0.3;
         ctx.stroke();
       }
+    }
 
-      // Hub central (planeta-mãe = a área)
-      us.hubOpacity = clamp((p-(uStart+0.02))/0.05, 0, 1);
-      if(us.hubOpacity > 0){
-        var hR = Math.max(4, 7*S);
-        ctx.globalAlpha = rev * us.hubOpacity;
-        var hgr = ctx.createRadialGradient(px,py,0,px,py,hR*5);
-        hgr.addColorStop(0,'rgba('+r[0]+','+r[1]+','+r[2]+',1)');
-        hgr.addColorStop(0.25,'rgba('+r[0]+','+r[1]+','+r[2]+',0.5)');
-        hgr.addColorStop(1,'rgba('+r[0]+','+r[1]+','+r[2]+',0)');
-        ctx.fillStyle = hgr;
-        ctx.beginPath(); ctx.arc(px,py,hR*5,0,Math.PI*2); ctx.fill();
-        // Núcleo branco
-        ctx.fillStyle = 'rgba(255,255,255,0.95)';
-        ctx.beginPath(); ctx.arc(px,py,hR,0,Math.PI*2); ctx.fill();
-      }
+    // ── Sinapses ──
+    if (sinapseActive) {
+      if (Math.random() < 0.04) spawnSinapse();
+    }
+    sinapses = sinapses.filter(function(s) { return s.t <= 1; });
+    sinapses.forEach(function(s) {
+      var pa = positions[s.ai], pb = positions[s.bi];
+      var t = s.t;
+      var sx = lerp(pa.px, pb.px, t);
+      var sy = lerp(pa.py, pb.py, t);
+      var sz = lerp(pa.scale, pb.scale, t);
+      var da = depthAlphaOf(sz);
+      ctx.beginPath();
+      ctx.arc(sx, sy, 2 * sz * da, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(200,230,255,' + (0.7 * da) + ')';
+      ctx.shadowColor = 'rgba(180,220,255,0.8)';
+      ctx.shadowBlur = 6;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      s.t += s.speed;
+    });
 
-      // Label da área (hub)
-      if(us.hubOpacity > 0.3){
-        var lfs = Math.max(8, Math.round(11*S));
-        ctx.font = '600 '+lfs+'px "Inter",sans-serif';
-        ctx.textAlign = 'center';
-        ctx.globalAlpha = rev * us.hubOpacity * gA;
-        ctx.fillStyle = 'rgba('+r[0]+','+r[1]+','+r[2]+',1)';
-        ctx.fillText(U.label, px, py - aR*0.35 - Math.max(6,10*S));
-      }
+    // ── Painters algorithm: sort nodes by z_real ──
+    var drawOrder = positions.map(function(p, i) { return { idx: i, p: p }; });
+    drawOrder.sort(function(a, b) { return a.p.z - b.p.z });
 
-      // ── Planetas (funcionários) ──
-      var visible = [];
-      for(var qi=0;qi<us.planets.length;qi++){
-        var pl = us.planets[qi];
-        var pStart = uStart + 0.06 + qi * 0.02;
-        pl.opacity = clamp((p - pStart)/0.07, 0, 1);
-        if(pl.opacity < 0.02) continue;
-        pl.angle += pl.speed * 16;
+    // ── Draw area nodes ──
+    drawOrder.forEach(function(item) {
+      var i = item.idx;
+      if (!areaVisible[i]) return;
+      var p = item.p;
+      var da = depthAlphaOf(p.scale);
+      var aa = areaAlpha[i];
+      var r_vis = 6;
 
-        // Posição na elipse
-        var ax = px + Math.cos(pl.angle) * aR;
-        var ay = py + Math.sin(pl.angle) * aR * 0.35;
-        var az = Math.sin(pl.angle); // z: -1=atrás, +1=frente
-        visible.push({ax:ax, ay:ay, az:az, pl:pl});
-      }
+      // Glow
+      ctx.shadowColor = 'rgba(160,200,255,0.5)';
+      ctx.shadowBlur = 15 * p.scale;
 
-      // Ordenar por z (atrás primeiro)
-      visible.sort(function(a,b){ return a.az - b.az; });
+      // Node
+      ctx.beginPath();
+      ctx.arc(p.px, p.py, r_vis * p.scale, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(160,200,255,' + (da * 0.9 * aa) + ')';
+      ctx.fill();
+      ctx.shadowBlur = 0;
 
-      for(var vi=0;vi<visible.length;vi++){
-        var v = visible[vi];
-        var vpl = v.pl;
-        var aOp = vpl.opacity * rev;
-        var depthFade = (v.az + 1) / 2; // 0=atrás, 1=frente
+      // Label (only front nodes)
+      if (da > 0.5 && aa > 0.3) {
+        var labelAlpha = Math.min(da * aa, 1);
+        var area = AREAS[i];
+        var lx = p.px, ly = p.py;
+        var ang = Math.atan2(p.py - CY, p.px - CX);
+        var ex = lx + Math.cos(ang) * 30;
+        var ey = ly + Math.sin(ang) * 30;
 
-        // Linha de conexão hub → planeta
-        ctx.globalAlpha = aOp * (0.15 + 0.35*depthFade) * gA;
-        ctx.strokeStyle = 'rgba('+r[0]+','+r[1]+','+r[2]+',0.7)';
-        ctx.lineWidth = 0.7;
-        ctx.setLineDash([3,5]);
-        ctx.beginPath(); ctx.moveTo(px,py); ctx.lineTo(v.ax,v.ay); ctx.stroke();
+        // Dotted line
+        ctx.save();
+        ctx.setLineDash([3, 4]);
+        ctx.beginPath();
+        ctx.moveTo(lx, ly);
+        ctx.lineTo(ex, ey);
+        ctx.strokeStyle = 'rgba(160,200,255,0.25)';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
         ctx.setLineDash([]);
+        ctx.restore();
 
-        // Planeta (ponto)
-        var nR = Math.max(1.5, (2 + depthFade*2.5) * S);
-        ctx.globalAlpha = aOp * (0.35 + 0.65*depthFade) * gA;
-        var ng = ctx.createRadialGradient(v.ax,v.ay,0,v.ax,v.ay,nR*3.5);
-        ng.addColorStop(0,'rgba('+r[0]+','+r[1]+','+r[2]+',1)');
-        ng.addColorStop(1,'rgba('+r[0]+','+r[1]+','+r[2]+',0)');
-        ctx.fillStyle = ng;
-        ctx.beginPath(); ctx.arc(v.ax,v.ay,nR*3.5,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = 'rgba(255,255,255,'+(0.7+depthFade*0.3)+')';
-        ctx.beginPath(); ctx.arc(v.ax,v.ay,nR,0,Math.PI*2); ctx.fill();
-
-        // Nome do funcionário (só quando está na frente, az > 0.3)
-        if(depthFade > 0.65 && us.hubOpacity > 0.5){
-          var nfs = Math.max(6, Math.round(9*S));
-          ctx.font = nfs+'px "DM Mono",monospace';
-          ctx.textAlign = 'left';
-          ctx.globalAlpha = aOp * (depthFade - 0.65) / 0.35 * gA;
-          ctx.fillStyle = 'rgba('+r[0]+','+r[1]+','+r[2]+',0.9)';
-          ctx.fillText(vpl.name, v.ax + nR + 4, v.ay + nfs*0.35);
-        }
+        // Label text
+        ctx.font = '10px "DM Mono", monospace';
+        ctx.fillStyle = 'rgba(160,200,255,' + labelAlpha + ')';
+        ctx.textAlign = p.px > CX ? 'left' : 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(area.name, ex + (p.px > CX ? 4 : -4), ey);
       }
-      ctx.globalAlpha = 1;
+    });
+
+    // ── Satellites ──
+    if (satellitesAlpha > 0) {
+      satPos.forEach(function(sp) {
+        ctx.beginPath();
+        ctx.arc(sp.px, sp.py, 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(200,169,110,' + (0.3 * satellitesAlpha) + ')';
+        ctx.fill();
+      });
     }
 
-    // ── CULTURA BUILDER texto ──
-    var cbA = 0;
-    if(p < 0.03) cbA = p/0.03;
-    else if(p < 0.07) cbA = 1;
-    else if(p < 0.11) cbA = 1 - (p-0.07)/0.04;
-    labelCB.style.opacity = cbA;
-
-    // ── KNOWLEDGE ──
-    var kwA = clamp((p-0.80)/0.08, 0, 1) * gA;
-    textKnow.style.opacity = kwA;
-    if(kwA > 0){
-      var kw = 'KNOWLEDGE';
-      var ch = Math.min(kw.length, Math.floor(clamp((p-0.80)/0.07,0,1)*kw.length));
-      textKnow.textContent = kw.substring(0,ch) + (ch < kw.length ? '_' : '');
+    // ── Hub ──
+    if (hubAlpha > 0) {
+      ctx.shadowColor = '#C8A96E';
+      ctx.shadowBlur = 40 * hubAlpha;
+      ctx.beginPath();
+      ctx.arc(CX, CY, 14, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(200,169,110,' + hubAlpha + ')';
+      ctx.fill();
+      ctx.shadowBlur = 0;
     }
 
-    // Fade overlay
-    overlay.style.opacity = '' + gA;
+    // ── Timing control ──
+    // 0–1s: CB visible (handled by DOM)
+    // 1–2s: CB fade out (handled by DOM)
+    // 2–2.5s: silêncio
+    // 2.5s: hub surge
+    // 2.8s: areas stagger
+    // 4s: connections + satellites
+    // 4.3s: sinapses
+    // 4.5–6.5s: nebulosa ativa
+    // 6.5s: KNOWLEDGE typewriter
+    // 7.5–9s: fade out
 
-    if(p >= 1){
-      overlay.style.display = 'none';
-      localStorage.setItem(SEEN_KEY, '1');
+    if (elapsed >= 2500 && elapsed < 9000) {
+      var hubProgress = Math.min((elapsed - 2500) / 400, 1);
+      hubAlpha = hubProgress;
     }
+
+    if (elapsed >= 2800) {
+      AREAS.forEach(function(a, i) {
+        var tStart = 2800 + i * 200;
+        if (elapsed >= tStart) {
+          areaVisible[i] = true;
+          areaAlpha[i] = Math.min((elapsed - tStart) / 400, 1);
+        }
+      });
+    }
+
+    if (elapsed >= 4000) {
+      connAlpha = Math.min((elapsed - 4000) / 500, 1);
+      satellitesAlpha = Math.min((elapsed - 4000) / 500, 1);
+    }
+
+    if (elapsed >= 4300) {
+      sinapseActive = true;
+    }
+
+    // Fade out at 7.5s–9s
+    if (elapsed >= 7500) {
+      var fadeProgress = Math.min((elapsed - 7500) / 1500, 1);
+      // Dim everything gradually
+      hubAlpha     = Math.max(0, 1 - fadeProgress);
+      connAlpha    = Math.max(0, 1 - fadeProgress);
+      satellitesAlpha = Math.max(0, 1 - fadeProgress);
+      sinapseActive = false;
+      AREAS.forEach(function(a, i) {
+        areaAlpha[i] = Math.max(0, 1 - fadeProgress);
+      });
+    }
+
+    requestAnimationFrame(drawFrame);
   }
 
-  function runIntro(){
-    resize(); makeStars();
-    playSound();
-    var t0 = Date.now();
-    var intId = setInterval(function(){
-      var elapsed = Date.now() - t0;
-      var p = Math.min(elapsed / DURATION, 1);
-      frameDraw(p);
-      if(overlay.style.display === 'none') clearInterval(intId);
-    }, 33);
+  // ── Typewriter for KNOWLEDGE ──
+  var WORD = 'KNOWLEDGE';
+  function runTypewriter(cb) {
+    textKnow.style.opacity = '1';
+    textKnow.innerHTML = '';
+    var cursor = document.createElement('span');
+    cursor.id = 'intro-cursor-holo';
+    cursor.textContent = '\u2588';
+    textKnow.appendChild(cursor);
+    var idx = 0;
+    var iv = setInterval(function() {
+      if (idx < WORD.length) {
+        textKnow.insertBefore(document.createTextNode(WORD[idx]), cursor);
+        idx++;
+      } else {
+        clearInterval(iv);
+        setTimeout(function() {
+          cursor.style.display = 'none';
+          if (cb) cb();
+        }, 400);
+      }
+    }, 110);
   }
 
-  setTimeout(runIntro, 200);
+  // ── Main sequence ──
+  function runIntro() {
+    // Start canvas animation loop immediately
+    animRunning = true;
+    requestAnimationFrame(drawFrame);
+
+    // t=0: fade in CB (800ms)
+    fadeElement(textCB, 0, 1, 800, function() {
+      // hold 200ms → t=1s total
+      setTimeout(function() {
+        // t=1s: fade out CB + play fragmentation
+        initAudio();
+        playFragmentacao();
+        fadeElement(textCB, 1, 0, 600, function() {
+          // t=1.6s silence → 2.5s total = 900ms wait
+          setTimeout(function() {
+            // t=2.5s: impacto + hub surge (handled by canvas at elapsed=2500)
+            initAudio();
+            playImpacto();
+
+            // t=6.5s: playBrilho + KNOWLEDGE typewriter
+            setTimeout(function() {
+              playBrilho();
+              runTypewriter(function() {
+                // t≈7.5s: fade out overlay
+                setTimeout(function() {
+                  overlay.style.opacity = '0';
+                  done = true;
+                  setTimeout(function() {
+                    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                  }, 1550);
+                }, 500);
+              });
+            }, 4000); // 2500 + 4000 = 6500ms after start
+
+          }, 900);
+        });
+      }, 200);
+    });
+  }
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(runIntro);
+  } else {
+    setTimeout(runIntro, 300);
+  }
+
 })();
 </script>
 
@@ -2658,7 +2819,7 @@ footer {
 <footer>
   <div class="footer-logo">Cultura<span>Builder</span></div>
   <div class="footer-copy">© 2026 CulturaBuilder · Todos os direitos reservados</div>
-  <div class="footer-note">cb.deco.ooo/new — intro H2 multiverse holding</div>
+  <div class="footer-note">cb.deco.ooo/new — rascunho de novo posicionamento</div>
 </footer>
 
 
@@ -2678,6 +2839,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 const io = new IntersectionObserver(entries => {
   entries.forEach((entry, i) => {
     if (entry.isIntersecting) {
+      // small stagger within sibling groups
       const siblings = entry.target.parentElement.querySelectorAll('.reveal');
       const idx = Array.from(siblings).indexOf(entry.target);
       setTimeout(() => {
@@ -2763,12 +2925,16 @@ setInterval(rotateLiveCapture, 6000);
   const CY = SIZE / 2;
   const RADIUS = 340;
   const TOTAL_POINTS = 420;
+  const GOLD = '#C8A96E';
+  const GOLD_BRIGHT = '#E8C98E';
 
+  // Gerar pontos uniformemente distribuídos na superfície de uma esfera
+  // usando o método de Fibonacci lattice (distribuição uniforme)
   const points = [];
   const goldenRatio = (1 + Math.sqrt(5)) / 2;
   for (let i = 0; i < TOTAL_POINTS; i++) {
-    const theta = Math.acos(1 - 2 * (i + 0.5) / TOTAL_POINTS);
-    const phi   = 2 * Math.PI * i / goldenRatio;
+    const theta = Math.acos(1 - 2 * (i + 0.5) / TOTAL_POINTS); // polar
+    const phi   = 2 * Math.PI * i / goldenRatio;                 // azimutal
     points.push({
       ox: Math.sin(theta) * Math.cos(phi),
       oy: Math.cos(theta),
@@ -2776,22 +2942,26 @@ setInterval(rotateLiveCapture, 6000);
     });
   }
 
-  let angleY = 0;
-  let angleX = 0.15;
+  let angleY = 0; // rotação horizontal lenta
+  let angleX = 0.15; // leve inclinação fixa para dar perspectiva
 
   function project(x, y, z) {
+    // Rotação em Y
     const cosY = Math.cos(angleY), sinY = Math.sin(angleY);
     const x1 = x * cosY - z * sinY;
     const z1 = x * sinY + z * cosY;
+    // Rotação em X (fixa)
     const cosX = Math.cos(angleX), sinX = Math.sin(angleX);
     const y2 = y * cosX - z1 * sinX;
     const z2 = y * sinX + z1 * cosX;
+
+    // Perspectiva leve
     const fov = 1200;
     const scale = fov / (fov + z2 * RADIUS);
     return {
       sx: CX + x1 * RADIUS * scale,
       sy: CY + y2 * RADIUS * scale,
-      depth: z2,
+      depth: z2, // -1 (fundo) a +1 (frente)
       scale,
     };
   }
@@ -2799,6 +2969,7 @@ setInterval(rotateLiveCapture, 6000);
   function draw() {
     ctx.clearRect(0, 0, SIZE, SIZE);
 
+    // Glow radial de fundo (âmbar suave, como o Meridian)
     const grad = ctx.createRadialGradient(CX, CY + 80, 0, CX, CY + 80, 420);
     grad.addColorStop(0,   'rgba(200,169,110,0.06)');
     grad.addColorStop(0.5, 'rgba(200,169,110,0.02)');
@@ -2806,19 +2977,21 @@ setInterval(rotateLiveCapture, 6000);
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, SIZE, SIZE);
 
+    // Projetar e ordenar por profundidade (painters algorithm)
     const projected = points.map(p => ({
       ...project(p.ox, p.oy, p.oz),
     }));
     projected.sort((a, b) => a.depth - b.depth);
 
     projected.forEach(p => {
-      const t = (p.depth + 1) / 2;
-      const alpha  = 0.08 + t * 0.55;
-      const radius = 0.8 + t * 1.4;
+      const t = (p.depth + 1) / 2; // 0 = fundo, 1 = frente
+      const alpha  = 0.08 + t * 0.55;   // pontos de trás mais transparentes
+      const radius = 0.8 + t * 1.4;     // pontos de trás menores
 
       ctx.beginPath();
       ctx.arc(p.sx, p.sy, radius, 0, Math.PI * 2);
 
+      // Pontos da frente ficam mais brilhantes/dourados
       if (t > 0.75) {
         ctx.fillStyle = `rgba(232,201,142,${alpha})`;
       } else {
@@ -2827,7 +3000,7 @@ setInterval(rotateLiveCapture, 6000);
       ctx.fill();
     });
 
-    angleY += 0.0018;
+    angleY += 0.0018; // rotação ~28s por volta completa
     requestAnimationFrame(draw);
   }
 
