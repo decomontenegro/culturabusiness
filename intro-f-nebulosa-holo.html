@@ -1772,7 +1772,7 @@ footer {
   }
 
   // ── Nebulosa Holográfica — State ──
-  var FOCAL = 500, Z_OFFSET = 400;
+  var FOCAL = 500, Z_OFFSET = 700;
 
   function project(x2d, y2d, z) {
     var zd = z + Z_OFFSET;
@@ -1782,14 +1782,14 @@ footer {
 
   // 8 áreas
   var AREAS = [
-    { name: 'Vendas',     bx: -160, by: -80,  bz: -100, fx: 0.0008, fy: 0.0011, fz: 0.0006, fase: 0.0, faseZ: 0.0 },
-    { name: 'Produto',    bx:  +50, by: -180, bz:  +80, fx: 0.0007, fy: 0.0009, fz: 0.0007, fase: 1.1, faseZ: 1.0 },
-    { name: 'Financeiro', bx: +180, by:  -40, bz:  -60, fx: 0.0009, fy: 0.0007, fz: 0.0005, fase: 2.2, faseZ: 2.1 },
-    { name: 'RH',         bx: +140, by: +120, bz: +120, fx: 0.0006, fy: 0.0010, fz: 0.0008, fase: 3.3, faseZ: 3.2 },
-    { name: 'Operações',  bx:  -20, by: +190, bz:  -80, fx: 0.0010, fy: 0.0008, fz: 0.0006, fase: 4.4, faseZ: 4.3 },
-    { name: 'Marketing',  bx: -170, by: +100, bz: +100, fx: 0.0008, fy: 0.0012, fz: 0.0007, fase: 5.5, faseZ: 5.4 },
-    { name: 'Jurídico',   bx: -100, by:  +60, bz:  -40, fx: 0.0011, fy: 0.0007, fz: 0.0009, fase: 0.7, faseZ: 0.6 },
-    { name: 'Tecnologia', bx:  +90, by:  +80, bz:  +60, fx: 0.0007, fy: 0.0011, fz: 0.0005, fase: 1.8, faseZ: 1.7 }
+    { name: 'Vendas',     bx: -130, by: -65,  bz: -100, fx: 0.0008, fy: 0.0011, fz: 0.0006, fase: 0.0, faseZ: 0.0 },
+    { name: 'Produto',    bx:  +40, by: -145, bz:  +80, fx: 0.0007, fy: 0.0009, fz: 0.0007, fase: 1.1, faseZ: 1.0 },
+    { name: 'Financeiro', bx: +145, by:  -35, bz:  -60, fx: 0.0009, fy: 0.0007, fz: 0.0005, fase: 2.2, faseZ: 2.1 },
+    { name: 'RH',         bx: +115, by: +100, bz: +120, fx: 0.0006, fy: 0.0010, fz: 0.0008, fase: 3.3, faseZ: 3.2 },
+    { name: 'Operações',  bx:  -15, by: +155, bz:  -80, fx: 0.0010, fy: 0.0008, fz: 0.0006, fase: 4.4, faseZ: 4.3 },
+    { name: 'Marketing',  bx: -140, by:  +85, bz: +100, fx: 0.0008, fy: 0.0012, fz: 0.0007, fase: 5.5, faseZ: 5.4 },
+    { name: 'Jurídico',   bx:  -80, by:  +50, bz:  -40, fx: 0.0011, fy: 0.0007, fz: 0.0009, fase: 0.7, faseZ: 0.6 },
+    { name: 'Tecnologia', bx:  +75, by:  +65, bz:  +60, fx: 0.0007, fy: 0.0011, fz: 0.0005, fase: 1.8, faseZ: 1.7 }
   ];
 
   // 8 satélites
@@ -1851,16 +1851,16 @@ footer {
 
     // Compute area positions
     var positions = AREAS.map(function(a) {
-      var x2d = CX + a.bx + 18 * Math.sin(elapsed * a.fx + a.fase);
-      var y2d = CY + a.by + 14 * Math.cos(elapsed * a.fy + a.fase);
+      var x2d = CX + a.bx + 12 * Math.sin(elapsed * a.fx + a.fase);
+      var y2d = CY + a.by + 10 * Math.cos(elapsed * a.fy + a.fase);
       var z   = a.bz + 60 * Math.sin(elapsed * a.fz + a.faseZ);
       return project(x2d, y2d, z);
     });
 
     // Satellite positions
     var satPos = SATELLITES.map(function(s) {
-      var x2d = CX + s.bx + 18 * Math.sin(elapsed * s.fx + s.fase);
-      var y2d = CY + s.by + 14 * Math.cos(elapsed * s.fy + s.fase);
+      var x2d = CX + s.bx + 10 * Math.sin(elapsed * s.fx + s.fase);
+      var y2d = CY + s.by + 8 * Math.cos(elapsed * s.fy + s.fase);
       var z   = s.bz + 60 * Math.sin(elapsed * s.fz + s.faseZ);
       return project(x2d, y2d, z);
     });
