@@ -1597,30 +1597,71 @@ footer {
 <!-- ── INTRO SPLASH SCREEN ── -->
 <div id="intro-overlay">
   <canvas id="intro-canvas"></canvas>
+  <div id="intro-text-cb">CULTURA BUILDER</div>
+  <div id="intro-text-know"></div>
 </div>
 
 <style>
 #intro-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  inset: 0;
   z-index: 9999;
   background: #080808;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: opacity 1.5s ease;
 }
+
 #intro-canvas {
   position: absolute;
-  top: 0; left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
+  pointer-events: none;
+}
+
+#intro-text-cb {
+  position: absolute;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 300;
+  font-size: clamp(14px, 2vw, 22px);
+  letter-spacing: 0.4em;
+  color: #F5F0E8;
+  opacity: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+  -webkit-font-smoothing: antialiased;
+}
+
+#intro-text-know {
+  position: absolute;
+  font-family: 'DM Mono', 'SF Mono', 'Courier New', monospace;
+  font-weight: 400;
+  font-size: clamp(48px, 7vw, 96px);
+  letter-spacing: 0.05em;
+  color: #F5F0E8;
+  opacity: 0;
+  white-space: nowrap;
+  -webkit-font-smoothing: antialiased;
+}
+
+#intro-cursor {
+  animation: blink 0.5s step-end infinite;
+  color: #F5F0E8;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
 }
 </style>
 
 <script>
 (function() {
-  var overlay = document.getElementById('intro-overlay');
-  var canvas  = document.getElementById('intro-canvas');
+  var overlay  = document.getElementById('intro-overlay');
+  var textCB   = document.getElementById('intro-text-cb');
+  var textKnow = document.getElementById('intro-text-know');
 
   // ── Skip on repeat visits ──
   if (localStorage.getItem('cb_intro_seen')) {
@@ -1629,539 +1670,186 @@ footer {
   }
   localStorage.setItem('cb_intro_seen', '1');
 
-  // ── Setup canvas ──
-  var ctx = canvas.getContext('2d');
-  var W, H;
+  // ── Web Audio API ──
+  var audioCtx = null;
 
-  function resize() {
-    W = canvas.width  = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  // ── Timing constants (ms) ──
-  var T_FADE_IN_END   = 1000;   // 0–1s   : fade-in "CULTURA BUILDER"
-  var T_EXPLODE_END   = 3000;   // 1–3s   : explosion → particles dispersing
-  var T_NEURAL_END    = 4500;   // 3–4.5s : particles → neural net nodes
-  var T_REVEAL_END    = 5400;   // 4.5–5.4s: KNOWLEDGE terminal typewriter (9 × 100ms)
-  var T_HOLD_END      = 6200;   // 5.4–6.2s: cursor blinks after word complete
-  var T_TOTAL         = 7000;   // 6.2–7s : fade out everything
-
-  // ── Colors ──
-  var COLOR_LIGHT = '#F5F0E8';
-  var COLOR_GOLD  = '#C8A96E';
-
-  // ── Particle pool (phase 0–1) ──
-  var particles = [];
-
-  // ── Neural network nodes (phase 2+) ──
-  var nodes = [];
-  var NODE_COUNT = 180;
-
-  // ── KNOWLEDGE terminal typewriter state ──
-  var WORD = 'KNOWLEDGE';
-  var letterAlphas = [0,0,0,0,0,0,0,0,0]; // kept for compat (unused in terminal mode)
-
-  // ── Helper: lerp ──
-  function lerp(a, b, t) { return a + (b - a) * t; }
-  function easeInOut(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
-  function easeOut(t)   { return 1 - Math.pow(1 - t, 3); }
-  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-
-  // ── Sample pixel positions from text drawn to an offscreen canvas ──
-  function sampleText(text, font, letterSpacing, density) {
-    var off = document.createElement('canvas');
-    var scale = Math.min(W / 900, 2);
-    var fontSize = Math.round(72 * scale);
-
-    off.width  = W;
-    off.height = H;
-    var c = off.getContext('2d');
-
-    c.fillStyle = '#fff';
-    c.font = font.replace('{SIZE}', fontSize + 'px');
-    c.textAlign = 'center';
-    c.textBaseline = 'middle';
-
-    // Manual letter-spacing via character-by-character drawing
-    if (letterSpacing) {
-      var chars = text.split('');
-      // measure total width
-      var totalW = 0;
-      chars.forEach(function(ch) { totalW += c.measureText(ch).width; });
-      totalW += letterSpacing * (chars.length - 1);
-      var x = W/2 - totalW/2;
-      chars.forEach(function(ch) {
-        var chW = c.measureText(ch).width;
-        c.fillText(ch, x + chW/2, H/2);
-        x += chW + letterSpacing;
-      });
-    } else {
-      c.fillText(text, W/2, H/2);
-    }
-
-    var data = c.getImageData(0, 0, W, H).data;
-    var pts  = [];
-    for (var y = 0; y < H; y += density) {
-      for (var x = 0; x < W; x += density) {
-        if (data[( y*W + x )*4 + 3] > 128) {
-          pts.push({ x: x, y: y });
-        }
-      }
-    }
-    return pts;
+  function initAudio() {
+    if (audioCtx) return;
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch(e) { audioCtx = null; }
   }
 
-  // ── Build particle system (only needs ptsA now — explosion only) ──
-  function buildParticles(ptsA) {
-    // Shuffle for visual randomness
-    ptsA.sort(function() { return Math.random()-0.5; });
-
-    particles = [];
-    for (var i = 0; i < ptsA.length; i++) {
-      var size   = 1.5 + Math.random() * 2.5;
-
-      // Explode target: random direction from particle's start pos
-      var angle  = Math.random() * Math.PI * 2;
-      var dist   = 80 + Math.random() * Math.min(W, H) * 0.45;
-
-      particles.push({
-        // Start positions (for CULTURA BUILDER phase)
-        sx: ptsA[i].x,
-        sy: ptsA[i].y,
-        // Explode positions
-        ex: ptsA[i].x + Math.cos(angle) * dist,
-        ey: ptsA[i].y + Math.sin(angle) * dist,
-        // Runtime pos
-        x: ptsA[i].x,
-        y: ptsA[i].y,
-        size: size,
-        alpha: 1,
-      });
-    }
+  // Som 1: Fragmentação — burst de ruído branco band-pass ~800Hz
+  function playFragmentacao() {
+    if (!audioCtx) return;
+    try {
+      var bufSize = audioCtx.sampleRate * 0.3;
+      var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+      var src = audioCtx.createBufferSource();
+      src.buffer = buf;
+      var bpf = audioCtx.createBiquadFilter();
+      bpf.type = 'bandpass';
+      bpf.frequency.value = 800;
+      bpf.Q.value = 2;
+      var gain = audioCtx.createGain();
+      var t = audioCtx.currentTime;
+      gain.gain.setValueAtTime(0.4, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      src.connect(bpf); bpf.connect(gain); gain.connect(audioCtx.destination);
+      src.start(t); src.stop(t + 0.35);
+    } catch(e) {}
   }
 
-  // ── Build neural net nodes ──
-  function buildNodes() {
-    nodes = [];
-    for (var i = 0; i < NODE_COUNT; i++) {
-      nodes.push({
-        x:     Math.random() * W,
-        y:     Math.random() * H,
-        vx:    (Math.random() - 0.5) * 0.3,
-        vy:    (Math.random() - 0.5) * 0.3,
-        size:  1.5 + Math.random() * 2.5,
-        phase: Math.random() * Math.PI * 2,
-        // Target position (assigned during phase 3a transition)
-        tx: 0,
-        ty: 0,
-      });
-    }
-    // Assign target positions (organic scatter, avoid a band around center for text)
-    for (var i = 0; i < NODE_COUNT; i++) {
-      var angle = Math.random() * Math.PI * 2;
-      var r     = 0.2 * Math.min(W, H) + Math.random() * 0.45 * Math.min(W, H);
-      nodes[i].tx = W/2 + Math.cos(angle) * r;
-      nodes[i].ty = H/2 + Math.sin(angle) * r * 0.8; // slightly flatter vertically
-    }
+  // Som 2: Impacto — boom grave 70Hz + ruído low-pass 200Hz
+  function playImpacto() {
+    if (!audioCtx) return;
+    try {
+      var t = audioCtx.currentTime;
+      var osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(70, t);
+      osc.frequency.exponentialRampToValueAtTime(30, t + 0.5);
+      var gainOsc = audioCtx.createGain();
+      gainOsc.gain.setValueAtTime(0.5, t);
+      gainOsc.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      osc.connect(gainOsc); gainOsc.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 0.55);
+
+      var bufSize = Math.floor(audioCtx.sampleRate * 0.5);
+      var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+      var noiseSrc = audioCtx.createBufferSource();
+      noiseSrc.buffer = buf;
+      var lpf = audioCtx.createBiquadFilter();
+      lpf.type = 'lowpass'; lpf.frequency.value = 200;
+      var gainNoise = audioCtx.createGain();
+      gainNoise.gain.setValueAtTime(0.25, t);
+      gainNoise.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      noiseSrc.connect(lpf); lpf.connect(gainNoise); gainNoise.connect(audioCtx.destination);
+      noiseSrc.start(t); noiseSrc.stop(t + 0.55);
+    } catch(e) {}
   }
 
-  // ── Draw neural network (nodes + connections) at given opacity ──
-  function drawNeuralNet(masterAlpha, elapsed) {
-    var time = elapsed / 1000; // seconds for oscillation
-    // Dynamic threshold oscillation ±10px around 110
-    var threshold = 110 + 10 * Math.sin(time * 0.7);
-
-    ctx.save();
-
-    // Draw connections
-    for (var i = 0; i < nodes.length; i++) {
-      for (var j = i + 1; j < nodes.length; j++) {
-        var dx = nodes[i].x - nodes[j].x;
-        var dy = nodes[i].y - nodes[j].y;
-        var dist = Math.sqrt(dx*dx + dy*dy);
-        if (dist < threshold) {
-          var lineAlpha = (1 - dist / threshold) * 0.5 * masterAlpha;
-          ctx.strokeStyle = 'rgba(200,169,110,' + lineAlpha + ')';
-          ctx.lineWidth = 0.8;
-          ctx.beginPath();
-          ctx.moveTo(nodes[i].x, nodes[i].y);
-          ctx.lineTo(nodes[j].x, nodes[j].y);
-          ctx.stroke();
-        }
-      }
-    }
-
-    // Draw nodes
-    for (var i = 0; i < nodes.length; i++) {
-      var nd = nodes[i];
-      var pulse = 0.5 + 0.5 * Math.sin(time * 1.8 + nd.phase);
-      var nodeAlpha = (0.3 + 0.4 * pulse) * masterAlpha;
-      var nodeSize  = nd.size * (0.8 + 0.4 * pulse);
-      ctx.globalAlpha = nodeAlpha;
-      ctx.fillStyle = COLOR_GOLD;
-      ctx.beginPath();
-      ctx.arc(nd.x, nd.y, nodeSize / 2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.restore();
+  // Som 3: Brilho — tom alto 1760Hz com ADSR suave + high-pass
+  function playBrilho() {
+    if (!audioCtx) return;
+    try {
+      var t = audioCtx.currentTime;
+      var osc = audioCtx.createOscillator();
+      osc.type = 'sine'; osc.frequency.value = 1760;
+      var hpf = audioCtx.createBiquadFilter();
+      hpf.type = 'highpass'; hpf.frequency.value = 1200;
+      var gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.2, t + 0.1);
+      gain.gain.linearRampToValueAtTime(0.2 * 0.3, t + 0.5);
+      gain.gain.setValueAtTime(0.2 * 0.3, t + 0.9);
+      gain.gain.linearRampToValueAtTime(0, t + 1.1);
+      osc.connect(hpf); hpf.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 1.15);
+    } catch(e) {}
   }
 
-  // ── Draw KNOWLEDGE terminal typewriter effect ──
-  function drawKnowledgeTerminal(elapsed, masterAlpha) {
-    var scale    = Math.min(W / 900, 2);
-    var fontSize = Math.round(clamp(72 * scale, 36, 96));
-
-    // lettersRevealed: 0–9 based on time since phase start (100ms per letter)
-    var phaseMs       = elapsed - T_NEURAL_END;
-    var lettersRevealed = Math.min(Math.floor(phaseMs / 100), WORD.length);
-
-    // Cursor blink: every 400ms
-    var cursorPhase = Math.floor(phaseMs / 400) % 2 === 0;
-    var showCursor;
-
-    if (lettersRevealed < WORD.length) {
-      // Still typing — cursor always visible while typing
-      showCursor = true;
-    } else {
-      // Typing done — blink for ~800ms (T_HOLD_END - T_REVEAL_END = 800ms), then hide
-      var afterTypingMs = elapsed - T_REVEAL_END;
-      if (afterTypingMs < 800) {
-        showCursor = cursorPhase;
-      } else {
-        showCursor = false;
-      }
-    }
-
-    var revealed = WORD.slice(0, lettersRevealed);
-    var cursor   = showCursor ? '\u2588' : '';
-    var text     = revealed + cursor;
-
-    ctx.save();
-    ctx.font         = '700 ' + fontSize + 'px "DM Mono", "Courier New", monospace';
-    ctx.fillStyle    = COLOR_LIGHT;
-    ctx.shadowColor  = COLOR_LIGHT;
-    ctx.shadowBlur   = 4;
-    ctx.textAlign    = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.globalAlpha  = masterAlpha !== undefined ? masterAlpha : 1;
-    ctx.fillText(text, W / 2, H / 2);
-    ctx.restore();
-  }
-
-  // ── Draw a single frame ──
-  function draw(now) {
-    ctx.clearRect(0, 0, W, H);
-
-    var elapsed = now - startTime;
-
-    // ── Phase 0: Fade-in "CULTURA BUILDER" text (0–1000ms) ──
-    if (elapsed <= T_FADE_IN_END) {
-      var alpha = easeOut(elapsed / T_FADE_IN_END);
-      ctx.globalAlpha = alpha;
-      drawTextDirect('CULTURA BUILDER', alpha);
-      ctx.globalAlpha = 1;
-      return;
-    }
-
-    // ── Phase 1: Explosion (1000–3000ms) ──
-    if (elapsed <= T_EXPLODE_END) {
-      var t = (elapsed - T_FADE_IN_END) / (T_EXPLODE_END - T_FADE_IN_END);
-      var te = easeInOut(t);
-      particles.forEach(function(p) {
-        p.x = lerp(p.sx, p.ex, te);
-        p.y = lerp(p.sy, p.ey, te);
-        p.alpha = lerp(1, 0.3, te);
-        ctx.globalAlpha = p.alpha;
-        ctx.fillStyle = COLOR_LIGHT;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      ctx.globalAlpha = 1;
-      return;
-    }
-
-    // ── Phase 2: Particles → Neural Network nodes (3000–4500ms) ──
-    if (elapsed <= T_NEURAL_END) {
-      var t  = (elapsed - T_EXPLODE_END) / (T_NEURAL_END - T_EXPLODE_END);
-      var te = easeInOut(t);
-
-      // Move existing explosion particles toward their corresponding node targets
-      // (we only have as many particles as ptsA, nodes may be fewer/more — use modulo)
-      particles.forEach(function(p, idx) {
-        var nd = nodes[idx % nodes.length];
-        p.x = lerp(p.ex, nd.tx, te);
-        p.y = lerp(p.ey, nd.ty, te);
-        p.alpha = lerp(0.3, 0, te); // fade out particle dots
-        ctx.globalAlpha = p.alpha;
-        ctx.fillStyle = COLOR_GOLD;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      ctx.globalAlpha = 1;
-
-      // Neural net fades IN as particles fade out
-      // Position nodes: lerp from tx,ty toward actual tx,ty (nodes start at target — just appear)
-      for (var i = 0; i < nodes.length; i++) {
-        nodes[i].x = nodes[i].tx;
-        nodes[i].y = nodes[i].ty;
-      }
-      drawNeuralNet(te, elapsed);
-      return;
-    }
-
-    // ── Update node positions (gentle drift) for all later phases ──
-    for (var i = 0; i < nodes.length; i++) {
-      nodes[i].x += nodes[i].vx;
-      nodes[i].y += nodes[i].vy;
-      // Bounce off edges
-      if (nodes[i].x < 0 || nodes[i].x > W) nodes[i].vx *= -1;
-      if (nodes[i].y < 0 || nodes[i].y > H) nodes[i].vy *= -1;
-    }
-
-    // ── Phase 3: KNOWLEDGE terminal typewriter (4500–5400ms) ──
-    if (elapsed <= T_REVEAL_END) {
-      // Neural net at 0.4 opacity (background, not competing)
-      drawNeuralNet(0.4, elapsed);
-      // Terminal typewriter
-      drawKnowledgeTerminal(elapsed, 1);
-      return;
-    }
-
-    // ── Phase 4: Cursor blink after word complete (5400–6200ms) ──
-    if (elapsed <= T_HOLD_END) {
-      drawNeuralNet(0.4, elapsed);
-      drawKnowledgeTerminal(elapsed, 1);
-      return;
-    }
-
-    // ── Phase 5: Fade out everything (6200–7000ms) ──
-    if (elapsed <= T_TOTAL) {
-      var t       = (elapsed - T_HOLD_END) / (T_TOTAL - T_HOLD_END);
-      var fadeOut = 1 - easeInOut(t);
-
-      ctx.globalAlpha = fadeOut;
-      drawNeuralNet(0.4 * fadeOut, elapsed);
-      ctx.globalAlpha = 1;
-      drawKnowledgeTerminal(elapsed, fadeOut);
-
-      overlay.style.opacity = fadeOut;
-      return;
-    }
-
-    // ── Done ──
-    overlay.style.opacity = '0';
-    overlay.style.pointerEvents = 'none';
-    setTimeout(function() {
-      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-    }, 100);
-  }
-
-  function drawTextDirect(text, alpha) {
-    var scale = Math.min(W / 900, 2);
-    var fontSize = Math.round(72 * scale);
-    ctx.save();
-    ctx.fillStyle = COLOR_LIGHT;
-    ctx.globalAlpha = alpha;
-    ctx.font = '300 ' + fontSize + 'px Inter, -apple-system, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    // Manual letter spacing (letter-spacing: 0.3em = fontSize * 0.3)
-    var spacing = fontSize * 0.3;
-    var chars = text.split('');
-    var totalW = 0;
-    chars.forEach(function(ch) { totalW += ctx.measureText(ch).width; });
-    totalW += spacing * (chars.length - 1);
-    var x = W/2 - totalW/2;
-    chars.forEach(function(ch) {
-      var cw = ctx.measureText(ch).width;
-      ctx.fillText(ch, x + cw/2, H/2);
-      x += cw + spacing;
-    });
-    ctx.restore();
-  }
-
-  // ── Fonts must be loaded before sampling pixels ──
-  var startTime;
-
-  function initAndRun() {
-    var density = 4; // sample every N pixels
-
-    // Scale letter-spacing for pixel sampling
-    var scale = Math.min(W / 900, 2);
-    var fontSizeCB  = Math.round(72 * scale);
-    var spacingCB   = fontSizeCB * 0.3;
-
-    var ptsA = sampleText(
-      'CULTURA BUILDER',
-      '300 {SIZE} Inter, -apple-system, sans-serif',
-      spacingCB,
-      density
-    );
-
-    // Limit particle count for perf (max ~3000)
-    var MAX = 3000;
-    if (ptsA.length > MAX) {
-      var step = Math.ceil(ptsA.length / MAX);
-      ptsA = ptsA.filter(function(_, i) { return i % step === 0; });
-    }
-
-    buildParticles(ptsA);
-    buildNodes();
-
-    // ── Web Audio API — sintetizadores sincronizados ──
-    var audioCtx = null;
-    var sound1Played = false; // Fragmentação  ~1s
-    var sound2Played = false; // Impacto/Formação ~3s
-    var sound3Played = false; // Pulso/Brilho   ~5s
-
-    function initAudio() {
-      if (audioCtx) return;
-      try {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      } catch(e) { audioCtx = null; }
-    }
-
-    // Som 1: Fragmentação — burst de ruído branco band-pass ~800Hz
-    function playFragmentacao() {
-      if (!audioCtx) return;
-      try {
-        var bufSize = audioCtx.sampleRate * 0.3; // 0.3s
-        var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
-        var data = buf.getChannelData(0);
-        for (var i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
-
-        var src = audioCtx.createBufferSource();
-        src.buffer = buf;
-
-        var bpf = audioCtx.createBiquadFilter();
-        bpf.type = 'bandpass';
-        bpf.frequency.value = 800;
-        bpf.Q.value = 2;
-
-        var gain = audioCtx.createGain();
-        var t = audioCtx.currentTime;
-        gain.gain.setValueAtTime(0.4, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-
-        src.connect(bpf);
-        bpf.connect(gain);
-        gain.connect(audioCtx.destination);
-        src.start(t);
-        src.stop(t + 0.35);
-      } catch(e) {}
-    }
-
-    // Som 2: Impacto/Formação — boom grave 70Hz + ruído low-pass 200Hz
-    function playImpacto() {
-      if (!audioCtx) return;
-      try {
-        var t = audioCtx.currentTime;
-
-        // Sub-bass boom
-        var osc = audioCtx.createOscillator();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(70, t);
-        osc.frequency.exponentialRampToValueAtTime(30, t + 0.5);
-        var gainOsc = audioCtx.createGain();
-        gainOsc.gain.setValueAtTime(0.5, t);
-        gainOsc.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
-        osc.connect(gainOsc);
-        gainOsc.connect(audioCtx.destination);
-        osc.start(t);
-        osc.stop(t + 0.55);
-
-        // Ruído com corpo baixo
-        var bufSize = Math.floor(audioCtx.sampleRate * 0.5);
-        var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
-        var data = buf.getChannelData(0);
-        for (var i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
-        var noiseSrc = audioCtx.createBufferSource();
-        noiseSrc.buffer = buf;
-        var lpf = audioCtx.createBiquadFilter();
-        lpf.type = 'lowpass';
-        lpf.frequency.value = 200;
-        var gainNoise = audioCtx.createGain();
-        gainNoise.gain.setValueAtTime(0.25, t);
-        gainNoise.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
-        noiseSrc.connect(lpf);
-        lpf.connect(gainNoise);
-        gainNoise.connect(audioCtx.destination);
-        noiseSrc.start(t);
-        noiseSrc.stop(t + 0.55);
-      } catch(e) {}
-    }
-
-    // Som 3: Pulso/Brilho — tom alto 1760Hz com envelope ADSR suave + high-pass
-    function playBrilho() {
-      if (!audioCtx) return;
-      try {
-        var t = audioCtx.currentTime;
-
-        var osc = audioCtx.createOscillator();
-        osc.type = 'sine';
-        osc.frequency.value = 1760;
-
-        var hpf = audioCtx.createBiquadFilter();
-        hpf.type = 'highpass';
-        hpf.frequency.value = 1200;
-
-        var gain = audioCtx.createGain();
-        // ADSR: attack 100ms, decay 400ms, sustain 0.3, release 200ms
-        gain.gain.setValueAtTime(0, t);
-        gain.gain.linearRampToValueAtTime(0.2, t + 0.1);          // attack
-        gain.gain.linearRampToValueAtTime(0.2 * 0.3, t + 0.5);    // decay → sustain
-        gain.gain.setValueAtTime(0.2 * 0.3, t + 0.9);             // hold sustain
-        gain.gain.linearRampToValueAtTime(0, t + 1.1);            // release
-
-        osc.connect(hpf);
-        hpf.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(t);
-        osc.stop(t + 1.15);
-      } catch(e) {}
-    }
-
-    startTime = performance.now();
-
-    function loop(now) {
-      // Inicializa AudioContext no primeiro frame (tenta autoplay — browser pode bloquear,
-      // mas a animação continua sem som em caso de erro)
-      if (!audioCtx) initAudio();
-
+  // ── Fade helper via rAF ──
+  function fadeElement(el, fromOpacity, toOpacity, durationMs, onComplete) {
+    var startTime = null;
+    el.style.opacity = fromOpacity;
+    function step(now) {
+      if (!startTime) startTime = now;
       var elapsed = now - startTime;
-
-      // Dispara sons nos pontos de tempo corretos (flags evitam duplo disparo)
-      if (!sound1Played && elapsed >= 1000) {
-        sound1Played = true;
-        playFragmentacao();
-      }
-      if (!sound2Played && elapsed >= 3000) {
-        sound2Played = true;
-        playImpacto();
-      }
-      if (!sound3Played && elapsed >= 4500) {
-        sound3Played = true;
-        playBrilho();
-      }
-
-      draw(now);
-      if (now - startTime < T_TOTAL + 200) {
-        requestAnimationFrame(loop);
+      var progress = Math.min(elapsed / durationMs, 1);
+      el.style.opacity = fromOpacity + (toOpacity - fromOpacity) * progress;
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        if (onComplete) onComplete();
       }
     }
-    requestAnimationFrame(loop);
+    requestAnimationFrame(step);
   }
 
-  // Wait for fonts via FontFaceObserver-style promise (native API)
+  // ── Typewriter for KNOWLEDGE ──
+  var WORD = 'KNOWLEDGE';
+
+  function runTypewriter(onComplete) {
+    textKnow.style.opacity = '1';
+    textKnow.innerHTML = '';
+
+    // Insert cursor span
+    var cursor = document.createElement('span');
+    cursor.id = 'intro-cursor';
+    cursor.textContent = '\u2588';
+    textKnow.appendChild(cursor);
+
+    var letterIndex = 0;
+    var interval = setInterval(function() {
+      if (letterIndex < WORD.length) {
+        var textNode = document.createTextNode(WORD[letterIndex]);
+        textKnow.insertBefore(textNode, cursor);
+        letterIndex++;
+      } else {
+        clearInterval(interval);
+        // Cursor blinks for 400ms then disappears
+        setTimeout(function() {
+          cursor.style.display = 'none';
+          if (onComplete) onComplete();
+        }, 400);
+      }
+    }, 120);
+  }
+
+  // ── Animation sequence ──
+  function runIntro() {
+    // Fase 1 — t=0: "CULTURA BUILDER" fade in (800ms)
+    fadeElement(textCB, 0, 1, 800, function() {
+
+      // Hold visible until t=1.5s (800ms fade + 700ms hold)
+      setTimeout(function() {
+
+        // Fase 2 — t=1.5s: som 1 + "CULTURA BUILDER" fade out (600ms)
+        initAudio();
+        playFragmentacao();
+        fadeElement(textCB, 1, 0, 600, function() {
+
+          // Fase 3 — t=2.1s: silêncio visual (700ms pause → until t=2.8s)
+          setTimeout(function() {
+
+            // Fase 4 — t=2.8s: som 2 + typewriter KNOWLEDGE
+            initAudio();
+            playImpacto();
+            runTypewriter(function() {
+              // Typewriter done at ~t=2.8+1.08+0.4=4.28s
+              // Som 3 at ~t=4.2s (play immediately after typing completes)
+              playBrilho();
+
+              // Fase 5 — hold KNOWLEDGE (700ms of silence → t≈4.98s)
+              setTimeout(function() {
+
+                // Fase 6 — t≈5.5s: fade out overlay (1.5s CSS transition)
+                overlay.style.opacity = '0';
+                setTimeout(function() {
+                  if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                }, 1550);
+
+              }, 700);
+            });
+
+          }, 700); // silence pause after CB fades out
+        });
+
+      }, 700); // hold "CULTURA BUILDER" visible after fade-in
+    });
+  }
+
+  // ── Start when fonts are ready ──
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(initAndRun);
+    document.fonts.ready.then(runIntro);
   } else {
-    // Fallback: short delay
-    setTimeout(initAndRun, 300);
+    setTimeout(runIntro, 300);
   }
 
 })();
