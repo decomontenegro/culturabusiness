@@ -1826,8 +1826,10 @@ footer {
     universeNodes = [];
     for (var ui = 0; ui < UNIVERSES.length; ui++) {
       var U = UNIVERSES[ui];
-      var hbx = U.hubBase.bxPct * Math.min(W * 0.45, 220);
-      var hby = U.hubBase.byPct * Math.min(H * 0.45, 200);
+      // Scale: usa 38% do menor lado da viewport como raio máximo do layout
+      var layoutR = Math.min(W, H) * 0.38;
+      var hbx = U.hubBase.bxPct * layoutR;
+      var hby = U.hubBase.byPct * layoutR;
       var hub = {
         x: CX + hbx,
         y: CY + hby,
@@ -1842,7 +1844,8 @@ footer {
       var areas = [];
       for (var ai = 0; ai < U.areas.length; ai++) {
         var ad = U.areas[ai];
-        var aScale = Math.min(W, H) / 700;
+        // Áreas: raio orbital = 14% do menor lado da viewport
+        var aScale = Math.min(W, H) * 0.14 / 90;
         areas.push({
           name: ad.name,
           bx: ad.bx * aScale, by: ad.by * aScale,
@@ -1857,8 +1860,9 @@ footer {
 
       // 3 satellites per universe
       var satellites = [];
-      var sScale = Math.min(W, H) / 700;
-      var satRadii = [90 * sScale, 110 * sScale, 130 * sScale];
+      // Satélites: órbitas entre 10% e 17% do menor lado
+      var sUnit = Math.min(W, H) * 0.01;
+      var satRadii = [sUnit * 10, sUnit * 13, sUnit * 16];
       var satSpeeds = [0.0005, 0.0004, 0.0003];
       for (var si = 0; si < 3; si++) {
         satellites.push({
@@ -1892,9 +1896,9 @@ footer {
       var hub = UN.hub;
 
       // Hub organic movement around base
-      var mScale = Math.min(W, H) / 700;
-      hub.x = CX + hub.bx + 10 * mScale * Math.sin(elapsed * 0.0005 + ui * 1.2);
-      hub.y = CY + hub.by + 8  * mScale * Math.cos(elapsed * 0.0006 + ui * 1.2);
+      var mScale = Math.min(W, H) * 0.015;
+      hub.x = CX + hub.bx + mScale * Math.sin(elapsed * 0.0005 + ui * 1.2);
+      hub.y = CY + hub.by + mScale * Math.cos(elapsed * 0.0006 + ui * 1.2);
 
       // Smooth radius
       if (hub.visible && hub.r < hub.targetR) {
@@ -1904,8 +1908,8 @@ footer {
       // Areas move relative to hub
       for (var ai = 0; ai < UN.areas.length; ai++) {
         var a = UN.areas[ai];
-        a.x = hub.x + a.bx + 7 * mScale * Math.sin(elapsed * a.fx + a.fase);
-        a.y = hub.y + a.by + 6 * mScale * Math.cos(elapsed * a.fy + a.fase);
+        a.x = hub.x + a.bx + mScale * 0.5 * Math.sin(elapsed * a.fx + a.fase);
+        a.y = hub.y + a.by + mScale * 0.4 * Math.cos(elapsed * a.fy + a.fase);
         if (a.visible && a.r < a.targetR) {
           a.r = Math.min(a.r + a.targetR * 0.04, a.targetR);
         }
