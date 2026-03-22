@@ -1644,8 +1644,8 @@ footer {
   var T_FADE_IN_END   = 1000;   // 0–1s   : fade-in "CULTURA BUILDER"
   var T_EXPLODE_END   = 3000;   // 1–3s   : explosion → particles dispersing
   var T_NEURAL_END    = 4500;   // 3–4.5s : particles → neural net nodes
-  var T_REVEAL_END    = 5500;   // 4.5–5.5s: KNOWLEDGE letter-by-letter reveal
-  var T_HOLD_END      = 6200;   // 5.5–6.2s: hold + glow pulse
+  var T_REVEAL_END    = 5400;   // 4.5–5.4s: KNOWLEDGE terminal typewriter (9 × 100ms)
+  var T_HOLD_END      = 6200;   // 5.4–6.2s: cursor blinks after word complete
   var T_TOTAL         = 7000;   // 6.2–7s : fade out everything
 
   // ── Colors ──
@@ -1659,9 +1659,9 @@ footer {
   var nodes = [];
   var NODE_COUNT = 180;
 
-  // ── KNOWLEDGE letter reveal state ──
+  // ── KNOWLEDGE terminal typewriter state ──
   var WORD = 'KNOWLEDGE';
-  var letterAlphas = [0,0,0,0,0,0,0,0,0]; // 9 letters
+  var letterAlphas = [0,0,0,0,0,0,0,0,0]; // kept for compat (unused in terminal mode)
 
   // ── Helper: lerp ──
   function lerp(a, b, t) { return a + (b - a) * t; }
@@ -1808,37 +1808,45 @@ footer {
     ctx.restore();
   }
 
-  // ── Draw KNOWLEDGE with per-letter alpha, glow, and optional pulse ──
-  function drawKnowledgeReveal(elapsed, glowPulse) {
+  // ── Draw KNOWLEDGE terminal typewriter effect ──
+  function drawKnowledgeTerminal(elapsed, masterAlpha) {
     var scale    = Math.min(W / 900, 2);
-    var fontSize = Math.round(clamp(90 * scale, 48, 100));
+    var fontSize = Math.round(clamp(72 * scale, 36, 96));
+
+    // lettersRevealed: 0–9 based on time since phase start (100ms per letter)
+    var phaseMs       = elapsed - T_NEURAL_END;
+    var lettersRevealed = Math.min(Math.floor(phaseMs / 100), WORD.length);
+
+    // Cursor blink: every 400ms
+    var cursorPhase = Math.floor(phaseMs / 400) % 2 === 0;
+    var showCursor;
+
+    if (lettersRevealed < WORD.length) {
+      // Still typing — cursor always visible while typing
+      showCursor = true;
+    } else {
+      // Typing done — blink for ~800ms (T_HOLD_END - T_REVEAL_END = 800ms), then hide
+      var afterTypingMs = elapsed - T_REVEAL_END;
+      if (afterTypingMs < 800) {
+        showCursor = cursorPhase;
+      } else {
+        showCursor = false;
+      }
+    }
+
+    var revealed = WORD.slice(0, lettersRevealed);
+    var cursor   = showCursor ? '\u2588' : '';
+    var text     = revealed + cursor;
 
     ctx.save();
-    ctx.font         = '700 ' + fontSize + 'px "Playfair Display", Georgia, serif';
-    ctx.textAlign    = 'left';
+    ctx.font         = '700 ' + fontSize + 'px "DM Mono", "Courier New", monospace';
+    ctx.fillStyle    = COLOR_LIGHT;
+    ctx.shadowColor  = COLOR_LIGHT;
+    ctx.shadowBlur   = 4;
+    ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
-    ctx.shadowColor  = COLOR_GOLD;
-    ctx.shadowBlur   = glowPulse || 25;
-
-    // Measure each letter width to position them
-    var letterWidths = [];
-    var totalWidth   = 0;
-    for (var i = 0; i < WORD.length; i++) {
-      var w = ctx.measureText(WORD[i]).width;
-      letterWidths.push(w);
-      totalWidth += w;
-    }
-
-    var startX = W / 2 - totalWidth / 2;
-    var curX   = startX;
-
-    for (var i = 0; i < WORD.length; i++) {
-      ctx.globalAlpha = clamp(letterAlphas[i], 0, 1);
-      ctx.fillStyle   = COLOR_GOLD;
-      ctx.fillText(WORD[i], curX, H / 2);
-      curX += letterWidths[i];
-    }
-
+    ctx.globalAlpha  = masterAlpha !== undefined ? masterAlpha : 1;
+    ctx.fillText(text, W / 2, H / 2);
     ctx.restore();
   }
 
@@ -1914,36 +1922,19 @@ footer {
       if (nodes[i].y < 0 || nodes[i].y > H) nodes[i].vy *= -1;
     }
 
-    // ── Phase 3: KNOWLEDGE reveal letter by letter (4500–5500ms) ──
+    // ── Phase 3: KNOWLEDGE terminal typewriter (4500–5400ms) ──
     if (elapsed <= T_REVEAL_END) {
-      var t          = (elapsed - T_NEURAL_END) / (T_REVEAL_END - T_NEURAL_END);
-      var phaseMs    = elapsed - T_NEURAL_END; // ms since phase start
-      var letterDuration = 100; // ms per letter fade-in
-      var letterDelay    = 80;  // ms between letter starts
-
-      for (var i = 0; i < WORD.length; i++) {
-        var letterStart = i * letterDelay;
-        var letterElapsed = phaseMs - letterStart;
-        letterAlphas[i] = clamp(letterElapsed / letterDuration, 0, 1);
-      }
-
       // Neural net at 0.4 opacity (background, not competing)
       drawNeuralNet(0.4, elapsed);
-      // KNOWLEDGE letters
-      drawKnowledgeReveal(elapsed, 25);
+      // Terminal typewriter
+      drawKnowledgeTerminal(elapsed, 1);
       return;
     }
 
-    // ── Phase 4: Hold + glow pulse (5500–6200ms) ──
+    // ── Phase 4: Cursor blink after word complete (5400–6200ms) ──
     if (elapsed <= T_HOLD_END) {
-      var t     = (elapsed - T_REVEAL_END) / (T_HOLD_END - T_REVEAL_END);
-      var glow  = 20 + 15 * Math.sin(t * Math.PI * 3); // 20–35px pulse
-
-      // All letters fully visible
-      for (var i = 0; i < WORD.length; i++) letterAlphas[i] = 1;
-
       drawNeuralNet(0.4, elapsed);
-      drawKnowledgeReveal(elapsed, glow);
+      drawKnowledgeTerminal(elapsed, 1);
       return;
     }
 
@@ -1952,12 +1943,10 @@ footer {
       var t       = (elapsed - T_HOLD_END) / (T_TOTAL - T_HOLD_END);
       var fadeOut = 1 - easeInOut(t);
 
-      for (var i = 0; i < WORD.length; i++) letterAlphas[i] = fadeOut;
-
       ctx.globalAlpha = fadeOut;
       drawNeuralNet(0.4 * fadeOut, elapsed);
       ctx.globalAlpha = 1;
-      drawKnowledgeReveal(elapsed, 25);
+      drawKnowledgeTerminal(elapsed, fadeOut);
 
       overlay.style.opacity = fadeOut;
       return;
