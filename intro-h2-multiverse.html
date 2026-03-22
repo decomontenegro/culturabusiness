@@ -1722,8 +1722,8 @@ footer {
     { label:'ENERGIA',       color:[255,150,50],  z:0.94, rotOffset:1.8,   tilt:0.28 },
   ];
 
-  // Raio de órbita das áreas (em espaço 3D, antes da projeção)
-  var AREA_RADIUS_BASE = Math.min(W,H) * 0.22;
+  // Raio de órbita das áreas — calculado em runIntro() após resize()
+  var AREA_RADIUS_BASE = 0;
   // Hub radius
   var HUB_R_BASE = 4;
 
@@ -2058,7 +2058,9 @@ footer {
   }
 
   function runIntro(){
-    resize(); makeBgPts();
+    resize();
+    AREA_RADIUS_BASE = Math.min(W,H) * 0.22;
+    makeBgPts();
     animRunning=true;
     playSound();
     requestAnimationFrame(frame);
