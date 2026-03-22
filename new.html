@@ -1594,6 +1594,344 @@ footer {
 </head>
 <body>
 
+<!-- ── INTRO SPLASH SCREEN ── -->
+<div id="intro-overlay">
+  <canvas id="intro-canvas"></canvas>
+</div>
+
+<style>
+#intro-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 9999;
+  background: #080808;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#intro-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+}
+</style>
+
+<script>
+(function() {
+  var overlay = document.getElementById('intro-overlay');
+  var canvas  = document.getElementById('intro-canvas');
+
+  // ── Skip on repeat visits ──
+  if (localStorage.getItem('cb_intro_seen')) {
+    overlay.style.display = 'none';
+    return;
+  }
+  localStorage.setItem('cb_intro_seen', '1');
+
+  // ── Setup canvas ──
+  var ctx = canvas.getContext('2d');
+  var W, H;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // ── Timing constants (ms) ──
+  var T_FADE_IN_END   = 1000;   // 0–1s  : fade-in "CULTURA BUILDER"
+  var T_EXPLODE_END   = 3000;   // 1–3s  : explosion → particles dispersing
+  var T_REFORM_END    = 5000;   // 3–5s  : particles reform into "KNOWLEDGE"
+  var T_HOLD_END      = 6000;   // 5–6s  : KNOWLEDGE holds/pulses gold
+  var T_TOTAL         = 7000;   // 6–7s  : fade out overlay
+
+  // ── Colors ──
+  var COLOR_LIGHT = '#F5F0E8';
+  var COLOR_GOLD  = '#C8A96E';
+
+  // ── Particle pool ──
+  var particles = [];
+
+  // ── Helper: lerp ──
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function easeInOut(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+  function easeOut(t)   { return 1 - Math.pow(1 - t, 3); }
+
+  // ── Sample pixel positions from text drawn to an offscreen canvas ──
+  function sampleText(text, font, letterSpacing, density) {
+    var off = document.createElement('canvas');
+    var scale = Math.min(W / 900, 2);
+    var fontSize = Math.round(72 * scale);
+
+    off.width  = W;
+    off.height = H;
+    var c = off.getContext('2d');
+
+    c.fillStyle = '#fff';
+    c.font = font.replace('{SIZE}', fontSize + 'px');
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+
+    // Manual letter-spacing via character-by-character drawing
+    if (letterSpacing) {
+      var chars = text.split('');
+      // measure total width
+      var totalW = 0;
+      chars.forEach(function(ch) { totalW += c.measureText(ch).width; });
+      totalW += letterSpacing * (chars.length - 1);
+      var x = W/2 - totalW/2;
+      chars.forEach(function(ch) {
+        var chW = c.measureText(ch).width;
+        c.fillText(ch, x + chW/2, H/2);
+        x += chW + letterSpacing;
+      });
+    } else {
+      c.fillText(text, W/2, H/2);
+    }
+
+    var data = c.getImageData(0, 0, W, H).data;
+    var pts  = [];
+    for (var y = 0; y < H; y += density) {
+      for (var x = 0; x < W; x += density) {
+        if (data[( y*W + x )*4 + 3] > 128) {
+          pts.push({ x: x, y: y });
+        }
+      }
+    }
+    return pts;
+  }
+
+  // ── Build particle system ──
+  function buildParticles(ptsA, ptsB) {
+    var count = Math.max(ptsA.length, ptsB.length);
+
+    // Pad shorter array by repeating
+    while (ptsA.length < count) ptsA.push(ptsA[Math.floor(Math.random()*ptsA.length)]);
+    while (ptsB.length < count) ptsB.push(ptsB[Math.floor(Math.random()*ptsB.length)]);
+
+    // Shuffle for visual randomness
+    ptsA.sort(function() { return Math.random()-0.5; });
+    ptsB.sort(function() { return Math.random()-0.5; });
+
+    particles = [];
+    for (var i = 0; i < count; i++) {
+      var isGold = Math.random() < 0.2;
+      var size   = 1.5 + Math.random() * 2.5;
+
+      // Explode target: random direction from particle's start pos
+      var angle  = Math.random() * Math.PI * 2;
+      var dist   = 80 + Math.random() * Math.min(W, H) * 0.45;
+
+      particles.push({
+        // Start positions (for CULTURA BUILDER phase)
+        sx: ptsA[i].x,
+        sy: ptsA[i].y,
+        // Explode positions
+        ex: ptsA[i].x + Math.cos(angle) * dist,
+        ey: ptsA[i].y + Math.sin(angle) * dist,
+        // End positions (for KNOWLEDGE phase)
+        tx: ptsB[i].x,
+        ty: ptsB[i].y,
+        // Runtime pos
+        x: ptsA[i].x,
+        y: ptsA[i].y,
+        size: size,
+        isGold: isGold,
+        alpha: 1,
+        // Small random drift in explode phase
+        driftX: (Math.random() - 0.5) * 0.5,
+        driftY: (Math.random() - 0.5) * 0.5,
+      });
+    }
+  }
+
+  // ── Draw a single frame ──
+  function draw(now) {
+    ctx.clearRect(0, 0, W, H);
+
+    var elapsed = now - startTime;
+
+    // ── Phase 0: Fade-in "CULTURA BUILDER" text (0–1000ms) ──
+    if (elapsed <= T_FADE_IN_END) {
+      var alpha = easeOut(elapsed / T_FADE_IN_END);
+      ctx.globalAlpha = alpha;
+      drawTextDirect('CULTURA BUILDER', alpha);
+      ctx.globalAlpha = 1;
+      return;
+    }
+
+    // ── Phase 1: Explosion (1000–3000ms) ──
+    if (elapsed <= T_EXPLODE_END) {
+      var t = (elapsed - T_FADE_IN_END) / (T_EXPLODE_END - T_FADE_IN_END);
+      var te = easeInOut(t);
+      particles.forEach(function(p) {
+        p.x = lerp(p.sx, p.ex, te);
+        p.y = lerp(p.sy, p.ey, te);
+        p.alpha = lerp(1, 0.3 + Math.random()*0.05, te);
+        drawParticle(p);
+      });
+      return;
+    }
+
+    // ── Phase 2: Reform into KNOWLEDGE (3000–5000ms) ──
+    if (elapsed <= T_REFORM_END) {
+      var t = (elapsed - T_EXPLODE_END) / (T_REFORM_END - T_EXPLODE_END);
+      var tr = easeInOut(t);
+      particles.forEach(function(p) {
+        p.x = lerp(p.ex, p.tx, tr);
+        p.y = lerp(p.ey, p.ty, tr);
+        p.alpha = lerp(0.3, 1, tr);
+        drawParticle(p);
+      });
+      return;
+    }
+
+    // ── Phase 3: KNOWLEDGE holds + pulses gold (5000–6000ms) ──
+    if (elapsed <= T_HOLD_END) {
+      var t = (elapsed - T_REFORM_END) / (T_HOLD_END - T_REFORM_END);
+      // Subtle pulse: brightness oscillates
+      var pulse = 0.85 + 0.15 * Math.sin(t * Math.PI * 4);
+      particles.forEach(function(p) {
+        p.x = p.tx;
+        p.y = p.ty;
+        p.alpha = pulse;
+        p.isGold = true; // all gold during hold
+        drawParticle(p);
+      });
+      // Also draw KNOWLEDGE text in gold beneath particles for crispness
+      ctx.globalAlpha = easeOut(t) * pulse;
+      drawKnowledgeText(pulse);
+      ctx.globalAlpha = 1;
+      return;
+    }
+
+    // ── Phase 4: Fade out overlay (6000–7000ms) ──
+    if (elapsed <= T_TOTAL) {
+      var t = (elapsed - T_HOLD_END) / (T_TOTAL - T_HOLD_END);
+      var fadeOut = 1 - easeInOut(t);
+      ctx.globalAlpha = fadeOut;
+      drawKnowledgeText(1);
+      ctx.globalAlpha = 1;
+      // Fade the overlay background
+      overlay.style.opacity = fadeOut;
+      return;
+    }
+
+    // ── Done ──
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+    setTimeout(function() {
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    }, 100);
+  }
+
+  function drawParticle(p) {
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = p.isGold ? COLOR_GOLD : COLOR_LIGHT;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawTextDirect(text, alpha) {
+    var scale = Math.min(W / 900, 2);
+    var fontSize = Math.round(72 * scale);
+    ctx.save();
+    ctx.fillStyle = COLOR_LIGHT;
+    ctx.globalAlpha = alpha;
+    ctx.font = '300 ' + fontSize + 'px Inter, -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    // Manual letter spacing (letter-spacing: 0.3em = fontSize * 0.3)
+    var spacing = fontSize * 0.3;
+    var chars = text.split('');
+    var totalW = 0;
+    chars.forEach(function(ch) { totalW += ctx.measureText(ch).width; });
+    totalW += spacing * (chars.length - 1);
+    var x = W/2 - totalW/2;
+    chars.forEach(function(ch) {
+      var cw = ctx.measureText(ch).width;
+      ctx.fillText(ch, x + cw/2, H/2);
+      x += cw + spacing;
+    });
+    ctx.restore();
+  }
+
+  function drawKnowledgeText(alpha) {
+    var scale = Math.min(W / 900, 2);
+    var fontSize = Math.round(88 * scale);
+    ctx.save();
+    ctx.fillStyle = COLOR_GOLD;
+    ctx.globalAlpha = alpha;
+    ctx.font = '700 ' + fontSize + 'px "Playfair Display", Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('KNOWLEDGE', W/2, H/2);
+    ctx.restore();
+  }
+
+  // ── Fonts must be loaded before sampling pixels ──
+  var startTime;
+
+  function initAndRun() {
+    var density = 4; // sample every N pixels
+
+    // Scale letter-spacing for pixel sampling
+    var scale = Math.min(W / 900, 2);
+    var fontSizeCB  = Math.round(72 * scale);
+    var fontSizeKNO = Math.round(88 * scale);
+    var spacingCB   = fontSizeCB * 0.3;
+
+    var ptsA = sampleText(
+      'CULTURA BUILDER',
+      '300 {SIZE} Inter, -apple-system, sans-serif',
+      spacingCB,
+      density
+    );
+    var ptsB = sampleText(
+      'KNOWLEDGE',
+      '700 {SIZE} "Playfair Display", Georgia, serif',
+      0,
+      density
+    );
+
+    // Limit particle count for perf (max ~3000)
+    var MAX = 3000;
+    if (ptsA.length > MAX) {
+      var step = Math.ceil(ptsA.length / MAX);
+      ptsA = ptsA.filter(function(_, i) { return i % step === 0; });
+    }
+    if (ptsB.length > MAX) {
+      var step = Math.ceil(ptsB.length / MAX);
+      ptsB = ptsB.filter(function(_, i) { return i % step === 0; });
+    }
+
+    buildParticles(ptsA, ptsB);
+
+    startTime = performance.now();
+
+    function loop(now) {
+      draw(now);
+      if (now - startTime < T_TOTAL + 200) {
+        requestAnimationFrame(loop);
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+
+  // Wait for fonts via FontFaceObserver-style promise (native API)
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(initAndRun);
+  } else {
+    // Fallback: short delay
+    setTimeout(initAndRun, 300);
+  }
+
+})();
+</script>
+
 <!-- NAV -->
 <nav>
   <div class="nav-logo">Cultura<span style="color:var(--gold)">Builder</span></div>
