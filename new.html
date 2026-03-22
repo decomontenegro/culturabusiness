@@ -1641,23 +1641,33 @@ footer {
   window.addEventListener('resize', resize);
 
   // ── Timing constants (ms) ──
-  var T_FADE_IN_END   = 1000;   // 0–1s  : fade-in "CULTURA BUILDER"
-  var T_EXPLODE_END   = 3000;   // 1–3s  : explosion → particles dispersing
-  var T_REFORM_END    = 5000;   // 3–5s  : particles reform into "KNOWLEDGE"
-  var T_HOLD_END      = 6000;   // 5–6s  : KNOWLEDGE holds/pulses gold
-  var T_TOTAL         = 7000;   // 6–7s  : fade out overlay
+  var T_FADE_IN_END   = 1000;   // 0–1s   : fade-in "CULTURA BUILDER"
+  var T_EXPLODE_END   = 3000;   // 1–3s   : explosion → particles dispersing
+  var T_NEURAL_END    = 4500;   // 3–4.5s : particles → neural net nodes
+  var T_REVEAL_END    = 5500;   // 4.5–5.5s: KNOWLEDGE letter-by-letter reveal
+  var T_HOLD_END      = 6200;   // 5.5–6.2s: hold + glow pulse
+  var T_TOTAL         = 7000;   // 6.2–7s : fade out everything
 
   // ── Colors ──
   var COLOR_LIGHT = '#F5F0E8';
   var COLOR_GOLD  = '#C8A96E';
 
-  // ── Particle pool ──
+  // ── Particle pool (phase 0–1) ──
   var particles = [];
+
+  // ── Neural network nodes (phase 2+) ──
+  var nodes = [];
+  var NODE_COUNT = 180;
+
+  // ── KNOWLEDGE letter reveal state ──
+  var WORD = 'KNOWLEDGE';
+  var letterAlphas = [0,0,0,0,0,0,0,0,0]; // 9 letters
 
   // ── Helper: lerp ──
   function lerp(a, b, t) { return a + (b - a) * t; }
   function easeInOut(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
   function easeOut(t)   { return 1 - Math.pow(1 - t, 3); }
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
   // ── Sample pixel positions from text drawn to an offscreen canvas ──
   function sampleText(text, font, letterSpacing, density) {
@@ -1703,21 +1713,13 @@ footer {
     return pts;
   }
 
-  // ── Build particle system ──
-  function buildParticles(ptsA, ptsB) {
-    var count = Math.max(ptsA.length, ptsB.length);
-
-    // Pad shorter array by repeating
-    while (ptsA.length < count) ptsA.push(ptsA[Math.floor(Math.random()*ptsA.length)]);
-    while (ptsB.length < count) ptsB.push(ptsB[Math.floor(Math.random()*ptsB.length)]);
-
+  // ── Build particle system (only needs ptsA now — explosion only) ──
+  function buildParticles(ptsA) {
     // Shuffle for visual randomness
     ptsA.sort(function() { return Math.random()-0.5; });
-    ptsB.sort(function() { return Math.random()-0.5; });
 
     particles = [];
-    for (var i = 0; i < count; i++) {
-      var isGold = Math.random() < 0.2;
+    for (var i = 0; i < ptsA.length; i++) {
       var size   = 1.5 + Math.random() * 2.5;
 
       // Explode target: random direction from particle's start pos
@@ -1731,20 +1733,113 @@ footer {
         // Explode positions
         ex: ptsA[i].x + Math.cos(angle) * dist,
         ey: ptsA[i].y + Math.sin(angle) * dist,
-        // End positions (for KNOWLEDGE phase)
-        tx: ptsB[i].x,
-        ty: ptsB[i].y,
         // Runtime pos
         x: ptsA[i].x,
         y: ptsA[i].y,
         size: size,
-        isGold: isGold,
         alpha: 1,
-        // Small random drift in explode phase
-        driftX: (Math.random() - 0.5) * 0.5,
-        driftY: (Math.random() - 0.5) * 0.5,
       });
     }
+  }
+
+  // ── Build neural net nodes ──
+  function buildNodes() {
+    nodes = [];
+    for (var i = 0; i < NODE_COUNT; i++) {
+      nodes.push({
+        x:     Math.random() * W,
+        y:     Math.random() * H,
+        vx:    (Math.random() - 0.5) * 0.3,
+        vy:    (Math.random() - 0.5) * 0.3,
+        size:  1.5 + Math.random() * 2.5,
+        phase: Math.random() * Math.PI * 2,
+        // Target position (assigned during phase 3a transition)
+        tx: 0,
+        ty: 0,
+      });
+    }
+    // Assign target positions (organic scatter, avoid a band around center for text)
+    for (var i = 0; i < NODE_COUNT; i++) {
+      var angle = Math.random() * Math.PI * 2;
+      var r     = 0.2 * Math.min(W, H) + Math.random() * 0.45 * Math.min(W, H);
+      nodes[i].tx = W/2 + Math.cos(angle) * r;
+      nodes[i].ty = H/2 + Math.sin(angle) * r * 0.8; // slightly flatter vertically
+    }
+  }
+
+  // ── Draw neural network (nodes + connections) at given opacity ──
+  function drawNeuralNet(masterAlpha, elapsed) {
+    var time = elapsed / 1000; // seconds for oscillation
+    // Dynamic threshold oscillation ±10px around 110
+    var threshold = 110 + 10 * Math.sin(time * 0.7);
+
+    ctx.save();
+
+    // Draw connections
+    for (var i = 0; i < nodes.length; i++) {
+      for (var j = i + 1; j < nodes.length; j++) {
+        var dx = nodes[i].x - nodes[j].x;
+        var dy = nodes[i].y - nodes[j].y;
+        var dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < threshold) {
+          var lineAlpha = (1 - dist / threshold) * 0.5 * masterAlpha;
+          ctx.strokeStyle = 'rgba(200,169,110,' + lineAlpha + ')';
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Draw nodes
+    for (var i = 0; i < nodes.length; i++) {
+      var nd = nodes[i];
+      var pulse = 0.5 + 0.5 * Math.sin(time * 1.8 + nd.phase);
+      var nodeAlpha = (0.3 + 0.4 * pulse) * masterAlpha;
+      var nodeSize  = nd.size * (0.8 + 0.4 * pulse);
+      ctx.globalAlpha = nodeAlpha;
+      ctx.fillStyle = COLOR_GOLD;
+      ctx.beginPath();
+      ctx.arc(nd.x, nd.y, nodeSize / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // ── Draw KNOWLEDGE with per-letter alpha, glow, and optional pulse ──
+  function drawKnowledgeReveal(elapsed, glowPulse) {
+    var scale    = Math.min(W / 900, 2);
+    var fontSize = Math.round(clamp(90 * scale, 48, 100));
+
+    ctx.save();
+    ctx.font         = '700 ' + fontSize + 'px "Playfair Display", Georgia, serif';
+    ctx.textAlign    = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor  = COLOR_GOLD;
+    ctx.shadowBlur   = glowPulse || 25;
+
+    // Measure each letter width to position them
+    var letterWidths = [];
+    var totalWidth   = 0;
+    for (var i = 0; i < WORD.length; i++) {
+      var w = ctx.measureText(WORD[i]).width;
+      letterWidths.push(w);
+      totalWidth += w;
+    }
+
+    var startX = W / 2 - totalWidth / 2;
+    var curX   = startX;
+
+    for (var i = 0; i < WORD.length; i++) {
+      ctx.globalAlpha = clamp(letterAlphas[i], 0, 1);
+      ctx.fillStyle   = COLOR_GOLD;
+      ctx.fillText(WORD[i], curX, H / 2);
+      curX += letterWidths[i];
+    }
+
+    ctx.restore();
   }
 
   // ── Draw a single frame ──
@@ -1769,52 +1864,101 @@ footer {
       particles.forEach(function(p) {
         p.x = lerp(p.sx, p.ex, te);
         p.y = lerp(p.sy, p.ey, te);
-        p.alpha = lerp(1, 0.3 + Math.random()*0.05, te);
-        drawParticle(p);
+        p.alpha = lerp(1, 0.3, te);
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = COLOR_LIGHT;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
+        ctx.fill();
       });
+      ctx.globalAlpha = 1;
       return;
     }
 
-    // ── Phase 2: Reform into KNOWLEDGE (3000–5000ms) ──
-    if (elapsed <= T_REFORM_END) {
-      var t = (elapsed - T_EXPLODE_END) / (T_REFORM_END - T_EXPLODE_END);
-      var tr = easeInOut(t);
-      particles.forEach(function(p) {
-        p.x = lerp(p.ex, p.tx, tr);
-        p.y = lerp(p.ey, p.ty, tr);
-        p.alpha = lerp(0.3, 1, tr);
-        drawParticle(p);
+    // ── Phase 2: Particles → Neural Network nodes (3000–4500ms) ──
+    if (elapsed <= T_NEURAL_END) {
+      var t  = (elapsed - T_EXPLODE_END) / (T_NEURAL_END - T_EXPLODE_END);
+      var te = easeInOut(t);
+
+      // Move existing explosion particles toward their corresponding node targets
+      // (we only have as many particles as ptsA, nodes may be fewer/more — use modulo)
+      particles.forEach(function(p, idx) {
+        var nd = nodes[idx % nodes.length];
+        p.x = lerp(p.ex, nd.tx, te);
+        p.y = lerp(p.ey, nd.ty, te);
+        p.alpha = lerp(0.3, 0, te); // fade out particle dots
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = COLOR_GOLD;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
+        ctx.fill();
       });
+      ctx.globalAlpha = 1;
+
+      // Neural net fades IN as particles fade out
+      // Position nodes: lerp from tx,ty toward actual tx,ty (nodes start at target — just appear)
+      for (var i = 0; i < nodes.length; i++) {
+        nodes[i].x = nodes[i].tx;
+        nodes[i].y = nodes[i].ty;
+      }
+      drawNeuralNet(te, elapsed);
       return;
     }
 
-    // ── Phase 3: KNOWLEDGE holds + pulses gold (5000–6000ms) ──
+    // ── Update node positions (gentle drift) for all later phases ──
+    for (var i = 0; i < nodes.length; i++) {
+      nodes[i].x += nodes[i].vx;
+      nodes[i].y += nodes[i].vy;
+      // Bounce off edges
+      if (nodes[i].x < 0 || nodes[i].x > W) nodes[i].vx *= -1;
+      if (nodes[i].y < 0 || nodes[i].y > H) nodes[i].vy *= -1;
+    }
+
+    // ── Phase 3: KNOWLEDGE reveal letter by letter (4500–5500ms) ──
+    if (elapsed <= T_REVEAL_END) {
+      var t          = (elapsed - T_NEURAL_END) / (T_REVEAL_END - T_NEURAL_END);
+      var phaseMs    = elapsed - T_NEURAL_END; // ms since phase start
+      var letterDuration = 100; // ms per letter fade-in
+      var letterDelay    = 80;  // ms between letter starts
+
+      for (var i = 0; i < WORD.length; i++) {
+        var letterStart = i * letterDelay;
+        var letterElapsed = phaseMs - letterStart;
+        letterAlphas[i] = clamp(letterElapsed / letterDuration, 0, 1);
+      }
+
+      // Neural net at 0.4 opacity (background, not competing)
+      drawNeuralNet(0.4, elapsed);
+      // KNOWLEDGE letters
+      drawKnowledgeReveal(elapsed, 25);
+      return;
+    }
+
+    // ── Phase 4: Hold + glow pulse (5500–6200ms) ──
     if (elapsed <= T_HOLD_END) {
-      var t = (elapsed - T_REFORM_END) / (T_HOLD_END - T_REFORM_END);
-      // Subtle pulse: brightness oscillates
-      var pulse = 0.85 + 0.15 * Math.sin(t * Math.PI * 4);
-      particles.forEach(function(p) {
-        p.x = p.tx;
-        p.y = p.ty;
-        p.alpha = pulse;
-        p.isGold = true; // all gold during hold
-        drawParticle(p);
-      });
-      // Also draw KNOWLEDGE text in gold beneath particles for crispness
-      ctx.globalAlpha = easeOut(t) * pulse;
-      drawKnowledgeText(pulse);
-      ctx.globalAlpha = 1;
+      var t     = (elapsed - T_REVEAL_END) / (T_HOLD_END - T_REVEAL_END);
+      var glow  = 20 + 15 * Math.sin(t * Math.PI * 3); // 20–35px pulse
+
+      // All letters fully visible
+      for (var i = 0; i < WORD.length; i++) letterAlphas[i] = 1;
+
+      drawNeuralNet(0.4, elapsed);
+      drawKnowledgeReveal(elapsed, glow);
       return;
     }
 
-    // ── Phase 4: Fade out overlay (6000–7000ms) ──
+    // ── Phase 5: Fade out everything (6200–7000ms) ──
     if (elapsed <= T_TOTAL) {
-      var t = (elapsed - T_HOLD_END) / (T_TOTAL - T_HOLD_END);
+      var t       = (elapsed - T_HOLD_END) / (T_TOTAL - T_HOLD_END);
       var fadeOut = 1 - easeInOut(t);
+
+      for (var i = 0; i < WORD.length; i++) letterAlphas[i] = fadeOut;
+
       ctx.globalAlpha = fadeOut;
-      drawKnowledgeText(1);
+      drawNeuralNet(0.4 * fadeOut, elapsed);
       ctx.globalAlpha = 1;
-      // Fade the overlay background
+      drawKnowledgeReveal(elapsed, 25);
+
       overlay.style.opacity = fadeOut;
       return;
     }
@@ -1825,14 +1969,6 @@ footer {
     setTimeout(function() {
       if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
     }, 100);
-  }
-
-  function drawParticle(p) {
-    ctx.globalAlpha = p.alpha;
-    ctx.fillStyle = p.isGold ? COLOR_GOLD : COLOR_LIGHT;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
-    ctx.fill();
   }
 
   function drawTextDirect(text, alpha) {
@@ -1859,19 +1995,6 @@ footer {
     ctx.restore();
   }
 
-  function drawKnowledgeText(alpha) {
-    var scale = Math.min(W / 900, 2);
-    var fontSize = Math.round(88 * scale);
-    ctx.save();
-    ctx.fillStyle = COLOR_GOLD;
-    ctx.globalAlpha = alpha;
-    ctx.font = '700 ' + fontSize + 'px "Playfair Display", Georgia, serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('KNOWLEDGE', W/2, H/2);
-    ctx.restore();
-  }
-
   // ── Fonts must be loaded before sampling pixels ──
   var startTime;
 
@@ -1881,19 +2004,12 @@ footer {
     // Scale letter-spacing for pixel sampling
     var scale = Math.min(W / 900, 2);
     var fontSizeCB  = Math.round(72 * scale);
-    var fontSizeKNO = Math.round(88 * scale);
     var spacingCB   = fontSizeCB * 0.3;
 
     var ptsA = sampleText(
       'CULTURA BUILDER',
       '300 {SIZE} Inter, -apple-system, sans-serif',
       spacingCB,
-      density
-    );
-    var ptsB = sampleText(
-      'KNOWLEDGE',
-      '700 {SIZE} "Playfair Display", Georgia, serif',
-      0,
       density
     );
 
@@ -1903,12 +2019,9 @@ footer {
       var step = Math.ceil(ptsA.length / MAX);
       ptsA = ptsA.filter(function(_, i) { return i % step === 0; });
     }
-    if (ptsB.length > MAX) {
-      var step = Math.ceil(ptsB.length / MAX);
-      ptsB = ptsB.filter(function(_, i) { return i % step === 0; });
-    }
 
-    buildParticles(ptsA, ptsB);
+    buildParticles(ptsA);
+    buildNodes();
 
     // ── Web Audio API — sintetizadores sincronizados ──
     var audioCtx = null;
@@ -2041,7 +2154,7 @@ footer {
         sound2Played = true;
         playImpacto();
       }
-      if (!sound3Played && elapsed >= 5000) {
+      if (!sound3Played && elapsed >= 4500) {
         sound3Played = true;
         playBrilho();
       }
