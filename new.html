@@ -1594,7 +1594,8 @@ footer {
 </head>
 <body>
 
-<!-- ── INTRO SPLASH SCREEN ── -->
+
+<!-- ── INTRO SPLASH SCREEN (Nebulosa Holográfica) ── -->
 <div id="intro-overlay">
   <canvas id="intro-canvas"></canvas>
   <div id="intro-text-cb">CULTURA BUILDER</div>
@@ -1606,10 +1607,7 @@ footer {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: #080808;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: #060810;
   transition: opacity 1.5s ease;
 }
 
@@ -1623,35 +1621,42 @@ footer {
 
 #intro-text-cb {
   position: absolute;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Inter', sans-serif;
   font-weight: 300;
-  font-size: clamp(14px, 2vw, 22px);
-  letter-spacing: 0.4em;
+  font-size: clamp(12px, 1.5vw, 18px);
+  letter-spacing: 0.45em;
   color: #F5F0E8;
   opacity: 0;
-  text-transform: uppercase;
   white-space: nowrap;
+  pointer-events: none;
   -webkit-font-smoothing: antialiased;
 }
 
 #intro-text-know {
   position: absolute;
-  font-family: 'DM Mono', 'SF Mono', 'Courier New', monospace;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'DM Mono', monospace;
   font-weight: 400;
-  font-size: clamp(48px, 7vw, 96px);
-  letter-spacing: 0.05em;
-  color: #F5F0E8;
+  font-size: clamp(18px, 2.5vw, 32px);
+  letter-spacing: 0.1em;
+  color: #C8A96E;
   opacity: 0;
   white-space: nowrap;
+  pointer-events: none;
   -webkit-font-smoothing: antialiased;
 }
 
-#intro-cursor {
-  animation: blink 0.5s step-end infinite;
-  color: #F5F0E8;
+#intro-cursor-holo {
+  animation: blink-holo 0.5s step-end infinite;
+  color: #C8A96E;
 }
 
-@keyframes blink {
+@keyframes blink-holo {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0; }
 }
@@ -1660,27 +1665,42 @@ footer {
 <script>
 (function() {
   var overlay  = document.getElementById('intro-overlay');
+  var canvas   = document.getElementById('intro-canvas');
   var textCB   = document.getElementById('intro-text-cb');
   var textKnow = document.getElementById('intro-text-know');
 
   // ── Skip on repeat visits ──
-  if (localStorage.getItem('cb_intro_seen')) {
+  if (localStorage.getItem('cb_intro_nebulaholo_seen')) {
     overlay.style.display = 'none';
     return;
   }
-  localStorage.setItem('cb_intro_seen', '1');
+  localStorage.setItem('cb_intro_nebulaholo_seen', '1');
+
+  // ── Canvas setup with DPR scaling ──
+  var ctx = canvas.getContext('2d');
+  var W, H, CX, CY;
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  function resizeCanvas() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+    CX = W / 2;
+    CY = H / 2;
+  }
+  resizeCanvas();
 
   // ── Web Audio API ──
   var audioCtx = null;
-
   function initAudio() {
     if (audioCtx) return;
-    try {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    } catch(e) { audioCtx = null; }
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { audioCtx = null; }
   }
 
-  // Som 1: Fragmentação — burst de ruído branco band-pass ~800Hz
   function playFragmentacao() {
     if (!audioCtx) return;
     try {
@@ -1688,14 +1708,9 @@ footer {
       var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
       var data = buf.getChannelData(0);
       for (var i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
-      var src = audioCtx.createBufferSource();
-      src.buffer = buf;
-      var bpf = audioCtx.createBiquadFilter();
-      bpf.type = 'bandpass';
-      bpf.frequency.value = 800;
-      bpf.Q.value = 2;
-      var gain = audioCtx.createGain();
-      var t = audioCtx.currentTime;
+      var src = audioCtx.createBufferSource(); src.buffer = buf;
+      var bpf = audioCtx.createBiquadFilter(); bpf.type = 'bandpass'; bpf.frequency.value = 800; bpf.Q.value = 2;
+      var gain = audioCtx.createGain(); var t = audioCtx.currentTime;
       gain.gain.setValueAtTime(0.4, t);
       gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
       src.connect(bpf); bpf.connect(gain); gain.connect(audioCtx.destination);
@@ -1703,149 +1718,431 @@ footer {
     } catch(e) {}
   }
 
-  // Som 2: Impacto — boom grave 70Hz + ruído low-pass 200Hz
   function playImpacto() {
     if (!audioCtx) return;
     try {
       var t = audioCtx.currentTime;
-      var osc = audioCtx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(70, t);
-      osc.frequency.exponentialRampToValueAtTime(30, t + 0.5);
+      var osc = audioCtx.createOscillator(); osc.type = 'sine';
+      osc.frequency.setValueAtTime(70, t); osc.frequency.exponentialRampToValueAtTime(30, t + 0.5);
       var gainOsc = audioCtx.createGain();
-      gainOsc.gain.setValueAtTime(0.5, t);
-      gainOsc.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      gainOsc.gain.setValueAtTime(0.5, t); gainOsc.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
       osc.connect(gainOsc); gainOsc.connect(audioCtx.destination);
       osc.start(t); osc.stop(t + 0.55);
-
       var bufSize = Math.floor(audioCtx.sampleRate * 0.5);
       var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
       var data = buf.getChannelData(0);
       for (var i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
-      var noiseSrc = audioCtx.createBufferSource();
-      noiseSrc.buffer = buf;
-      var lpf = audioCtx.createBiquadFilter();
-      lpf.type = 'lowpass'; lpf.frequency.value = 200;
+      var noiseSrc = audioCtx.createBufferSource(); noiseSrc.buffer = buf;
+      var lpf = audioCtx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.frequency.value = 200;
       var gainNoise = audioCtx.createGain();
-      gainNoise.gain.setValueAtTime(0.25, t);
-      gainNoise.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      gainNoise.gain.setValueAtTime(0.25, t); gainNoise.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
       noiseSrc.connect(lpf); lpf.connect(gainNoise); gainNoise.connect(audioCtx.destination);
       noiseSrc.start(t); noiseSrc.stop(t + 0.55);
     } catch(e) {}
   }
 
-  // Som 3: Brilho — tom alto 1760Hz com ADSR suave + high-pass
   function playBrilho() {
     if (!audioCtx) return;
     try {
       var t = audioCtx.currentTime;
-      var osc = audioCtx.createOscillator();
-      osc.type = 'sine'; osc.frequency.value = 1760;
-      var hpf = audioCtx.createBiquadFilter();
-      hpf.type = 'highpass'; hpf.frequency.value = 1200;
+      var osc = audioCtx.createOscillator(); osc.type = 'sine'; osc.frequency.value = 1760;
+      var hpf = audioCtx.createBiquadFilter(); hpf.type = 'highpass'; hpf.frequency.value = 1200;
       var gain = audioCtx.createGain();
       gain.gain.setValueAtTime(0, t);
       gain.gain.linearRampToValueAtTime(0.2, t + 0.1);
-      gain.gain.linearRampToValueAtTime(0.2 * 0.3, t + 0.5);
-      gain.gain.setValueAtTime(0.2 * 0.3, t + 0.9);
+      gain.gain.linearRampToValueAtTime(0.06, t + 0.5);
+      gain.gain.setValueAtTime(0.06, t + 0.9);
       gain.gain.linearRampToValueAtTime(0, t + 1.1);
       osc.connect(hpf); hpf.connect(gain); gain.connect(audioCtx.destination);
       osc.start(t); osc.stop(t + 1.15);
     } catch(e) {}
   }
 
-  // ── Fade helper via rAF ──
-  function fadeElement(el, fromOpacity, toOpacity, durationMs, onComplete) {
-    var startTime = null;
-    el.style.opacity = fromOpacity;
+  // ── Fade helper ──
+  function fadeElement(el, from, to, dur, cb) {
+    var start = null;
+    el.style.opacity = from;
     function step(now) {
-      if (!startTime) startTime = now;
-      var elapsed = now - startTime;
-      var progress = Math.min(elapsed / durationMs, 1);
-      el.style.opacity = fromOpacity + (toOpacity - fromOpacity) * progress;
-      if (progress < 1) {
-        requestAnimationFrame(step);
-      } else {
-        if (onComplete) onComplete();
-      }
+      if (!start) start = now;
+      var p = Math.min((now - start) / dur, 1);
+      el.style.opacity = from + (to - from) * p;
+      if (p < 1) requestAnimationFrame(step);
+      else if (cb) cb();
     }
     requestAnimationFrame(step);
   }
 
-  // ── Typewriter for KNOWLEDGE ──
-  var WORD = 'KNOWLEDGE';
+  // ── Nebulosa Holográfica — State ──
+  var FOCAL = 500, Z_OFFSET = 700;
 
-  function runTypewriter(onComplete) {
-    textKnow.style.opacity = '1';
-    textKnow.innerHTML = '';
-
-    // Insert cursor span
-    var cursor = document.createElement('span');
-    cursor.id = 'intro-cursor';
-    cursor.textContent = '\u2588';
-    textKnow.appendChild(cursor);
-
-    var letterIndex = 0;
-    var interval = setInterval(function() {
-      if (letterIndex < WORD.length) {
-        var textNode = document.createTextNode(WORD[letterIndex]);
-        textKnow.insertBefore(textNode, cursor);
-        letterIndex++;
-      } else {
-        clearInterval(interval);
-        // Cursor blinks for 400ms then disappears
-        setTimeout(function() {
-          cursor.style.display = 'none';
-          if (onComplete) onComplete();
-        }, 400);
-      }
-    }, 120);
+  function project(x2d, y2d, z) {
+    var zd = z + Z_OFFSET;
+    var s = FOCAL / zd;
+    return { px: CX + (x2d - CX) * s, py: CY + (y2d - CY) * s, scale: s, z: z };
   }
 
-  // ── Animation sequence ──
+  // 8 áreas
+  var AREAS = [
+    { name: 'Vendas',     bx: -130, by: -65,  bz: -100, fx: 0.0008, fy: 0.0011, fz: 0.0006, fase: 0.0, faseZ: 0.0 },
+    { name: 'Produto',    bx:  +40, by: -145, bz:  +80, fx: 0.0007, fy: 0.0009, fz: 0.0007, fase: 1.1, faseZ: 1.0 },
+    { name: 'Financeiro', bx: +145, by:  -35, bz:  -60, fx: 0.0009, fy: 0.0007, fz: 0.0005, fase: 2.2, faseZ: 2.1 },
+    { name: 'RH',         bx: +115, by: +100, bz: +120, fx: 0.0006, fy: 0.0010, fz: 0.0008, fase: 3.3, faseZ: 3.2 },
+    { name: 'Operações',  bx:  -15, by: +155, bz:  -80, fx: 0.0010, fy: 0.0008, fz: 0.0006, fase: 4.4, faseZ: 4.3 },
+    { name: 'Marketing',  bx: -140, by:  +85, bz: +100, fx: 0.0008, fy: 0.0012, fz: 0.0007, fase: 5.5, faseZ: 5.4 },
+    { name: 'Jurídico',   bx:  -80, by:  +50, bz:  -40, fx: 0.0011, fy: 0.0007, fz: 0.0009, fase: 0.7, faseZ: 0.6 },
+    { name: 'Tecnologia', bx:  +75, by:  +65, bz:  +60, fx: 0.0007, fy: 0.0011, fz: 0.0005, fase: 1.8, faseZ: 1.7 }
+  ];
+
+  // 8 satélites
+  var SATELLITES = (function() {
+    var sats = [];
+    for (var i = 0; i < 8; i++) {
+      var ang = (i / 8) * Math.PI * 2;
+      sats.push({
+        bx: Math.cos(ang) * 80,
+        by: Math.sin(ang) * 60,
+        bz: (Math.random() - 0.5) * 100,
+        fx: 0.0005 + Math.random() * 0.0005,
+        fy: 0.0005 + Math.random() * 0.0005,
+        fz: 0.0004 + Math.random() * 0.0004,
+        fase: Math.random() * Math.PI * 2,
+        faseZ: Math.random() * Math.PI * 2
+      });
+    }
+    return sats;
+  })();
+
+  // Sinapses
+  var sinapses = [];
+  function spawnSinapse() {
+    var ai = Math.floor(Math.random() * AREAS.length);
+    var bi = Math.floor(Math.random() * AREAS.length);
+    if (ai === bi) bi = (bi + 1) % AREAS.length;
+    sinapses.push({ ai: ai, bi: bi, t: 0, speed: 0.008 + Math.random() * 0.012 });
+  }
+
+  // Scan lines
+  var scanY = [0, H / 3, 2 * H / 3];
+
+  // Animation state
+  var startTime = null;
+  var animRunning = false;
+  var hubAlpha = 0;
+  var areasAlpha = 0;
+  var connAlpha = 0;
+  var satellitesAlpha = 0;
+  var sinapseActive = false;
+  var overlayAlpha = 1;
+  var done = false;
+
+  // Per-area visibility
+  var areaVisible = [false, false, false, false, false, false, false, false];
+  var areaAlpha   = [0, 0, 0, 0, 0, 0, 0, 0];
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function drawFrame(now) {
+    if (!startTime) startTime = now;
+    if (done) return;
+
+    var elapsed = now - startTime;
+    var dt = 16; // ~60fps
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Compute area positions
+    var positions = AREAS.map(function(a) {
+      var x2d = CX + a.bx + 12 * Math.sin(elapsed * a.fx + a.fase);
+      var y2d = CY + a.by + 10 * Math.cos(elapsed * a.fy + a.fase);
+      var z   = a.bz + 60 * Math.sin(elapsed * a.fz + a.faseZ);
+      return project(x2d, y2d, z);
+    });
+
+    // Satellite positions
+    var satPos = SATELLITES.map(function(s) {
+      var x2d = CX + s.bx + 10 * Math.sin(elapsed * s.fx + s.fase);
+      var y2d = CY + s.by + 8 * Math.cos(elapsed * s.fy + s.fase);
+      var z   = s.bz + 60 * Math.sin(elapsed * s.fz + s.faseZ);
+      return project(x2d, y2d, z);
+    });
+
+    // Depth alpha normalization
+    var scales = positions.map(function(p) { return p.scale; });
+    var minScale = Math.min.apply(null, scales);
+    var maxScale = Math.max.apply(null, scales);
+    var scaleRange = maxScale - minScale || 0.001;
+
+    function depthAlphaOf(scale) {
+      return 0.3 + 0.7 * ((scale - minScale) / scaleRange);
+    }
+
+    // Hub
+    var hubProj = project(CX, CY, 0);
+
+    // ── Scan lines ──
+    for (var sl = 0; sl < 3; sl++) {
+      scanY[sl] = (scanY[sl] + 1) % H;
+      ctx.beginPath();
+      ctx.moveTo(0, scanY[sl]);
+      ctx.lineTo(W, scanY[sl]);
+      ctx.strokeStyle = 'rgba(160,200,255,0.025)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // ── Connections (hub → areas + adjacent) ──
+    if (connAlpha > 0) {
+      // Hub → area (Bézier)
+      positions.forEach(function(p, i) {
+        if (!areaVisible[i]) return;
+        var da = depthAlphaOf(p.scale);
+        var alpha = connAlpha * 0.2 * da * areaAlpha[i];
+        if (alpha < 0.005) return;
+        ctx.beginPath();
+        ctx.moveTo(hubProj.px, hubProj.py);
+        var cp1x = hubProj.px + (p.px - hubProj.px) * 0.25 + (Math.sin(elapsed * 0.001 + i) * 30);
+        var cp1y = hubProj.py + (p.py - hubProj.py) * 0.25 + (Math.cos(elapsed * 0.001 + i) * 20);
+        var cp2x = hubProj.px + (p.px - hubProj.px) * 0.75 + (Math.sin(elapsed * 0.0013 + i) * 20);
+        var cp2y = hubProj.py + (p.py - hubProj.py) * 0.75 + (Math.cos(elapsed * 0.0013 + i) * 15);
+        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p.px, p.py);
+        ctx.strokeStyle = 'rgba(200,169,110,' + alpha + ')';
+        ctx.lineWidth = 0.8 * p.scale;
+        ctx.stroke();
+      });
+
+      // Adjacent pairs (quadratic)
+      for (var ai = 0; ai < AREAS.length; ai++) {
+        var aj = (ai + 1) % AREAS.length;
+        if (!areaVisible[ai] || !areaVisible[aj]) continue;
+        var pa = positions[ai], pb = positions[aj];
+        var daAvg = (depthAlphaOf(pa.scale) + depthAlphaOf(pb.scale)) / 2;
+        var alpha2 = connAlpha * 0.1 * daAvg * Math.min(areaAlpha[ai], areaAlpha[aj]);
+        if (alpha2 < 0.003) continue;
+        ctx.beginPath();
+        ctx.moveTo(pa.px, pa.py);
+        var cpx = (pa.px + pb.px) / 2 + Math.sin(elapsed * 0.0009 + ai) * 25;
+        var cpy = (pa.py + pb.py) / 2 + Math.cos(elapsed * 0.0009 + ai) * 25;
+        ctx.quadraticCurveTo(cpx, cpy, pb.px, pb.py);
+        ctx.strokeStyle = 'rgba(160,200,255,' + alpha2 + ')';
+        ctx.lineWidth = 0.3;
+        ctx.stroke();
+      }
+    }
+
+    // ── Sinapses ──
+    if (sinapseActive) {
+      if (Math.random() < 0.04) spawnSinapse();
+    }
+    sinapses = sinapses.filter(function(s) { return s.t <= 1; });
+    sinapses.forEach(function(s) {
+      var pa = positions[s.ai], pb = positions[s.bi];
+      var t = s.t;
+      var sx = lerp(pa.px, pb.px, t);
+      var sy = lerp(pa.py, pb.py, t);
+      var sz = lerp(pa.scale, pb.scale, t);
+      var da = depthAlphaOf(sz);
+      ctx.beginPath();
+      ctx.arc(sx, sy, 2 * sz * da, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(200,230,255,' + (0.7 * da) + ')';
+      ctx.shadowColor = 'rgba(180,220,255,0.8)';
+      ctx.shadowBlur = 6;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      s.t += s.speed;
+    });
+
+    // ── Painters algorithm: sort nodes by z_real ──
+    var drawOrder = positions.map(function(p, i) { return { idx: i, p: p }; });
+    drawOrder.sort(function(a, b) { return a.p.z - b.p.z });
+
+    // ── Draw area nodes ──
+    drawOrder.forEach(function(item) {
+      var i = item.idx;
+      if (!areaVisible[i]) return;
+      var p = item.p;
+      var da = depthAlphaOf(p.scale);
+      var aa = areaAlpha[i];
+      var r_vis = 6;
+
+      // Glow
+      ctx.shadowColor = 'rgba(160,200,255,0.5)';
+      ctx.shadowBlur = 15 * p.scale;
+
+      // Node
+      ctx.beginPath();
+      ctx.arc(p.px, p.py, r_vis * p.scale, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(160,200,255,' + (da * 0.9 * aa) + ')';
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Label (only front nodes)
+      if (da > 0.5 && aa > 0.3) {
+        var labelAlpha = Math.min(da * aa, 1);
+        var area = AREAS[i];
+        var lx = p.px, ly = p.py;
+        var ang = Math.atan2(p.py - CY, p.px - CX);
+        var ex = lx + Math.cos(ang) * 30;
+        var ey = ly + Math.sin(ang) * 30;
+
+        // Dotted line
+        ctx.save();
+        ctx.setLineDash([3, 4]);
+        ctx.beginPath();
+        ctx.moveTo(lx, ly);
+        ctx.lineTo(ex, ey);
+        ctx.strokeStyle = 'rgba(160,200,255,0.25)';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+
+        // Label text
+        ctx.font = '10px "DM Mono", monospace';
+        ctx.fillStyle = 'rgba(160,200,255,' + labelAlpha + ')';
+        ctx.textAlign = p.px > CX ? 'left' : 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(area.name, ex + (p.px > CX ? 4 : -4), ey);
+      }
+    });
+
+    // ── Satellites ──
+    if (satellitesAlpha > 0) {
+      satPos.forEach(function(sp) {
+        ctx.beginPath();
+        ctx.arc(sp.px, sp.py, 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(200,169,110,' + (0.3 * satellitesAlpha) + ')';
+        ctx.fill();
+      });
+    }
+
+    // ── Hub ──
+    if (hubAlpha > 0) {
+      ctx.shadowColor = '#C8A96E';
+      ctx.shadowBlur = 40 * hubAlpha;
+      ctx.beginPath();
+      ctx.arc(CX, CY, 14, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(200,169,110,' + hubAlpha + ')';
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    // ── Timing control ──
+    // 0–1s: CB visible (handled by DOM)
+    // 1–2s: CB fade out (handled by DOM)
+    // 2–2.5s: silêncio
+    // 2.5s: hub surge
+    // 2.8s: areas stagger
+    // 4s: connections + satellites
+    // 4.3s: sinapses
+    // 4.5–6.5s: nebulosa ativa
+    // 6.5s: KNOWLEDGE typewriter
+    // 7.5–9s: fade out
+
+    if (elapsed >= 2500 && elapsed < 9000) {
+      var hubProgress = Math.min((elapsed - 2500) / 400, 1);
+      hubAlpha = hubProgress;
+    }
+
+    if (elapsed >= 2800) {
+      AREAS.forEach(function(a, i) {
+        var tStart = 2800 + i * 200;
+        if (elapsed >= tStart) {
+          areaVisible[i] = true;
+          areaAlpha[i] = Math.min((elapsed - tStart) / 400, 1);
+        }
+      });
+    }
+
+    if (elapsed >= 4000) {
+      connAlpha = Math.min((elapsed - 4000) / 500, 1);
+      satellitesAlpha = Math.min((elapsed - 4000) / 500, 1);
+    }
+
+    if (elapsed >= 4300) {
+      sinapseActive = true;
+    }
+
+    // Fade out at 7.5s–9s
+    if (elapsed >= 7500) {
+      var fadeProgress = Math.min((elapsed - 7500) / 1500, 1);
+      // Dim everything gradually
+      hubAlpha     = Math.max(0, 1 - fadeProgress);
+      connAlpha    = Math.max(0, 1 - fadeProgress);
+      satellitesAlpha = Math.max(0, 1 - fadeProgress);
+      sinapseActive = false;
+      AREAS.forEach(function(a, i) {
+        areaAlpha[i] = Math.max(0, 1 - fadeProgress);
+      });
+    }
+
+    requestAnimationFrame(drawFrame);
+  }
+
+  // ── Typewriter for KNOWLEDGE ──
+  var WORD = 'KNOWLEDGE';
+  function runTypewriter(cb) {
+    textKnow.style.opacity = '1';
+    textKnow.innerHTML = '';
+    var cursor = document.createElement('span');
+    cursor.id = 'intro-cursor-holo';
+    cursor.textContent = '\u2588';
+    textKnow.appendChild(cursor);
+    var idx = 0;
+    var iv = setInterval(function() {
+      if (idx < WORD.length) {
+        textKnow.insertBefore(document.createTextNode(WORD[idx]), cursor);
+        idx++;
+      } else {
+        clearInterval(iv);
+        setTimeout(function() {
+          cursor.style.display = 'none';
+          if (cb) cb();
+        }, 400);
+      }
+    }, 110);
+  }
+
+  // ── Main sequence ──
   function runIntro() {
-    // Fase 1 — t=0: "CULTURA BUILDER" fade in (800ms)
+    // Start canvas animation loop immediately
+    animRunning = true;
+    requestAnimationFrame(drawFrame);
+
+    // t=0: fade in CB (800ms)
     fadeElement(textCB, 0, 1, 800, function() {
-
-      // Hold visible until t=1.5s (800ms fade + 700ms hold)
+      // hold 200ms → t=1s total
       setTimeout(function() {
-
-        // Fase 2 — t=1.5s: som 1 + "CULTURA BUILDER" fade out (600ms)
+        // t=1s: fade out CB + play fragmentation
         initAudio();
         playFragmentacao();
         fadeElement(textCB, 1, 0, 600, function() {
-
-          // Fase 3 — t=2.1s: silêncio visual (700ms pause → until t=2.8s)
+          // t=1.6s silence → 2.5s total = 900ms wait
           setTimeout(function() {
-
-            // Fase 4 — t=2.8s: som 2 + typewriter KNOWLEDGE
+            // t=2.5s: impacto + hub surge (handled by canvas at elapsed=2500)
             initAudio();
             playImpacto();
-            runTypewriter(function() {
-              // Typewriter done at ~t=2.8+1.08+0.4=4.28s
-              // Som 3 at ~t=4.2s (play immediately after typing completes)
+
+            // t=6.5s: playBrilho + KNOWLEDGE typewriter
+            setTimeout(function() {
               playBrilho();
-
-              // Fase 5 — hold KNOWLEDGE (700ms of silence → t≈4.98s)
-              setTimeout(function() {
-
-                // Fase 6 — t≈5.5s: fade out overlay (1.5s CSS transition)
-                overlay.style.opacity = '0';
+              runTypewriter(function() {
+                // t≈7.5s: fade out overlay
                 setTimeout(function() {
-                  if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-                }, 1550);
+                  overlay.style.opacity = '0';
+                  done = true;
+                  setTimeout(function() {
+                    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                  }, 1550);
+                }, 500);
+              });
+            }, 4000); // 2500 + 4000 = 6500ms after start
 
-              }, 700);
-            });
-
-          }, 700); // silence pause after CB fades out
+          }, 900);
         });
-
-      }, 700); // hold "CULTURA BUILDER" visible after fade-in
+      }, 200);
     });
   }
 
-  // ── Start when fonts are ready ──
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(runIntro);
   } else {
@@ -1854,6 +2151,7 @@ footer {
 
 })();
 </script>
+
 
 <!-- NAV -->
 <nav>
