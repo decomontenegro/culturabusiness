@@ -1741,10 +1741,14 @@ footer {
   /* ── DRAW ── */
   var DURATION = 9500;
   var startTime=null;
+  var frameCount=0;
 
   function frame(ts){
     if(!startTime) startTime=ts;
-    var elapsed=ts-startTime;
+    frameCount++;
+    // elapsed baseado em frames reais (33ms/frame garantido), não em performance.now()
+    // Isso evita bugs com performance.now() em browsers headless/backgrounded
+    var elapsed=frameCount*33;
     var p=elapsed/DURATION;
     if(p>1) p=1;
 
