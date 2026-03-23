@@ -180,7 +180,7 @@ nav {
 }
 
 .live-capture {
-  width: 360px;
+  width: 400px;
   border: 1px solid rgba(200,169,110,0.18);
   border-radius: 12px;
   background: #0d0d0d;
@@ -312,6 +312,245 @@ nav {
   color: var(--muted);
   text-transform: uppercase;
   text-align: center;
+}
+
+/* ── LIVE EVENT STREAM ── */
+.lc-event-stream {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 18px;
+}
+
+.lc-section-label {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  opacity: 0.7;
+}
+
+.lc-event {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 11px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.lc-event.lc-ev-visible { opacity: 1; transform: translateY(0); }
+
+.lc-event.lc-ev-captured {
+  background: rgba(74,175,80,0.05);
+  border-color: rgba(74,175,80,0.15);
+}
+
+.lc-event.lc-ev-ignored {
+  background: rgba(245,240,232,0.02);
+  border-color: rgba(245,240,232,0.05);
+}
+
+.lc-ev-icon {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.lc-ev-icon-ok  { background: rgba(74,175,80,0.15); color: #4caf50; }
+.lc-ev-icon-no  { background: rgba(245,240,232,0.05); color: rgba(245,240,232,0.2); }
+
+.lc-ev-body { flex: 1; min-width: 0; }
+
+.lc-ev-text {
+  font-size: 10px;
+  color: rgba(245,240,232,0.55);
+  font-style: italic;
+  line-height: 1.45;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lc-ev-verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.4s ease 0.35s;
+}
+
+.lc-ev-visible .lc-ev-verdict { opacity: 1; }
+
+.lc-ev-verdict-ok  { color: #4caf50; }
+.lc-ev-verdict-no  { color: rgba(245,240,232,0.2); }
+
+.lc-ev-tag {
+  font-size: 8px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: var(--mono);
+}
+
+.lc-tag-decisao  { background: rgba(74,175,80,0.1);  color: #4caf50; border: 1px solid rgba(74,175,80,0.2); }
+.lc-tag-processo { background: rgba(74,149,212,0.1); color: #4a95d4; border: 1px solid rgba(74,149,212,0.2); }
+.lc-tag-cliente  { background: rgba(200,169,110,0.1);color: var(--gold); border: 1px solid rgba(200,169,110,0.2); }
+.lc-tag-ruido    { background: rgba(245,240,232,0.03); color: rgba(245,240,232,0.18); border: 1px solid rgba(245,240,232,0.07); }
+
+/* ── KNOWLEDGE MAP ── */
+.lc-km-wrap {
+  border-top: 1px solid rgba(245,240,232,0.06);
+  padding-top: 14px;
+  margin-bottom: 18px;
+}
+
+.lc-km-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.lc-km-total {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+}
+
+.lc-km-cats { display: flex; flex-direction: column; gap: 6px; }
+
+.lc-km-cat {
+  border: 1px solid rgba(245,240,232,0.07);
+  border-radius: 7px;
+  overflow: hidden;
+  transition: border-color 0.4s;
+}
+
+.lc-km-cat.lc-km-active { border-color: rgba(245,240,232,0.12); }
+
+.lc-km-cat-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 11px;
+  background: rgba(245,240,232,0.02);
+}
+
+.lc-km-cat-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: rgba(245,240,232,0.35);
+  text-transform: uppercase;
+}
+
+.lc-km-cat-count {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: rgba(245,240,232,0.2);
+  transition: color 0.3s;
+}
+
+.lc-km-cat.lc-km-active .lc-km-cat-count { color: var(--gold); }
+
+.lc-km-items {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.55s ease, padding 0.3s;
+}
+
+.lc-km-cat.lc-km-active .lc-km-items {
+  max-height: 200px;
+  padding: 6px 11px 10px;
+}
+
+.lc-km-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(245,240,232,0.04);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.35s, transform 0.35s;
+}
+
+.lc-km-item:last-child { border-bottom: none; }
+.lc-km-item.lc-km-item-vis { opacity: 1; transform: translateX(0); }
+
+.lc-km-item-key {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: rgba(245,240,232,0.28);
+  min-width: 70px;
+  padding-top: 1px;
+  letter-spacing: 0.06em;
+}
+
+.lc-km-item-val {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: rgba(245,240,232,0.75);
+  line-height: 1.4;
+  flex: 1;
+}
+
+.lc-km-item-val strong { color: var(--text); font-weight: 600; }
+
+.lc-km-new {
+  font-size: 7px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(74,175,80,0.12);
+  border: 1px solid rgba(74,175,80,0.2);
+  color: #4caf50;
+  font-family: var(--mono);
+  flex-shrink: 0;
+  margin-top: 1px;
+  opacity: 0;
+  transition: opacity 0.3s ease 0.5s;
+  letter-spacing: 0.08em;
+}
+
+.lc-km-item.lc-km-item-vis .lc-km-new { opacity: 1; }
+
+.lc-km-typing {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 0;
+}
+
+.lc-km-typing span {
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: rgba(245,240,232,0.3);
+}
+
+.lc-km-typing span:nth-child(1) { animation: lcdot 1.1s 0s infinite; }
+.lc-km-typing span:nth-child(2) { animation: lcdot 1.1s 0.18s infinite; }
+.lc-km-typing span:nth-child(3) { animation: lcdot 1.1s 0.36s infinite; }
+
+@keyframes lcdot {
+  0%,100% { opacity: 0.2; transform: scale(1); }
+  50%      { opacity: 0.9; transform: scale(1.4); }
 }
 
 /* ── COMPOUND ── */
@@ -2207,35 +2446,58 @@ footer {
           <span class="lc-pulse-badge">● AO VIVO</span>
         </div>
         <div class="lc-body">
-          <div class="lc-stream" id="lcStream">
-            <div class="lc-msg lc-msg-in">
-              <span class="lc-msg-label">REUNIÃO</span>
-              <span class="lc-msg-text">"Decidimos adiar o lançamento para Q2. Budget aprovado foi R$280k."</span>
+
+          <!-- ── Stream de eventos ── -->
+          <div class="lc-section-label">↓ capturando conversas</div>
+          <div class="lc-event-stream" id="lcEventStream"></div>
+
+          <!-- ── Knowledge Map ── -->
+          <div class="lc-km-wrap">
+            <div class="lc-km-header">
+              <span class="lc-section-label" style="margin:0">↓ memória categorizada</span>
+              <span class="lc-km-total"><span id="lcKmTotal">0</span> estruturados</span>
             </div>
-            <div class="lc-arrow">↓ estruturando</div>
-            <div class="lc-msg lc-msg-out">
-              <span class="lc-msg-label">MEMÓRIA</span>
-              <div class="lc-structured">
-                <div class="lc-row"><span class="lc-key">Decisão</span><span class="lc-val">Lançamento → Q2 2025</span></div>
-                <div class="lc-row"><span class="lc-key">Budget</span><span class="lc-val">R$ 280.000 ✓</span></div>
-                <div class="lc-row"><span class="lc-key">Status</span><span class="lc-val lc-val-gold">confirmado</span></div>
+            <div class="lc-km-cats">
+              <div class="lc-km-cat" id="lckm-decisao">
+                <div class="lc-km-cat-hd">
+                  <span class="lc-km-cat-name">📋 Decisões</span>
+                  <span class="lc-km-cat-count" id="lckm-cnt-decisao">0 itens</span>
+                </div>
+                <div class="lc-km-items" id="lckm-items-decisao"></div>
+              </div>
+              <div class="lc-km-cat" id="lckm-processo">
+                <div class="lc-km-cat-hd">
+                  <span class="lc-km-cat-name">⚙️ Processos</span>
+                  <span class="lc-km-cat-count" id="lckm-cnt-processo">0 itens</span>
+                </div>
+                <div class="lc-km-items" id="lckm-items-processo"></div>
+              </div>
+              <div class="lc-km-cat" id="lckm-cliente">
+                <div class="lc-km-cat-hd">
+                  <span class="lc-km-cat-name">🤝 Clientes</span>
+                  <span class="lc-km-cat-count" id="lckm-cnt-cliente">0 itens</span>
+                </div>
+                <div class="lc-km-items" id="lckm-items-cliente"></div>
               </div>
             </div>
           </div>
+
+          <!-- ── Stats ── -->
           <div class="lc-stats">
             <div class="lc-stat">
-              <span class="lc-stat-num" data-target="847">0</span>
-              <span class="lc-stat-label">decisões capturadas</span>
+              <span class="lc-stat-num" id="lcStatCapt">0</span>
+              <span class="lc-stat-label">capturados</span>
             </div>
             <div class="lc-stat">
-              <span class="lc-stat-num" data-target="12">0</span>
-              <span class="lc-stat-label">equipes conectadas</span>
+              <span class="lc-stat-num" id="lcStatFilt">0</span>
+              <span class="lc-stat-label">ruído filtrado</span>
             </div>
             <div class="lc-stat">
               <span class="lc-stat-num lc-stat-pct" data-target="94">0</span>
-              <span class="lc-stat-label">taxa de retenção</span>
+              <span class="lc-stat-label">taxa retenção</span>
             </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -2854,7 +3116,7 @@ const io = new IntersectionObserver(entries => {
 
 document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-// ── Live capture counter animation ──
+// ── Live capture: counter for retention stat ──
 function animateCounters() {
   document.querySelectorAll('.lc-stat-num[data-target]').forEach(el => {
     const target = parseInt(el.dataset.target);
@@ -2868,48 +3130,141 @@ function animateCounters() {
     }, 16);
   });
 }
-const captureEl = document.querySelector('.live-capture');
-if (captureEl) {
-  const captureObserver = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) { animateCounters(); captureObserver.unobserve(e.target); }});
-  }, { threshold: 0.4 });
-  captureObserver.observe(captureEl);
-}
 
-// ── Live capture: troca conteúdo a cada 6s ──
-const decisions = [
-  {
-    reuniao: 'Decidimos adiar o lançamento para Q2. Budget aprovado foi R$280k.',
-    rows: [['Decisão','Lançamento → Q2 2025'],['Budget','R$ 280.000 ✓'],['Status','confirmado']]
-  },
-  {
-    reuniao: 'O Marcos vai liderar a expansão para São Paulo a partir de março.',
-    rows: [['Ação','Expansão SP'],['Responsável','Marcos'],['Início','março 2025']]
-  },
-  {
-    reuniao: 'Aprovamos a contratação de 3 pessoas para o time de produto.',
-    rows: [['Decisão','Contratar 3 pessoas'],['Área','Produto'],['Prazo','até abril']]
+// ── Live Knowledge Capture Animation ──
+(function() {
+  const EVENTS = [
+    { delay: 600,  text: '"Aprovamos contratar 3 pessoas para produto até abril."',      type: 'captured', tag: 'decisao',  km: { key: 'Contratação', val: '<strong>3 pessoas</strong> para produto · até abril' } },
+    { delay: 2800, text: '"Oi gente, bom dia! 😄 Alguém viu meu carregador?"',           type: 'ignored',  tag: 'ruido',    km: null },
+    { delay: 5200, text: '"Accor pediu desconto 15% — aprovamos, potencial de +4 hotéis."', type: 'captured', tag: 'cliente', km: { key: 'Accor exceção', val: '<strong>-15%</strong> aprovado · potencial +4 hotéis' } },
+    { delay: 7600, text: '"Você viu a série nova do Netflix? 🔥"',                         type: 'ignored',  tag: 'ruido',    km: null },
+    { delay: 10000,text: '"Bug crítico: sempre avisar TL antes do rollback, fora do horário também."', type: 'captured', tag: 'processo', km: { key: 'Bug crítico', val: 'Avisa <strong>TL primeiro</strong> → rollback' } },
+    { delay: 12600,text: '"Alguém sabe a senha do wifi do escritório novo?"',              type: 'ignored',  tag: 'ruido',    km: null },
+    { delay: 15200,text: '"Board decidiu: sem investidor externo em 2025, crescimento com caixa próprio."', type: 'captured', tag: 'decisao', km: { key: 'Capital 2025', val: '<strong>Sem externo</strong> · caixa próprio' } },
+  ];
+
+  const tagLabels = { decisao: 'Decisão', processo: 'Processo', cliente: 'Cliente', ruido: 'ruído filtrado' };
+  const tagClass  = { decisao: 'lc-tag-decisao', processo: 'lc-tag-processo', cliente: 'lc-tag-cliente', ruido: 'lc-tag-ruido' };
+
+  let capt = 0, filt = 0, kmTotal = 0;
+  const kmCounts = { decisao: 0, processo: 0, cliente: 0 };
+  let timers = [];
+  let started = false;
+
+  function animNum(el, to, dur) {
+    if (!el) return;
+    const from = parseInt(el.textContent) || 0;
+    const steps = 18, ms = dur / steps;
+    let i = 0;
+    const iv = setInterval(() => {
+      i++;
+      el.textContent = Math.round(from + (to - from) * (i / steps));
+      if (i >= steps) { clearInterval(iv); el.textContent = to; }
+    }, ms);
   }
-];
-let decisionIdx = 0;
-function rotateLiveCapture() {
-  decisionIdx = (decisionIdx + 1) % decisions.length;
-  const d = decisions[decisionIdx];
-  const msgText = document.querySelector('.lc-msg-text');
-  const structured = document.querySelector('.lc-structured');
-  if (!msgText || !structured) return;
-  msgText.style.opacity = '0';
-  structured.style.opacity = '0';
-  setTimeout(() => {
-    msgText.textContent = d.reuniao;
-    structured.innerHTML = d.rows.map(([k,v]) =>
-      `<div class="lc-row"><span class="lc-key">${k}</span><span class="lc-val${v==='confirmado'?' lc-val-gold':''}">${v}</span></div>`
-    ).join('');
-    msgText.style.opacity = '1';
-    structured.style.opacity = '1';
-  }, 400);
-}
-setInterval(rotateLiveCapture, 6000);
+
+  function addEvent(ev) {
+    const stream = document.getElementById('lcEventStream');
+    if (!stream) return;
+    const el = document.createElement('div');
+    el.className = `lc-event ${ev.type === 'captured' ? 'lc-ev-captured' : 'lc-ev-ignored'}`;
+    const iconClass = ev.type === 'captured' ? 'lc-ev-icon-ok' : 'lc-ev-icon-no';
+    const iconChar  = ev.type === 'captured' ? '✓' : '–';
+    const verdClass = ev.type === 'captured' ? 'lc-ev-verdict-ok' : 'lc-ev-verdict-no';
+    const verdText  = ev.type === 'captured' ? '✓ capturado' : '× ignorado';
+    el.innerHTML = `
+      <div class="lc-ev-icon ${iconClass}">${iconChar}</div>
+      <div class="lc-ev-body">
+        <div class="lc-ev-text">${ev.text}</div>
+        <div class="lc-ev-verdict ${verdClass}">${verdText} &nbsp;<span class="lc-ev-tag ${tagClass[ev.tag]}">${tagLabels[ev.tag]}</span></div>
+      </div>`;
+    stream.appendChild(el);
+    timers.push(setTimeout(() => el.classList.add('lc-ev-visible'), 80));
+  }
+
+  function addKmItem(ev) {
+    if (!ev.km) return;
+    const { key, val } = ev.km;
+    const cat = ev.tag; // decisao | processo | cliente
+    const container = document.getElementById(`lckm-items-${cat}`);
+    const catEl = document.getElementById(`lckm-${cat}`);
+    const cntEl = document.getElementById(`lckm-cnt-${cat}`);
+    if (!container || !catEl) return;
+    catEl.classList.add('lc-km-active');
+    // typing indicator
+    const typing = document.createElement('div');
+    typing.className = 'lc-km-typing';
+    typing.innerHTML = '<span></span><span></span><span></span>';
+    container.appendChild(typing);
+    timers.push(setTimeout(() => {
+      typing.remove();
+      const item = document.createElement('div');
+      item.className = 'lc-km-item';
+      item.innerHTML = `<div class="lc-km-item-key">${key}</div><div class="lc-km-item-val">${val}</div><div class="lc-km-new">novo</div>`;
+      container.appendChild(item);
+      timers.push(setTimeout(() => item.classList.add('lc-km-item-vis'), 60));
+      kmCounts[cat]++;
+      kmTotal++;
+      cntEl.textContent = `${kmCounts[cat]} ${kmCounts[cat] === 1 ? 'item' : 'itens'}`;
+      animNum(document.getElementById('lcKmTotal'), kmTotal, 400);
+      timers.push(setTimeout(() => { const b = item.querySelector('.lc-km-new'); if(b) b.style.opacity='0'; }, 3500));
+    }, 1100));
+  }
+
+  function runCapture() {
+    capt = 0; filt = 0; kmTotal = 0;
+    ['decisao','processo','cliente'].forEach(c => { kmCounts[c] = 0; });
+    const stream = document.getElementById('lcEventStream');
+    if (stream) stream.innerHTML = '';
+    ['decisao','processo','cliente'].forEach(c => {
+      const el = document.getElementById(`lckm-items-${c}`);
+      const cat = document.getElementById(`lckm-${c}`);
+      const cnt = document.getElementById(`lckm-cnt-${c}`);
+      if (el) el.innerHTML = '';
+      if (cat) cat.classList.remove('lc-km-active');
+      if (cnt) cnt.textContent = '0 itens';
+    });
+    const tot = document.getElementById('lcKmTotal');
+    const sc  = document.getElementById('lcStatCapt');
+    const sf  = document.getElementById('lcStatFilt');
+    if (tot) tot.textContent = '0';
+    if (sc)  sc.textContent  = '0';
+    if (sf)  sf.textContent  = '0';
+    animateCounters();
+
+    EVENTS.forEach(ev => {
+      timers.push(setTimeout(() => {
+        addEvent(ev);
+        if (ev.type === 'captured') {
+          capt++;
+          timers.push(setTimeout(() => { animNum(document.getElementById('lcStatCapt'), capt, 400); addKmItem(ev); }, 750));
+        } else {
+          filt++;
+          timers.push(setTimeout(() => animNum(document.getElementById('lcStatFilt'), filt, 400), 500));
+        }
+      }, ev.delay));
+    });
+
+    // loop: restart after last event + 4s
+    const lastDelay = EVENTS[EVENTS.length - 1].delay + 4000;
+    timers.push(setTimeout(runCapture, lastDelay));
+  }
+
+  // Start when card enters viewport
+  const captureEl = document.querySelector('.live-capture');
+  if (captureEl) {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting && !started) {
+          started = true;
+          runCapture();
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.3 });
+    observer.observe(captureEl);
+  }
+})();
 
 // ── Hero Globe (particle sphere) ──
 (function() {
