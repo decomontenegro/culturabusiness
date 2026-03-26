@@ -1843,6 +1843,838 @@ footer {
   color: rgba(200,169,110,0.3);
   padding: 0 6px;
 }
+
+/* ════════════════════════════════
+   CAMADA 1 — MULTICANAL
+════════════════════════════════ */
+.multicanal-section {
+  padding: 160px 0;
+  border-top: 1px solid rgba(245,240,232,0.05);
+}
+
+.multicanal-header {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.multicanal-header .eyebrow {
+  display: block;
+  margin-bottom: 24px;
+}
+
+.multicanal-title {
+  font-family: var(--serif);
+  font-size: clamp(36px, 4.5vw, 64px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+
+.multicanal-sub {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.multicanal-diagram {
+  display: grid;
+  grid-template-columns: 1fr 80px 1fr;
+  gap: 0;
+  align-items: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.mc-channels {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mc-channel {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1px solid rgba(245,240,232,0.07);
+  border-radius: 10px;
+  background: rgba(245,240,232,0.02);
+  transition: border-color 0.4s ease, background 0.4s ease;
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.6s ease, transform 0.6s ease, border-color 0.4s ease;
+}
+
+.mc-channel.mc-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.mc-channel:hover {
+  border-color: rgba(200,169,110,0.25);
+  background: rgba(200,169,110,0.03);
+}
+
+.mc-channel-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  background: rgba(200,169,110,0.08);
+  border: 1px solid rgba(200,169,110,0.15);
+}
+
+.mc-channel-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.mc-channel-name {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.mc-channel-desc {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 300;
+}
+
+.mc-channel-count {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  flex-shrink: 0;
+}
+
+.mc-funnel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  position: relative;
+}
+
+.mc-funnel-line {
+  width: 1px;
+  background: linear-gradient(to bottom, rgba(200,169,110,0.05), rgba(200,169,110,0.4), rgba(200,169,110,0.05));
+  flex: 1;
+}
+
+.mc-funnel-arrow {
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold);
+  font-size: 18px;
+  animation: mc-pulse-arrow 2s ease-in-out infinite;
+}
+
+@keyframes mc-pulse-arrow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.2); }
+}
+
+.mc-brain {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 40px 32px;
+  border: 1px solid rgba(200,169,110,0.3);
+  border-radius: 16px;
+  background: radial-gradient(ellipse at center, rgba(200,169,110,0.06) 0%, rgba(8,8,8,0) 70%);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 0.8s ease 0.4s, transform 0.8s ease 0.4s;
+}
+
+.mc-brain.mc-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.mc-brain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: radial-gradient(ellipse at center, rgba(200,169,110,0.08) 0%, transparent 70%);
+  animation: mc-brain-pulse 3s ease-in-out infinite;
+}
+
+@keyframes mc-brain-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+
+.mc-brain-icon {
+  font-size: 48px;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 0 20px rgba(200,169,110,0.3));
+}
+
+.mc-brain-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  position: relative;
+  z-index: 1;
+}
+
+.mc-brain-title {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  position: relative;
+  z-index: 1;
+}
+
+.mc-brain-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.mc-brain-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid rgba(200,169,110,0.1);
+  border-radius: 6px;
+  background: rgba(200,169,110,0.03);
+}
+
+.mc-brain-stat-key {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.mc-brain-stat-val {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--gold);
+  font-weight: 500;
+}
+
+/* ════════════════════════════════
+   CAMADA 2 — GROWTH BARS (COMPOUND)
+════════════════════════════════ */
+.compound-growth {
+  margin-bottom: 64px;
+  padding: 40px 36px;
+  border: 1px solid rgba(200,169,110,0.12);
+  border-radius: 12px;
+  background: rgba(200,169,110,0.02);
+}
+
+.compound-growth-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 32px;
+  display: block;
+}
+
+.compound-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.compound-bar-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 100px;
+  gap: 16px;
+  align-items: center;
+}
+
+.compound-bar-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: right;
+}
+
+.compound-bar-track {
+  height: 8px;
+  background: rgba(245,240,232,0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.compound-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(200,169,110,0.6) 0%, #C8A96E 100%);
+  transition: width 1.2s cubic-bezier(0.16,1,0.3,1);
+  position: relative;
+}
+
+.compound-bar-fill::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 20px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2));
+  border-radius: 0 4px 4px 0;
+}
+
+.compound-bar-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.compound-bar-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.compound-bar-note {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 300;
+}
+
+.compound-bar-row.bar-highlight .compound-bar-label {
+  color: var(--gold);
+}
+
+.compound-bar-row.bar-highlight .compound-bar-fill {
+  background: linear-gradient(90deg, #C8A96E 0%, #E8C98E 60%, #C8A96E 100%);
+  box-shadow: 0 0 12px rgba(200,169,110,0.3);
+}
+
+.compound-bar-row.bar-highlight .compound-bar-note {
+  color: var(--gold);
+  font-weight: 500;
+}
+
+/* ════════════════════════════════
+   CAMADA 3 — ATIVAÇÃO
+════════════════════════════════ */
+.ativacao-section {
+  padding: 160px 0;
+  border-top: 1px solid rgba(245,240,232,0.05);
+}
+
+.ativacao-header {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.ativacao-header .eyebrow {
+  display: block;
+  margin-bottom: 24px;
+}
+
+.ativacao-title {
+  font-family: var(--serif);
+  font-size: clamp(32px, 4vw, 56px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.ativacao-sub {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.ativacao-demo {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 24px;
+  align-items: center;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.ativ-panel {
+  border: 1px solid rgba(200,169,110,0.15);
+  border-radius: 12px;
+  background: #0d0d0d;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.ativ-panel.ativ-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ativ-panel:last-child {
+  transition-delay: 0.5s;
+}
+
+.ativ-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(200,169,110,0.1);
+  background: rgba(255,255,255,0.02);
+}
+
+.ativ-dot { width: 8px; height: 8px; border-radius: 50%; }
+.ativ-dot-red  { background: rgba(255,95,87,0.7); }
+.ativ-dot-grey { background: rgba(100,100,100,0.4); }
+
+.ativ-title-bar {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  flex: 1;
+}
+
+.ativ-badge {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  padding: 2px 7px;
+  border-radius: 3px;
+}
+
+.ativ-badge-capture {
+  background: rgba(74,149,212,0.12);
+  color: #4a95d4;
+  border: 1px solid rgba(74,149,212,0.2);
+}
+
+.ativ-badge-query {
+  background: rgba(200,169,110,0.1);
+  color: var(--gold);
+  border: 1px solid rgba(200,169,110,0.2);
+  animation: lcpulse 2s ease-in-out infinite;
+}
+
+.ativ-body {
+  padding: 20px 18px;
+  min-height: 200px;
+}
+
+.ativ-week-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  display: block;
+}
+
+.ativ-capture-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid rgba(245,240,232,0.07);
+  border-radius: 8px;
+  background: rgba(245,240,232,0.02);
+  margin-bottom: 12px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s;
+}
+
+.ativ-capture-msg.ativ-line-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ativ-msg-source {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+
+.ativ-msg-text {
+  font-size: 12px;
+  color: rgba(245,240,232,0.7);
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.ativ-msg-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.ativ-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ativ-chat-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.ativ-chat-msg.ativ-line-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ativ-chat-msg.ativ-msg-user {
+  align-items: flex-end;
+}
+
+.ativ-chat-msg.ativ-msg-agent {
+  align-items: flex-start;
+  transition-delay: 0.6s;
+}
+
+.ativ-chat-who {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+
+.ativ-chat-bubble {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.6;
+  max-width: 90%;
+}
+
+.ativ-bubble-user {
+  background: rgba(245,240,232,0.06);
+  border: 1px solid rgba(245,240,232,0.1);
+  color: rgba(245,240,232,0.8);
+}
+
+.ativ-bubble-agent {
+  background: rgba(200,169,110,0.06);
+  border: 1px solid rgba(200,169,110,0.2);
+  color: rgba(245,240,232,0.9);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.ativ-source-cite {
+  font-size: 9px;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+  font-family: var(--mono);
+}
+
+.ativ-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.5s ease 0.8s;
+}
+
+.ativ-arrow.ativ-visible {
+  opacity: 1;
+}
+
+.ativ-arrow-line {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, transparent, rgba(200,169,110,0.5), transparent);
+}
+
+.ativ-arrow-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  white-space: nowrap;
+}
+
+.ativ-arrow-chevron {
+  color: var(--gold);
+  font-size: 14px;
+}
+
+/* ════════════════════════════════
+   CAMADA 4 — SETORES
+════════════════════════════════ */
+.setores-section {
+  padding: 160px 0;
+  border-top: 1px solid rgba(245,240,232,0.05);
+}
+
+.setores-header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.setores-header .eyebrow {
+  display: block;
+  margin-bottom: 24px;
+}
+
+.setores-title {
+  font-family: var(--serif);
+  font-size: clamp(32px, 4vw, 56px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.setores-sub {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.setores-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 48px;
+}
+
+.setor-tab {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 16px;
+  border: 1px solid rgba(245,240,232,0.08);
+  border-radius: 40px;
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.3s, border-color 0.3s, background 0.3s;
+}
+
+.setor-tab:hover {
+  color: var(--text);
+  border-color: rgba(245,240,232,0.2);
+}
+
+.setor-tab.setor-active {
+  color: var(--gold);
+  border-color: rgba(200,169,110,0.4);
+  background: rgba(200,169,110,0.05);
+}
+
+.setores-content {
+  max-width: 720px;
+  margin: 0 auto;
+  position: relative;
+  min-height: 260px;
+}
+
+.setor-panel {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+  pointer-events: none;
+}
+
+.setor-panel.setor-panel-active {
+  opacity: 1;
+  transform: translateY(0);
+  position: relative;
+  pointer-events: auto;
+}
+
+.setor-card {
+  border: 1px solid rgba(200,169,110,0.15);
+  border-radius: 12px;
+  background: #0d0d0d;
+  overflow: hidden;
+}
+
+.setor-card-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(200,169,110,0.1);
+  background: rgba(255,255,255,0.02);
+}
+
+.setor-sector-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  padding: 3px 10px;
+  border: 1px solid rgba(200,169,110,0.3);
+  border-radius: 20px;
+  background: rgba(200,169,110,0.06);
+}
+
+.setor-card-dots {
+  display: flex; gap: 5px; margin-left: auto;
+}
+
+.setor-card-dot { width: 8px; height: 8px; border-radius: 50%; }
+.setor-card-dot-r { background: rgba(255,95,87,0.6); }
+.setor-card-dot-g { background: rgba(100,100,100,0.4); }
+
+.setor-card-body {
+  padding: 24px;
+}
+
+.setor-capture-line {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid rgba(245,240,232,0.07);
+  border-radius: 8px;
+  background: rgba(245,240,232,0.02);
+  margin-bottom: 16px;
+}
+
+.setor-capture-source {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.setor-capture-text {
+  font-size: 14px;
+  color: rgba(245,240,232,0.75);
+  font-style: italic;
+  line-height: 1.65;
+}
+
+.setor-tag-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.setor-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  padding: 3px 10px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.setor-tag-decisao {
+  background: rgba(74,175,80,0.1);
+  color: #4caf50;
+  border: 1px solid rgba(74,175,80,0.25);
+}
+
+.setor-tag-processo {
+  background: rgba(74,149,212,0.1);
+  color: #4a95d4;
+  border: 1px solid rgba(74,149,212,0.25);
+}
+
+.setor-tag-cliente {
+  background: rgba(200,169,110,0.1);
+  color: var(--gold);
+  border: 1px solid rgba(200,169,110,0.25);
+}
+
+.setor-meta {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 768px) {
+  .multicanal-diagram {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .mc-funnel {
+    flex-direction: row;
+    height: 40px;
+  }
+  .mc-funnel-line {
+    width: auto;
+    height: 1px;
+    flex: 1;
+    background: linear-gradient(to right, rgba(200,169,110,0.05), rgba(200,169,110,0.4), rgba(200,169,110,0.05));
+  }
+  .ativacao-demo {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .ativ-arrow {
+    flex-direction: row;
+    writing-mode: initial;
+  }
+  .ativ-arrow-line {
+    width: 40px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(200,169,110,0.5), transparent);
+  }
+  .ativ-arrow-label {
+    writing-mode: initial;
+  }
+}
 </style>
 </head>
 <body>
@@ -2411,8 +3243,11 @@ footer {
   <div class="nav-logo">Cultura<span style="color:var(--gold)">Builder</span></div>
   <div class="nav-links">
     <a href="#insight">O insight</a>
+    <a href="#multicanal">Canais</a>
     <a href="#fases">Como funciona</a>
+    <a href="#ativacao">Ativação</a>
     <a href="#prova">Já em uso</a>
+    <a href="#setores">Setores</a>
     <a href="#vs-mercado">vs. mercado</a>
     <a href="#cta" class="nav-cta">Falar com especialista</a>
   </div>
@@ -2694,6 +3529,95 @@ footer {
 </section>
 
 
+<!-- ════ MULTICANAL ════ -->
+<section class="multicanal-section" id="multicanal">
+  <div class="wrap">
+
+    <div class="multicanal-header reveal">
+      <span class="eyebrow">Captura multicanal</span>
+      <h2 class="multicanal-title">Cada canal aprende.<br>A empresa inteira lembra.</h2>
+      <p class="multicanal-sub">Conhecimento descentralizado na coleta. Unificado na memória.</p>
+    </div>
+
+    <div class="multicanal-diagram">
+
+      <!-- Canais à esquerda -->
+      <div class="mc-channels">
+        <div class="mc-channel" data-mc-delay="0">
+          <div class="mc-channel-icon">💬</div>
+          <div class="mc-channel-info">
+            <span class="mc-channel-name">WhatsApp</span>
+            <span class="mc-channel-desc">Decisões em tempo real</span>
+          </div>
+          <span class="mc-channel-count">+847 itens</span>
+        </div>
+        <div class="mc-channel" data-mc-delay="100">
+          <div class="mc-channel-icon">🎙️</div>
+          <div class="mc-channel-info">
+            <span class="mc-channel-name">Reuniões</span>
+            <span class="mc-channel-desc">Transcrição + estruturação</span>
+          </div>
+          <span class="mc-channel-count">+312 itens</span>
+        </div>
+        <div class="mc-channel" data-mc-delay="200">
+          <div class="mc-channel-icon">📧</div>
+          <div class="mc-channel-info">
+            <span class="mc-channel-name">Email</span>
+            <span class="mc-channel-desc">Aprovações e contexto</span>
+          </div>
+          <span class="mc-channel-count">+563 itens</span>
+        </div>
+        <div class="mc-channel" data-mc-delay="300">
+          <div class="mc-channel-icon">🎵</div>
+          <div class="mc-channel-info">
+            <span class="mc-channel-name">Áudio</span>
+            <span class="mc-channel-desc">Mensagens de voz</span>
+          </div>
+          <span class="mc-channel-count">+194 itens</span>
+        </div>
+        <div class="mc-channel" data-mc-delay="400">
+          <div class="mc-channel-icon">#</div>
+          <div class="mc-channel-info">
+            <span class="mc-channel-name">Slack / Teams</span>
+            <span class="mc-channel-desc">Threads e discussões</span>
+          </div>
+          <span class="mc-channel-count">+1.2k itens</span>
+        </div>
+      </div>
+
+      <!-- Funil/seta central -->
+      <div class="mc-funnel">
+        <div class="mc-funnel-line"></div>
+        <div class="mc-funnel-arrow">→</div>
+        <div class="mc-funnel-line"></div>
+      </div>
+
+      <!-- Cérebro da empresa -->
+      <div class="mc-brain" id="mc-brain">
+        <div class="mc-brain-icon">🧠</div>
+        <span class="mc-brain-label">knowledge.core</span>
+        <span class="mc-brain-title">Cérebro da<br>Empresa</span>
+        <div class="mc-brain-stats">
+          <div class="mc-brain-stat">
+            <span class="mc-brain-stat-key">decisões:</span>
+            <span class="mc-brain-stat-val">3.118 itens</span>
+          </div>
+          <div class="mc-brain-stat">
+            <span class="mc-brain-stat-key">processos:</span>
+            <span class="mc-brain-stat-val">1.847 itens</span>
+          </div>
+          <div class="mc-brain-stat">
+            <span class="mc-brain-stat-key">contexto:</span>
+            <span class="mc-brain-stat-val">∞ conexões</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
 <!-- ════ AS 3 FASES ════ -->
 <section class="fases" id="fases">
   <div class="wrap">
@@ -2844,6 +3768,86 @@ footer {
   </div>
 </section>
 
+<!-- ════ ATIVAÇÃO ════ -->
+<section class="ativacao-section" id="ativacao">
+  <div class="wrap">
+
+    <div class="ativacao-header reveal">
+      <span class="eyebrow">Da captura à ativação</span>
+      <h2 class="ativacao-title">O conhecimento não fica parado.<br>Ele responde.</h2>
+      <p class="ativacao-sub">Da captura à ativação — em segundos.</p>
+    </div>
+
+    <div class="ativacao-demo">
+
+      <!-- Parte A: captura -->
+      <div class="ativ-panel" id="ativ-panel-a">
+        <div class="ativ-bar">
+          <div class="ativ-dot ativ-dot-red"></div>
+          <div class="ativ-dot ativ-dot-grey"></div>
+          <div class="ativ-dot ativ-dot-grey"></div>
+          <span class="ativ-title-bar">knowledge.capture</span>
+          <span class="ativ-badge ativ-badge-capture">semana 1</span>
+        </div>
+        <div class="ativ-body">
+          <span class="ativ-week-label">📥 captura — reunião comercial</span>
+          <div class="ativ-capture-msg" id="ativ-msg-capture">
+            <span class="ativ-msg-source">WhatsApp · Comercial · 14:32</span>
+            <span class="ativ-msg-text">"Aprovamos desconto de 15% para o Accor — potencial de +4 hotéis na rede."</span>
+            <span class="ativ-msg-tag">
+              <span class="lc-ev-tag lc-tag-cliente">[CLIENTE]</span>
+            </span>
+          </div>
+          <div class="ativ-capture-msg" id="ativ-msg-structured" style="border-color: rgba(200,169,110,0.2); background: rgba(200,169,110,0.03);">
+            <span class="ativ-msg-source" style="color: var(--gold);">→ estruturado em knowledge.core</span>
+            <span class="ativ-msg-text" style="font-size: 11px; font-family: var(--mono); color: rgba(245,240,232,0.6);">cliente: Accor<br>desconto: 15%<br>oportunidade: +4 hotéis<br>status: aprovado</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seta temporal -->
+      <div class="ativ-arrow" id="ativ-arrow">
+        <div class="ativ-arrow-line"></div>
+        <span class="ativ-arrow-label">3 semanas depois →</span>
+        <div class="ativ-arrow-line"></div>
+        <span class="ativ-arrow-chevron">↓</span>
+      </div>
+
+      <!-- Parte B: ativação -->
+      <div class="ativ-panel" id="ativ-panel-b">
+        <div class="ativ-bar">
+          <div class="ativ-dot ativ-dot-red"></div>
+          <div class="ativ-dot ativ-dot-grey"></div>
+          <div class="ativ-dot ativ-dot-grey"></div>
+          <span class="ativ-title-bar">agent.query</span>
+          <span class="ativ-badge ativ-badge-query">● ao vivo</span>
+        </div>
+        <div class="ativ-body">
+          <span class="ativ-week-label">💬 pergunta ao agente</span>
+          <div class="ativ-chat">
+            <div class="ativ-chat-msg ativ-msg-user" id="ativ-chat-q">
+              <span class="ativ-chat-who">Marina · Comercial</span>
+              <div class="ativ-chat-bubble ativ-bubble-user">
+                Qual nossa política de desconto para redes hoteleiras?
+              </div>
+            </div>
+            <div class="ativ-chat-msg ativ-msg-agent" id="ativ-chat-a">
+              <span class="ativ-chat-who">agente ·  knowledge.core</span>
+              <div class="ativ-chat-bubble ativ-bubble-agent">
+                Com base no histórico: redes hoteleiras elegíveis a até 15% de desconto.<br><br>
+                Exemplo recente: Accor recebeu 15% — decisão aprovada, potencial de +4 unidades na rede.
+              </div>
+              <span class="ativ-source-cite">↗ fonte: reunião comercial · 3 semanas atrás</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
 <!-- ════ PROVA — O LOBO ════ -->
 <section class="prova" id="prova">
   <div class="wrap">
@@ -2876,6 +3880,201 @@ footer {
         <div class="stat">
           <span class="stat-num">0</span>
           <span class="stat-label">reuniões de alinhamento repetidas</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ════ SETORES ════ -->
+<section class="setores-section" id="setores">
+  <div class="wrap">
+
+    <div class="setores-header reveal">
+      <span class="eyebrow">Setores atendidos</span>
+      <h2 class="setores-title">Funciona para o seu setor.</h2>
+      <p class="setores-sub">Cada setor tem sua linguagem. O sistema entende.</p>
+    </div>
+
+    <div class="setores-tabs reveal">
+      <button class="setor-tab setor-active" data-setor="imobiliario">Imobiliário</button>
+      <button class="setor-tab" data-setor="construcao">Construção</button>
+      <button class="setor-tab" data-setor="financeiro">Financeiro</button>
+      <button class="setor-tab" data-setor="midia">Mídia / TV</button>
+      <button class="setor-tab" data-setor="rh">RH</button>
+      <button class="setor-tab" data-setor="eventos">Eventos</button>
+      <button class="setor-tab" data-setor="alimentos">Alimentos</button>
+    </div>
+
+    <div class="setores-content reveal">
+
+      <!-- Imobiliário -->
+      <div class="setor-panel setor-panel-active" id="setor-imobiliario">
+        <div class="setor-card">
+          <div class="setor-card-bar">
+            <span class="setor-sector-badge">🏢 Imobiliário</span>
+            <div class="setor-card-dots">
+              <div class="setor-card-dot setor-card-dot-r"></div>
+              <div class="setor-card-dot setor-card-dot-g"></div>
+              <div class="setor-card-dot setor-card-dot-g"></div>
+            </div>
+          </div>
+          <div class="setor-card-body">
+            <div class="setor-capture-line">
+              <span class="setor-capture-source">📥 captura · jurídico · 10:14</span>
+              <span class="setor-capture-text">"Habite-se do Edifício Cora aprovado — vistoria agendada para 15/04."</span>
+              <div class="setor-tag-row">
+                <span class="setor-tag setor-tag-processo">[PROCESSO]</span>
+                <span class="setor-meta">estruturado em 0.3s · índice: cora/habite-se</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Construção -->
+      <div class="setor-panel" id="setor-construcao">
+        <div class="setor-card">
+          <div class="setor-card-bar">
+            <span class="setor-sector-badge">🏗️ Incorporação / Construção</span>
+            <div class="setor-card-dots">
+              <div class="setor-card-dot setor-card-dot-r"></div>
+              <div class="setor-card-dot setor-card-dot-g"></div>
+              <div class="setor-card-dot setor-card-dot-g"></div>
+            </div>
+          </div>
+          <div class="setor-card-body">
+            <div class="setor-capture-line">
+              <span class="setor-capture-source">📥 captura · obra · 07:58</span>
+              <span class="setor-capture-text">"Concretagem do 8º pavimento aprovada — cronograma mantido."</span>
+              <div class="setor-tag-row">
+                <span class="setor-tag setor-tag-decisao">[DECISÃO]</span>
+                <span class="setor-meta">estruturado em 0.4s · índice: pav8/cronograma</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financeiro -->
+      <div class="setor-panel" id="setor-financeiro">
+        <div class="setor-card">
+          <div class="setor-card-bar">
+            <span class="setor-sector-badge">💰 Financeiro</span>
+            <div class="setor-card-dots">
+              <div class="setor-card-dot setor-card-dot-r"></div>
+              <div class="setor-card-dot setor-card-dot-g"></div>
+              <div class="setor-card-dot setor-card-dot-g"></div>
+            </div>
+          </div>
+          <div class="setor-card-body">
+            <div class="setor-capture-line">
+              <span class="setor-capture-source">📥 captura · crédito · 15:22</span>
+              <span class="setor-capture-text">"Spread de 2,3% aprovado para operação de crédito — dentro do limite de risco."</span>
+              <div class="setor-tag-row">
+                <span class="setor-tag setor-tag-decisao">[DECISÃO]</span>
+                <span class="setor-meta">estruturado em 0.2s · índice: credito/spread</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mídia/TV -->
+      <div class="setor-panel" id="setor-midia">
+        <div class="setor-card">
+          <div class="setor-card-bar">
+            <span class="setor-sector-badge">📺 Mídia / TV</span>
+            <div class="setor-card-dots">
+              <div class="setor-card-dot setor-card-dot-r"></div>
+              <div class="setor-card-dot setor-card-dot-g"></div>
+              <div class="setor-card-dot setor-card-dot-g"></div>
+            </div>
+          </div>
+          <div class="setor-card-body">
+            <div class="setor-capture-line">
+              <span class="setor-capture-source">📥 captura · mídia · 11:45</span>
+              <span class="setor-capture-text">"GRP da campanha Natura atingiu 340 pontos — renovação aprovada."</span>
+              <div class="setor-tag-row">
+                <span class="setor-tag setor-tag-cliente">[CLIENTE]</span>
+                <span class="setor-meta">estruturado em 0.3s · índice: natura/grp</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RH -->
+      <div class="setor-panel" id="setor-rh">
+        <div class="setor-card">
+          <div class="setor-card-bar">
+            <span class="setor-sector-badge">👥 RH</span>
+            <div class="setor-card-dots">
+              <div class="setor-card-dot setor-card-dot-r"></div>
+              <div class="setor-card-dot setor-card-dot-g"></div>
+              <div class="setor-card-dot setor-card-dot-g"></div>
+            </div>
+          </div>
+          <div class="setor-card-body">
+            <div class="setor-capture-line">
+              <span class="setor-capture-source">📥 captura · rh · 09:12</span>
+              <span class="setor-capture-text">"PDI da Juliana aprovado — headcount Q2 liberado."</span>
+              <div class="setor-tag-row">
+                <span class="setor-tag setor-tag-decisao">[DECISÃO]</span>
+                <span class="setor-meta">estruturado em 0.4s · índice: juliana/pdi</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Eventos -->
+      <div class="setor-panel" id="setor-eventos">
+        <div class="setor-card">
+          <div class="setor-card-bar">
+            <span class="setor-sector-badge">🎪 Eventos / Agência</span>
+            <div class="setor-card-dots">
+              <div class="setor-card-dot setor-card-dot-r"></div>
+              <div class="setor-card-dot setor-card-dot-g"></div>
+              <div class="setor-card-dot setor-card-dot-g"></div>
+            </div>
+          </div>
+          <div class="setor-card-body">
+            <div class="setor-capture-line">
+              <span class="setor-capture-source">📥 captura · producao · 22:47</span>
+              <span class="setor-capture-text">"Rider técnico confirmado — producao autoriza montagem a partir das 6h."</span>
+              <div class="setor-tag-row">
+                <span class="setor-tag setor-tag-processo">[PROCESSO]</span>
+                <span class="setor-meta">estruturado em 0.3s · índice: rider/montagem</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alimentos -->
+      <div class="setor-panel" id="setor-alimentos">
+        <div class="setor-card">
+          <div class="setor-card-bar">
+            <span class="setor-sector-badge">🛒 Alimentos / Produtos</span>
+            <div class="setor-card-dots">
+              <div class="setor-card-dot setor-card-dot-r"></div>
+              <div class="setor-card-dot setor-card-dot-g"></div>
+              <div class="setor-card-dot setor-card-dot-g"></div>
+            </div>
+          </div>
+          <div class="setor-card-body">
+            <div class="setor-capture-line">
+              <span class="setor-capture-source">📥 captura · trade · 16:30</span>
+              <span class="setor-capture-text">"SKU premium aprovado para teste em 50 PDVs — margem 34%."</span>
+              <div class="setor-tag-row">
+                <span class="setor-tag setor-tag-decisao">[DECISÃO]</span>
+                <span class="setor-meta">estruturado em 0.2s · índice: sku/pdvs</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -3037,6 +4236,58 @@ footer {
     <div class="compound-inner">
       <span class="eyebrow">O efeito composto</span>
       <h2 class="compound-headline">Conhecimento acumula.<br>Vantagem também.</h2>
+      <!-- GROWTH BARS — Memória que cresce -->
+      <div class="compound-growth" id="compound-growth">
+        <span class="compound-growth-title">Acúmulo de conhecimento ao longo do tempo</span>
+        <div class="compound-bars">
+
+          <div class="compound-bar-row">
+            <span class="compound-bar-label">Semana 1</span>
+            <div class="compound-bar-track">
+              <div class="compound-bar-fill" data-target="8"></div>
+            </div>
+            <div class="compound-bar-info">
+              <span class="compound-bar-count">47 itens</span>
+              <span class="compound-bar-note">primeiras capturas</span>
+            </div>
+          </div>
+
+          <div class="compound-bar-row">
+            <span class="compound-bar-label">Mês 1</span>
+            <div class="compound-bar-track">
+              <div class="compound-bar-fill" data-target="28"></div>
+            </div>
+            <div class="compound-bar-info">
+              <span class="compound-bar-count">312 itens</span>
+              <span class="compound-bar-note">base estruturada</span>
+            </div>
+          </div>
+
+          <div class="compound-bar-row">
+            <span class="compound-bar-label">Mês 3</span>
+            <div class="compound-bar-track">
+              <div class="compound-bar-fill" data-target="58"></div>
+            </div>
+            <div class="compound-bar-info">
+              <span class="compound-bar-count">1.847 itens</span>
+              <span class="compound-bar-note">onboarding instantâneo</span>
+            </div>
+          </div>
+
+          <div class="compound-bar-row bar-highlight">
+            <span class="compound-bar-label">Ano 1</span>
+            <div class="compound-bar-track">
+              <div class="compound-bar-fill" data-target="100"></div>
+            </div>
+            <div class="compound-bar-info">
+              <span class="compound-bar-count">8.400+ itens</span>
+              <span class="compound-bar-note">vantagem intransponível</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
       <div class="compound-lines">
         <div class="compound-line">
           <span class="compound-period">Semana 1</span>
@@ -3448,6 +4699,140 @@ function animateCounters() {
   window.addEventListener('resize', () => { resize(); });
   init();
   tick();
+})();
+</script>
+
+<!-- ════ CAMADAS JS ════ -->
+<script>
+(function() {
+  'use strict';
+
+  // ── CAMADA 1: Multicanal animate-in ──
+  function initMulticanal() {
+    const channels = document.querySelectorAll('.mc-channel');
+    const brain = document.getElementById('mc-brain');
+    if (!channels.length) return;
+
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          channels.forEach((ch, i) => {
+            setTimeout(() => {
+              ch.classList.add('mc-visible');
+            }, parseInt(ch.dataset.mcDelay || 0) + i * 80);
+          });
+          if (brain) {
+            setTimeout(() => brain.classList.add('mc-visible'), 600);
+          }
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2 });
+
+    const section = document.getElementById('multicanal');
+    if (section) obs.observe(section);
+  }
+
+  // ── CAMADA 2: Compound growth bars ──
+  function initCompoundBars() {
+    const growth = document.getElementById('compound-growth');
+    if (!growth) return;
+
+    const bars = growth.querySelectorAll('.compound-bar-fill');
+
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          bars.forEach((bar, i) => {
+            const target = parseInt(bar.dataset.target || 0);
+            setTimeout(() => {
+              bar.style.width = target + '%';
+            }, i * 200 + 300);
+          });
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+
+    obs.observe(growth);
+  }
+
+  // ── CAMADA 3: Ativação sequence ──
+  function initAtivacao() {
+    const section = document.getElementById('ativacao');
+    if (!section) return;
+
+    const panelA = document.getElementById('ativ-panel-a');
+    const panelB = document.getElementById('ativ-panel-b');
+    const arrow  = document.getElementById('ativ-arrow');
+    const msgCapture   = document.getElementById('ativ-msg-capture');
+    const msgStructured = document.getElementById('ativ-msg-structured');
+    const chatQ  = document.getElementById('ativ-chat-q');
+    const chatA  = document.getElementById('ativ-chat-a');
+
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          // Panel A
+          if (panelA) setTimeout(() => panelA.classList.add('ativ-visible'), 100);
+          if (msgCapture)    setTimeout(() => msgCapture.classList.add('ativ-line-visible'), 400);
+          if (msgStructured) setTimeout(() => msgStructured.classList.add('ativ-line-visible'), 900);
+
+          // Arrow
+          if (arrow) setTimeout(() => arrow.classList.add('ativ-visible'), 1200);
+
+          // Panel B
+          if (panelB) setTimeout(() => panelB.classList.add('ativ-visible'), 1400);
+          if (chatQ)  setTimeout(() => chatQ.classList.add('ativ-line-visible'), 1700);
+          if (chatA)  setTimeout(() => chatA.classList.add('ativ-line-visible'), 2300);
+
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2 });
+
+    obs.observe(section);
+  }
+
+  // ── CAMADA 4: Setores tabs ──
+  function initSetores() {
+    const tabs   = document.querySelectorAll('.setor-tab');
+    const panels = document.querySelectorAll('.setor-panel');
+    if (!tabs.length) return;
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const setor = tab.dataset.setor;
+
+        // Update tabs
+        tabs.forEach(t => t.classList.remove('setor-active'));
+        tab.classList.add('setor-active');
+
+        // Update panels
+        panels.forEach(p => p.classList.remove('setor-panel-active'));
+        const target = document.getElementById('setor-' + setor);
+        if (target) {
+          setTimeout(() => target.classList.add('setor-panel-active'), 10);
+        }
+      });
+    });
+  }
+
+  // Init all
+  document.addEventListener('DOMContentLoaded', function() {
+    initMulticanal();
+    initCompoundBars();
+    initAtivacao();
+    initSetores();
+  });
+
+  // Also run if DOM already loaded
+  if (document.readyState !== 'loading') {
+    initMulticanal();
+    initCompoundBars();
+    initAtivacao();
+    initSetores();
+  }
 })();
 </script>
 
